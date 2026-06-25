@@ -1,32 +1,34 @@
-﻿using System.IO;
-using System.Reflection;
+﻿using System;
+using System.IO;
 
-using Gtk;
-
-using BackgammonByHoratiu.Utils;
+using BackgammonByHoratiu.Settings;
 
 namespace BackgammonByHoratiu
 {
-    class MainClass
+    static class Program
     {
-        public static void Main(string[] args)
+        public static GameWindow Game { get; private set; }
+
+        internal static void RunGame()
         {
-            Assembly thisAssembly = Assembly.GetExecutingAssembly();
-            string binPath;
+            Game = new GameWindow();
+            Game.Run();
+            Game.Dispose();
+        }
 
-            binPath = Path.GetDirectoryName(thisAssembly.Location);
+        internal static void PrepareFiles()
+        {
+            if (!Directory.Exists(ApplicationPaths.UserDataDirectory))
+            {
+                Directory.CreateDirectory(ApplicationPaths.UserDataDirectory);
+            }
+        }
 
-            Logger.MainLog.WriteLine(
-                "Starting " + thisAssembly.GetName().Name +
-                " v" + thisAssembly.GetName().Version);
-
-            Directory.SetCurrentDirectory(binPath);
-
-            Application.Init();
-            MainWindow win = new MainWindow();
-            win.Show();
-
-            Application.Run();
+        [STAThread]
+        static void Main()
+        {
+            PrepareFiles();
+            RunGame();
         }
     }
 }
