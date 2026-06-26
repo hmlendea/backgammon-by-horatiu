@@ -1,14 +1,10 @@
-﻿using System;
-using System.Drawing;
-
-using BackgammonByHoratiu.Utils;
+using System;
 
 namespace BackgammonByHoratiu.Entities
 {
     public class Table
     {
         Player player1, player2;
-        Color clrBackground, clrColumnOut, clrColumnHouse, clrColumnOdd, clrColumnEven;
         int[] table;
         int dice1, dice2;
         int activePlayer;
@@ -27,36 +23,6 @@ namespace BackgammonByHoratiu.Entities
         public Player Player2
         {
             get { return player2; }
-        }
-
-        public Color BackgroundColor
-        {
-            get { return clrBackground; }
-            set { clrBackground = value; }
-        }
-
-        public Color OddColumnColor
-        {
-            get { return clrColumnOdd; }
-            set { clrColumnOdd = value; }
-        }
-
-        public Color EvenColumnColor
-        {
-            get { return clrColumnEven; }
-            set { clrColumnEven = value; }
-        }
-
-        public Color HouseColumnColor
-        {
-            get { return clrColumnHouse; }
-            set { clrColumnHouse = value; }
-        }
-
-        public Color OutColumnColor
-        {
-            get { return clrColumnOut; }
-            set { clrColumnOut = value; }
         }
 
         public int Dice1
@@ -78,14 +44,8 @@ namespace BackgammonByHoratiu.Entities
         {
             table = new int[24];
 
-            player1 = new Player(Color.White);
-            player2 = new Player(Color.Brown);
-
-            clrBackground = Color.Gray;
-            clrColumnOdd = Color.FromArgb(255, 255, 255, 127);
-            clrColumnEven = Color.FromArgb(255, 0, 127, 0);
-            clrColumnHouse = Color.FromArgb(255, 63, 63, 63);
-            clrColumnOut = Color.Black;
+            player1 = new Player();
+            player2 = new Player();
 
             table[0] = 2;
             table[5] = -5;
@@ -106,7 +66,6 @@ namespace BackgammonByHoratiu.Entities
 
         public void MoveOutedPiece(int distance)
         {
-            // Player 1
             if (activePlayer == 1)
             {
                 if (player1.OutedPieces == 0)
@@ -131,7 +90,6 @@ namespace BackgammonByHoratiu.Entities
                 else
                     throw new PieceMoveException("Invalid destination");
             }
-            // Player 2
             else
             {
                 if (player2.OutedPieces == 0)
@@ -146,7 +104,7 @@ namespace BackgammonByHoratiu.Entities
                     }
                     else
                         table[table.Length - distance] -= 1;
-                    
+
                     player2.OutedPieces -= 1;
                     player2.MovesLeft.Remove(distance);
 
@@ -164,9 +122,8 @@ namespace BackgammonByHoratiu.Entities
                 throw new PieceMoveException("There are no pieces on this column");
 
             if ((activePlayer == 1 && table[pos] < 0) || (activePlayer == 2 && table[pos] > 0))
-                throw new PieceMoveException("Cannot move the other player's pieces");
+                throw new PieceMoveException("Cannot move the other player s pieces");
 
-            // Player 1
             if (activePlayer == 1)
             {
                 if (player1.OutedPieces != 0)
@@ -181,7 +138,7 @@ namespace BackgammonByHoratiu.Entities
                     }
                     else
                         table[pos + move] += 1;
-                    
+
                     table[pos] -= 1;
                     player1.MovesLeft.Remove(move);
 
@@ -191,12 +148,11 @@ namespace BackgammonByHoratiu.Entities
                 else
                     throw new PieceMoveException("Invalid destination");
             }
-            // Player 2
             else if (activePlayer == 2)
             {
                 if (player2.OutedPieces != 0)
                     throw new PieceMoveException("Player 2 has outed pieces");
-                
+
                 if (move > 0 && pos - move >= 0 && table[pos - move] <= 1)
                 {
                     if (table[pos - move] == 1)
@@ -220,8 +176,6 @@ namespace BackgammonByHoratiu.Entities
 
         void NextTurn()
         {
-            Player player;
-
             if (activePlayer == 1)
                 activePlayer = 2;
             else
@@ -241,7 +195,7 @@ namespace BackgammonByHoratiu.Entities
                 player = player1;
             else
                 player = player2;
-            
+
             if (dice1 == dice2)
                 for (int i = 0; i < 4; i++)
                     player.MovesLeft.Add(dice1);
@@ -250,8 +204,6 @@ namespace BackgammonByHoratiu.Entities
                 player.MovesLeft.Add(dice1);
                 player.MovesLeft.Add(dice2);
             }
-
-            Logger.MainLog.WriteLine("Dice thrown for player " + activePlayer + ": [" + dice1 + ", " + dice2 + "]");
         }
     }
 }
