@@ -38,6 +38,8 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
 
         public void ThrowDice() => table.ThrowDice();
 
+        public void NextTurn() => table.NextTurn();
+
         public void NewGame()
         {
             table = new Table();

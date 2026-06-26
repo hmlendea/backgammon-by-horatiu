@@ -6,7 +6,6 @@ using Microsoft.Xna.Framework.Graphics;
 using NuciXNA.DataAccess.Content;
 using NuciXNA.Graphics;
 using NuciXNA.Gui.Controls;
-using NuciXNA.Primitives;
 
 using BackgammonByHoratiu.GameLogic.GameManagers;
 using BackgammonByHoratiu.Settings;

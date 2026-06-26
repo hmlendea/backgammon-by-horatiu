@@ -26,6 +26,8 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
 
         void ThrowDice();
 
+        void NextTurn();
+
         void NewGame();
     }
 }

@@ -3,7 +3,6 @@ using Microsoft.Xna.Framework.Graphics;
 
 using NuciXNA.DataAccess.Content;
 using NuciXNA.Graphics;
-using NuciXNA.Gui;
 using NuciXNA.Gui.Screens;
 using NuciXNA.Input;
 

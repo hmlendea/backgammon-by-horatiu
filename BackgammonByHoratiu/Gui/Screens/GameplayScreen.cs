@@ -99,7 +99,7 @@ namespace BackgammonByHoratiu.Gui.Screens
 
             if (gameBoard.IsOnDice(x, y))
             {
-                game.ThrowDice();
+                game.NextTurn();
                 dragBeginCol = -1;
                 return;
             }

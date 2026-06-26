@@ -264,7 +264,7 @@ namespace BackgammonByHoratiu.Entities
             TableValues[to] += sign;
         }
 
-        void NextTurn()
+        public void NextTurn()
         {
             if (ActivePlayer == 1)
             {
