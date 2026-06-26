@@ -48,18 +48,16 @@ namespace BackgammonByHoratiu.Entities
                     throw new PieceMoveException("Player 1 has no outed pieces");
                 }
 
-                if (TableValues[distance - 1] >= -1)
+                if (Player1.MovesLeft.Contains(distance))
                 {
-                    if (TableValues[distance - 1] == -1)
+                    int col = distance - 1;
+
+                    if (TableValues[col] < -1)
                     {
-                        TableValues[distance - 1] = 1;
-                        Player2.OutedPieces += 1;
-                    }
-                    else
-                    {
-                        TableValues[distance - 1] += 1;
+                        throw new PieceMoveException("Invalid destination");
                     }
 
+                    ApplyBarEntry(col, 1);
                     Player1.OutedPieces -= 1;
                     Player1.MovesLeft.Remove(distance);
 
@@ -70,7 +68,26 @@ namespace BackgammonByHoratiu.Entities
                 }
                 else
                 {
-                    throw new PieceMoveException("Invalid destination");
+                    (int die1, int die2) = FindBarEntryCombo(distance, 1);
+
+                    if (die1 == -1)
+                    {
+                        throw new PieceMoveException("Invalid destination");
+                    }
+
+                    int intermediate = die1 - 1;
+                    int target = distance - 1;
+
+                    ApplyBarEntry(intermediate, 1);
+                    Player1.OutedPieces -= 1;
+                    ApplyMoveStep(intermediate, target, 1);
+                    Player1.MovesLeft.Remove(die1);
+                    Player1.MovesLeft.Remove(die2);
+
+                    if (Player1.MovesLeft.Count == 0)
+                    {
+                        NextTurn();
+                    }
                 }
             }
             else
@@ -80,18 +97,16 @@ namespace BackgammonByHoratiu.Entities
                     throw new PieceMoveException("Player 2 has no outed pieces");
                 }
 
-                if (TableValues[^distance] <= 1)
+                if (Player2.MovesLeft.Contains(distance))
                 {
-                    if (TableValues[^distance] == 1)
+                    int col = 24 - distance;
+
+                    if (TableValues[col] > 1)
                     {
-                        TableValues[^distance] = -1;
-                        Player1.OutedPieces += 1;
-                    }
-                    else
-                    {
-                        TableValues[^distance] -= 1;
+                        throw new PieceMoveException("Invalid destination");
                     }
 
+                    ApplyBarEntry(col, -1);
                     Player2.OutedPieces -= 1;
                     Player2.MovesLeft.Remove(distance);
 
@@ -102,9 +117,96 @@ namespace BackgammonByHoratiu.Entities
                 }
                 else
                 {
-                    throw new PieceMoveException("Invalid destination");
+                    (int die1, int die2) = FindBarEntryCombo(distance, -1);
+
+                    if (die1 == -1)
+                    {
+                        throw new PieceMoveException("Invalid destination");
+                    }
+
+                    int intermediate = 24 - die1;
+                    int target = 24 - distance;
+
+                    ApplyBarEntry(intermediate, -1);
+                    Player2.OutedPieces -= 1;
+                    ApplyMoveStep(intermediate, target, -1);
+                    Player2.MovesLeft.Remove(die1);
+                    Player2.MovesLeft.Remove(die2);
+
+                    if (Player2.MovesLeft.Count == 0)
+                    {
+                        NextTurn();
+                    }
                 }
             }
+        }
+
+        void ApplyBarEntry(int col, int sign)
+        {
+            if (sign > 0 && TableValues[col] == -1)
+            {
+                Player2.OutedPieces += 1;
+                TableValues[col] = 0;
+            }
+            else if (sign < 0 && TableValues[col] == 1)
+            {
+                Player1.OutedPieces += 1;
+                TableValues[col] = 0;
+            }
+
+            TableValues[col] += sign;
+        }
+
+        (int, int) FindBarEntryCombo(int distance, int sign)
+        {
+            Player movingPlayer = sign > 0 ? Player1 : Player2;
+            var moves = movingPlayer.MovesLeft;
+
+            for (int i = 0; i < moves.Count; i++)
+            {
+                int die1 = moves[i];
+                int die2 = distance - die1;
+
+                if (die2 < 1)
+                {
+                    continue;
+                }
+
+                bool die2Available = false;
+
+                for (int j = 0; j < moves.Count; j++)
+                {
+                    if (j != i && moves[j] == die2)
+                    {
+                        die2Available = true;
+                        break;
+                    }
+                }
+
+                if (!die2Available)
+                {
+                    continue;
+                }
+
+                int intermediate = sign > 0 ? die1 - 1 : 24 - die1;
+
+                if (sign > 0 && TableValues[intermediate] < -1)
+                {
+                    continue;
+                }
+
+                if (sign < 0 && TableValues[intermediate] > 1)
+                {
+                    continue;
+                }
+
+                if (IsStepValid(intermediate, die2, sign))
+                {
+                    return (die1, die2);
+                }
+            }
+
+            return (-1, -1);
         }
 
         public void MovePiece(int pos, int move)
