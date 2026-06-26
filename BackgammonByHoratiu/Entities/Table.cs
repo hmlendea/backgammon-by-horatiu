@@ -238,26 +238,33 @@ namespace BackgammonByHoratiu.Entities
                 throw new PieceMoveException("Column is blocked by the opponent");
             }
 
-            int distance;
+            int distance = sign > 0 ? to - from : from - to;
+            Player movingPlayer = sign > 0 ? Player1 : Player2;
 
-            if (sign > 0)
+            if (movingPlayer.MovesLeft.Contains(distance))
             {
-                distance = to - from;
+                movingPlayer.MovesLeft.Remove(distance);
+                ApplyMoveStep(from, to, sign);
             }
             else
             {
-                distance = from - to;
+                (int die1, int die2) = FindTwoDiceCombo(from, distance, sign, movingPlayer);
+
+                if (die1 == -1)
+                {
+                    throw new PieceMoveException("No valid move to that column");
+                }
+
+                int intermediate = from + sign * die1;
+                movingPlayer.MovesLeft.Remove(die1);
+                ApplyMoveStep(from, intermediate, sign);
+                movingPlayer.MovesLeft.Remove(die2);
+                ApplyMoveStep(intermediate, to, sign);
             }
+        }
 
-            Player movingPlayer = sign > 0 ? Player1 : Player2;
-
-            if (!movingPlayer.MovesLeft.Contains(distance))
-            {
-                throw new PieceMoveException($"No die showing {distance}");
-            }
-
-            movingPlayer.MovesLeft.Remove(distance);
-
+        void ApplyMoveStep(int from, int to, int sign)
+        {
             if (sign > 0 && TableValues[to] == -1)
             {
                 Player2.OutedPieces += 1;
@@ -271,6 +278,96 @@ namespace BackgammonByHoratiu.Entities
 
             TableValues[from] -= sign;
             TableValues[to] += sign;
+        }
+
+        bool IsStepValid(int from, int die, int sign)
+        {
+            int to = from + sign * die;
+
+            if (to < 0 || to >= 24)
+            {
+                return false;
+            }
+
+            bool sameHalf = (from < 12) == (to < 12);
+
+            if (sameHalf)
+            {
+                if (sign > 0 && to <= from)
+                {
+                    return false;
+                }
+
+                if (sign < 0 && to >= from)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (sign < 0 && from < 12)
+                {
+                    return false;
+                }
+
+                if (sign > 0 && from >= 12)
+                {
+                    return false;
+                }
+            }
+
+            if (sign > 0 && TableValues[to] <= -2)
+            {
+                return false;
+            }
+
+            if (sign < 0 && TableValues[to] >= 2)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        (int, int) FindTwoDiceCombo(int from, int distance, int sign, Player movingPlayer)
+        {
+            var moves = movingPlayer.MovesLeft;
+
+            for (int i = 0; i < moves.Count; i++)
+            {
+                int die1 = moves[i];
+                int die2 = distance - die1;
+
+                if (die2 < 1)
+                {
+                    continue;
+                }
+
+                bool die2Available = false;
+
+                for (int j = 0; j < moves.Count; j++)
+                {
+                    if (j != i && moves[j] == die2)
+                    {
+                        die2Available = true;
+                        break;
+                    }
+                }
+
+                if (!die2Available)
+                {
+                    continue;
+                }
+
+                int intermediate = from + sign * die1;
+
+                if (IsStepValid(from, die1, sign) && IsStepValid(intermediate, die2, sign))
+                {
+                    return (die1, die2);
+                }
+            }
+
+            return (-1, -1);
         }
 
         public void BearOffPiece(int from)
