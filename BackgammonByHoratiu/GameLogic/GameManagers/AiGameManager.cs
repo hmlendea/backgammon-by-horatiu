@@ -28,7 +28,7 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
         public Player Player1 => inner.Player1;
         public Player Player2 => inner.Player2;
 
-        public void LoadContent()   => inner.LoadContent();
+        public void LoadContent() => inner.LoadContent();
         public void UnloadContent() => inner.UnloadContent();
 
         public void Update(double elapsedMs)

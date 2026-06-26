@@ -33,7 +33,7 @@ namespace BackgammonByHoratiu.Gui.Screens
 
         protected override void DoLoadContent()
         {
-            game = new AiGameManager();
+            game = new GameManager();
             game.LoadContent();
 
             gameBoard = new GuiGameBoard(game)
@@ -55,11 +55,6 @@ namespace BackgammonByHoratiu.Gui.Screens
         protected override void DoUpdate(GameTime gameTime)
         {
             game.Update(gameTime.ElapsedGameTime.TotalMilliseconds);
-
-            // Clear drag state while it is the AI's turn
-            if (game.ActivePlayer != 1)
-                dragBeginCol = -1;
-
             gameBoard.SelectedColumn = dragBeginCol;
         }
 
@@ -98,11 +93,9 @@ namespace BackgammonByHoratiu.Gui.Screens
         void OnMouseButtonReleased(object sender, MouseButtonEventArgs e)
         {
             if (e.Button != MouseButton.Left)
+            {
                 return;
-
-            // Human only controls Player 1 (white)
-            if (game.ActivePlayer != 1)
-                return;
+            }
 
             int x = e.Location.X;
             int y = e.Location.Y;
