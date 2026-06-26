@@ -79,7 +79,7 @@ namespace BackgammonByHoratiu
         {
             graphics.GraphicsDevice.Clear(Color.Black);
 
-            spriteBatch.Begin();
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.AnisotropicClamp);
 
             ScreenManager.Instance.Draw(spriteBatch);
 

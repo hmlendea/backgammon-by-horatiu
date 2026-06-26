@@ -18,19 +18,19 @@ namespace BackgammonByHoratiu.Gui.Controls
         static readonly Color ColorOddColumn    = new(255, 255, 127);
         static readonly Color ColorEvenColumn   = new(0, 127, 0);
         static readonly Color ColorHouseColumn  = new(63, 63, 63);
-        static readonly Color ColorOutColumn    = Color.Black;
-        static readonly Color ColorPlayer1      = Color.White;
-        static readonly Color ColorPlayer2      = new(139, 69, 19);   // Brown
-        static readonly Color ColorPieceBorder  = Color.Black;
-        static readonly Color ColorColumnBorder = Color.Black;
-        static readonly Color ColorDiceBorder   = Color.Black;
+        static readonly Color ColorOutColumn = Color.Black;
+        static readonly Color ColorPlayer1   = Color.White;
+        static readonly Color ColorPlayer2   = new(139, 69, 19);
 
         readonly IGameManager game;
 
         Texture2D pixelTexture;
         Texture2D triangleDownTexture;
         Texture2D triangleUpTexture;
-        Texture2D circleTexture;
+        Texture2D brownPieceTexture;
+        Texture2D whitePieceTexture;
+        Texture2D brownDieTexture;
+        Texture2D whiteDieTexture;
         SpriteFont boardFont;
 
         // Precomputed hit-test rectangles mirroring the original MainWindow layout
@@ -59,7 +59,10 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             triangleDownTexture = CreateTriangleTexture(gd, GameDefines.PieceSize, GameDefines.ColumnHeight, pointsDown: true);
             triangleUpTexture   = CreateTriangleTexture(gd, GameDefines.PieceSize, GameDefines.ColumnHeight, pointsDown: false);
-            circleTexture       = CreateCircleTexture(gd, GameDefines.PieceSize);
+            brownPieceTexture   = NuciContentManager.Instance.LoadTexture2D("Table/BrownPiece");
+            whitePieceTexture   = NuciContentManager.Instance.LoadTexture2D("Table/WhitePiece");
+            brownDieTexture     = NuciContentManager.Instance.LoadTexture2D("Table/BrownDie");
+            whiteDieTexture     = NuciContentManager.Instance.LoadTexture2D("Table/WhiteDie");
 
             boardFont = NuciContentManager.Instance.LoadSpriteFont("Fonts/InfoBarFont");
 
@@ -71,7 +74,6 @@ namespace BackgammonByHoratiu.Gui.Controls
             pixelTexture?.Dispose();
             triangleDownTexture?.Dispose();
             triangleUpTexture?.Dispose();
-            circleTexture?.Dispose();
         }
 
         protected override void DoUpdate(GameTime gameTime) { }
@@ -130,8 +132,6 @@ namespace BackgammonByHoratiu.Gui.Controls
 
                 Texture2D tri = isTopHalf ? triangleDownTexture : triangleUpTexture;
                 spriteBatch.Draw(tri, col, fillColor);
-
-                DrawBorder(spriteBatch, col, ColorColumnBorder, 1);
             }
         }
 
@@ -205,16 +205,15 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         void DrawDice(SpriteBatch spriteBatch)
         {
-            Color diceColor = game.ActivePlayer == 1 ? ColorPlayer1 : ColorPlayer2;
+            Texture2D dieTex = game.ActivePlayer == 1 ? whiteDieTexture : brownDieTexture;
 
-            spriteBatch.Draw(pixelTexture, dice1Rect, diceColor);
-            spriteBatch.Draw(pixelTexture, dice2Rect, diceColor);
+            spriteBatch.Draw(dieTex, dice1Rect, Color.White);
+            spriteBatch.Draw(dieTex, dice2Rect, Color.White);
 
-            DrawBorder(spriteBatch, dice1Rect, ColorDiceBorder, 2);
-            DrawBorder(spriteBatch, dice2Rect, ColorDiceBorder, 2);
+            Color dieTextColor = game.ActivePlayer == 1 ? Color.Black : Color.White;
 
-            DrawCenteredText(spriteBatch, game.Dice1.ToString(), dice1Rect, Color.Black);
-            DrawCenteredText(spriteBatch, game.Dice2.ToString(), dice2Rect, Color.Black);
+            DrawCenteredText(spriteBatch, game.Dice1.ToString(), dice1Rect, dieTextColor);
+            DrawCenteredText(spriteBatch, game.Dice2.ToString(), dice2Rect, dieTextColor);
         }
 
         void DrawCompletedPieces(SpriteBatch spriteBatch)
@@ -256,10 +255,8 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         void DrawCircle(SpriteBatch spriteBatch, Rectangle dest, Color fill)
         {
-            // Draw shadow border slightly larger
-            Rectangle border = new(dest.X - 1, dest.Y - 1, dest.Width + 2, dest.Height + 2);
-            spriteBatch.Draw(circleTexture, border, ColorPieceBorder);
-            spriteBatch.Draw(circleTexture, dest, fill);
+            Texture2D tex = fill == ColorPlayer2 ? brownPieceTexture : whitePieceTexture;
+            spriteBatch.Draw(tex, dest, Color.White);
         }
 
         void DrawBorder(SpriteBatch spriteBatch, Rectangle rect, Color color, int thickness)
@@ -382,22 +379,5 @@ namespace BackgammonByHoratiu.Gui.Controls
             return tex;
         }
 
-        static Texture2D CreateCircleTexture(GraphicsDevice gd, int diameter)
-        {
-            Texture2D tex    = new(gd, diameter, diameter);
-            Color[]   data   = new Color[diameter * diameter];
-            float     radius = diameter / 2f;
-            Vector2   center = new(radius, radius);
-
-            for (int y = 0; y < diameter; y++)
-                for (int x = 0; x < diameter; x++)
-                {
-                    float dist = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), center);
-                    data[y * diameter + x] = dist <= radius ? Color.White : Color.Transparent;
-                }
-
-            tex.SetData(data);
-            return tex;
-        }
     }
 }
