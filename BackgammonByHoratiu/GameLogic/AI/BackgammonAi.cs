@@ -165,12 +165,12 @@ namespace BackgammonByHoratiu.GameLogic.AI
                     {
                         if (column >= 18)
                         {
-                            // Anchor point in the human's home board — very high value
+                            // Anchor point in the human's home board - very high value
                             score += 120;
                         }
                         else if (column <= 5)
                         {
-                            // Home-board point — valuable for trapping hit pieces
+                            // Home-board point. Valuable for trapping hit pieces
                             score += 70;
                         }
                         else
@@ -229,7 +229,32 @@ namespace BackgammonByHoratiu.GameLogic.AI
                 score += ScorePrimes(snapshot, maxColumn: 23, primeBaseMultiplier: 8);
             }
 
+            score += ScoreHomeBoardClosure(snapshot);
+
             return score;
+        }
+
+        // When human pieces are on the bar, each closed AI home-board point (cols 0-5 owned
+        // by 2+ AI pieces) denies a re-entry square. Bonus scales with the number of trapped
+        // human pieces so this becomes the highest-priority goal in that situation.
+        static int ScoreHomeBoardClosure(BoardSnapshot snapshot)
+        {
+            if (snapshot.HumanOutedPieces == 0)
+            {
+                return 0;
+            }
+
+            int closedPoints = 0;
+
+            for (int column = 0; column <= 5; column++)
+            {
+                if (snapshot.ColumnValues[column] <= -2)
+                {
+                    closedPoints++;
+                }
+            }
+
+            return closedPoints * snapshot.HumanOutedPieces * 80;
         }
 
         // Bonus for holding anchor points (cols 18-23) in the human's home board.

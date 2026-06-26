@@ -296,10 +296,6 @@ namespace BackgammonByHoratiu.Gui.Controls
         public bool IsInOutColumnTop(int x, int y) => outColumnTop.Contains(x, y);
         public bool IsInOutColumnBottom(int x, int y) => outColumnBottom.Contains(x, y);
 
-        // ------------------------------------------------------------------ //
-        //  Layout builder — mirrors original MainWindow constructor logic     //
-        // ------------------------------------------------------------------ //
-
         void BuildLayoutRectangles()
         {
             int ps = GameDefines.PieceSize;
