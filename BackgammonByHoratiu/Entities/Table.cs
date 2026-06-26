@@ -586,6 +586,31 @@ namespace BackgammonByHoratiu.Entities
                         return true;
                     }
                 }
+                else if (CanBearOff(sign))
+                {
+                    for (int i = 0; i < 24; i++)
+                    {
+                        if (sign > 0 && TableValues[i] > 0 && i >= 18)
+                        {
+                            int distance = 24 - i;
+
+                            if (distance == die || (die > distance && IsFarthestPiece(i, sign)))
+                            {
+                                return true;
+                            }
+                        }
+
+                        if (sign < 0 && TableValues[i] < 0 && i <= 5)
+                        {
+                            int distance = i + 1;
+
+                            if (distance == die || (die > distance && IsFarthestPiece(i, sign)))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
                 else
                 {
                     for (int i = 0; i < 24; i++)
