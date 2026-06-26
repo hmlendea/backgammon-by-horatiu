@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
+using NuciXNA.DataAccess.Content;
 using NuciXNA.Gui;
 using NuciXNA.Gui.Controls;
 using NuciXNA.Gui.Screens;
@@ -17,6 +18,8 @@ namespace BackgammonByHoratiu.Gui.Screens
 
         public GuiImage LogoImage { get; set; }
 
+        Size2D logoNativeSize;
+
         public SplashScreen()
         {
             Delay = 2;
@@ -25,6 +28,9 @@ namespace BackgammonByHoratiu.Gui.Screens
 
         protected override void DoLoadContent()
         {
+            Texture2D logoTexture = NuciContentManager.Instance.LoadTexture2D("SplashScreen/Logo");
+            logoNativeSize = new Size2D(logoTexture.Width, logoTexture.Height);
+
             LogoImage = new GuiImage { ContentFile = "SplashScreen/Logo" };
 
             GuiManager.Instance.RegisterControls(LogoImage);
@@ -62,8 +68,15 @@ namespace BackgammonByHoratiu.Gui.Screens
 
         void SetChildrenProperties()
         {
-            LogoImage.Location = Point2D.Empty;
-            LogoImage.Size = new Size2D(GameDefines.WindowWidth, GameDefines.WindowHeight);
+            int logoWidth = (int)(GameDefines.WindowWidth * 0.8f);
+            int logoHeight = (logoNativeSize.Width > 0)
+                ? (int)(logoWidth * (float)logoNativeSize.Height / logoNativeSize.Width)
+                : logoWidth;
+            int offsetX = (GameDefines.WindowWidth - logoWidth) / 2;
+            int offsetY = (GameDefines.WindowHeight - logoHeight) / 2;
+
+            LogoImage.Location = new Point2D(offsetX, offsetY);
+            LogoImage.Size = new Size2D(logoWidth, logoHeight);
         }
 
         void ChangeScreen() => ScreenManager.Instance.ChangeScreens<GameplayScreen>();
