@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 using BackgammonByHoratiu.Entities;
@@ -16,15 +17,16 @@ namespace BackgammonByHoratiu.GameLogic.AI
 
         internal void TryPlayMove()
         {
-            Player ai = game.Player2;
+            Player aiPlayer = game.Player2;
 
-            if (ai.MovesLeft.Count == 0)
+            if (aiPlayer.MovesLeft.Count == 0)
             {
                 TryNextTurn();
+
                 return;
             }
 
-            if (ai.OutedPieces > 0)
+            if (aiPlayer.OutedPieces > 0)
             {
                 if (!TryBarEntry())
                 {
@@ -52,34 +54,41 @@ namespace BackgammonByHoratiu.GameLogic.AI
 
         bool TryBarEntry()
         {
-            List<int> moves = [.. game.Player2.MovesLeft];
+            List<int> availableMoves = [.. game.Player2.MovesLeft];
 
             // Two passes: prefer hitting a blot, fall back to any open point
             foreach (bool hitsOnly in new[] { true, false })
             {
-                var tried = new HashSet<int>();
-                foreach (int d in moves)
+                HashSet<int> alreadyTried = [];
+
+                foreach (int dieValue in availableMoves)
                 {
-                    if (!tried.Add(d))
+                    if (!alreadyTried.Add(dieValue))
                     {
                         continue;
                     }
 
-                    int col = 24 - d;
-                    bool hits = game.TableValues[col] == 1;
-                    bool open = game.TableValues[col] <= 0;
+                    int destinationColumn = 24 - dieValue;
+                    bool hitsOpponentBlot = game.TableValues[destinationColumn] == 1;
+                    bool isOpen = game.TableValues[destinationColumn] <= 0;
 
-                    if (hitsOnly && !hits)
+                    if (hitsOnly && !hitsOpponentBlot)
                     {
                         continue;
                     }
 
-                    if (!hitsOnly && !open && !hits)
+                    if (!hitsOnly && !isOpen && !hitsOpponentBlot)
                     {
                         continue;
                     }
 
-                    try { game.MoveOutedPiece(d); return true; } catch { }
+                    try
+                    {
+                        game.MoveOutedPiece(dieValue);
+
+                        return true;
+                    }
+                    catch { }
                 }
             }
 
@@ -88,65 +97,16 @@ namespace BackgammonByHoratiu.GameLogic.AI
 
         bool TryBearOff()
         {
-            for (int i = 5; i >= 0; i--)
+            for (int column = 5; column >= 0; column--)
             {
-                if (game.TableValues[i] >= 0)
+                if (game.TableValues[column] >= 0)
                 {
                     continue;
                 }
 
-                try { game.BearOffPiece(i); return true; } catch { }
-            }
-            return false;
-        }
-
-        bool TryNormalMove()
-        {
-            List<(int pos, int die, int score)> candidates = [];
-            HashSet<(int, int)> triedCombos = [];
-
-            foreach (int d in game.Player2.MovesLeft)
-            {
-                for (int i = 0; i < 24; i++)
-                {
-                    if (game.TableValues[i] >= 0)
-                    {
-                        continue;
-                    }
-
-                    if (!triedCombos.Add((i, d)))
-                    {
-                        continue;
-                    }
-
-                    int target = i - d;
-
-                    if (target < 0)
-                    {
-                        continue;
-                    }
-
-                    if (game.TableValues[target] >= 2)
-                    {
-                        continue;
-                    }
-
-                    candidates.Add((i, d, ScoreMove(i, target)));
-                }
-            }
-
-            if (candidates.Count == 0)
-            {
-                return false;
-            }
-
-            candidates.Sort((a, b) => b.score.CompareTo(a.score));
-
-            foreach (var (pos, die, _) in candidates)
-            {
                 try
                 {
-                    game.MovePiece(pos, die);
+                    game.BearOffPiece(column);
 
                     return true;
                 }
@@ -156,42 +116,103 @@ namespace BackgammonByHoratiu.GameLogic.AI
             return false;
         }
 
-        int ScoreMove(int from, int to)
+        bool TryNormalMove()
         {
-            int[] tv = game.TableValues;
-            int score = 0;
-            int targetVal = tv[to];
+            List<MoveCandidate> candidates = [];
+            HashSet<MoveKey> alreadyConsidered = [];
 
-            // Don't move home-board pieces while there are stragglers in the far quadrant
-            if (from < 6)
+            foreach (int dieValue in game.Player2.MovesLeft)
             {
-                for (int i = 18; i < 24; i++)
+                for (int column = 0; column < 24; column++)
                 {
-                    if (tv[i] < 0) { score -= 500; break; }
+                    if (game.TableValues[column] >= 0)
+                    {
+                        continue;
+                    }
+
+                    if (!alreadyConsidered.Add(new MoveKey(column, dieValue)))
+                    {
+                        continue;
+                    }
+
+                    int destinationColumn = column - dieValue;
+
+                    if (destinationColumn < 0)
+                    {
+                        continue;
+                    }
+
+                    if (game.TableValues[destinationColumn] >= 2)
+                    {
+                        continue;
+                    }
+
+                    candidates.Add(new MoveCandidate(column, dieValue, ScoreMove(column, destinationColumn)));
                 }
             }
 
-            if (targetVal == 1)
+            if (candidates.Count == 0)
+            {
+                return false;
+            }
+
+            candidates.Sort((first, second) => second.Score.CompareTo(first.Score));
+
+            foreach (MoveCandidate candidate in candidates)
+            {
+                try
+                {
+                    game.MovePiece(candidate.SourceColumn, candidate.DieValue);
+
+                    return true;
+                }
+                catch { }
+            }
+
+            return false;
+        }
+
+        int ScoreMove(int sourceColumn, int destinationColumn)
+        {
+            int[] boardValues = game.TableValues;
+            int score = 0;
+            int destinationPieceCount = boardValues[destinationColumn];
+
+            // Don't move home-board pieces while there are stragglers in the far quadrant
+            if (sourceColumn < 6)
+            {
+                for (int farColumn = 18; farColumn < 24; farColumn++)
+                {
+                    if (boardValues[farColumn] < 0)
+                    {
+                        score -= 500;
+
+                        break;
+                    }
+                }
+            }
+
+            if (destinationPieceCount == 1)
             {
                 score += 150;
             }
-            else if (targetVal <= -2)
+            else if (destinationPieceCount <= -2)
             {
-                score += to <= 5 ? 120 : 80;
+                score += destinationColumn <= 5 ? 120 : 80;
             }
-            else if (targetVal == -1)
+            else if (destinationPieceCount == -1)
             {
-                score += to <= 5 ? 160 : 60;   // home-board gates are high priority
+                score += destinationColumn <= 5 ? 160 : 60;   // home-board gates are high priority
             }
             else
             {
-                // Blot penalty proportional to actual threat; reduced for far-back pieces
-                int blotPenalty = ThreatLevel(to) * 25;
-                if (from >= 18)
+                int blotPenalty = ThreatLevel(destinationColumn) * 25;
+
+                if (sourceColumn >= 18)
                 {
                     blotPenalty /= 2;
                 }
-                else if (from < 6)
+                else if (sourceColumn < 6)
                 {
                     blotPenalty = (int)(blotPenalty * 1.5f);
                 }
@@ -199,78 +220,89 @@ namespace BackgammonByHoratiu.GameLogic.AI
                 score -= blotPenalty;
             }
 
-            // Uncovering a source blot; proportional to threat, reduced for far-back pieces
-            if (tv[from] == -2)
+            if (boardValues[sourceColumn] == -2)
             {
-                int sourcePenalty = ThreatLevel(from) * 20;
-                if (from >= 18)
+                int sourceBecomesBlotPenalty = ThreatLevel(sourceColumn) * 20;
+
+                if (sourceColumn >= 18)
                 {
-                    sourcePenalty /= 2;
+                    sourceBecomesBlotPenalty /= 2;
                 }
 
-                score -= sourcePenalty;
+                score -= sourceBecomesBlotPenalty;
             }
 
-            // Urgency for outer-board pieces, amplified by how close the human is to winning
-            float pressure = HumanProgress();
-            int pressureBonus = (int)(pressure * 300);
+            float humanWinProgress = HumanProgress();
+            int urgencyBonus = (int)(humanWinProgress * 300);
 
-            if (from >= 18)
+            if (sourceColumn >= 18)
             {
-                score += 250 + from * 5 + pressureBonus;
+                score += 250 + sourceColumn * 5 + urgencyBonus;
             }
-            else if (from >= 12)
+            else if (sourceColumn >= 12)
             {
-                score += 80 + from * 3 + pressureBonus / 2;
+                score += 80 + sourceColumn * 3 + urgencyBonus / 2;
             }
-            else if (from >= 6)
+            else if (sourceColumn >= 6)
             {
-                score += 40 + from * 2;
+                score += 40 + sourceColumn * 2;
             }
 
-            if (from >= 6 && to <= 5)
+            if (sourceColumn >= 6 && destinationColumn <= 5)
             {
                 score += 80;
             }
 
-            score += from >= 6 ? (23 - to) * 2 : (23 - to);
+            if (sourceColumn >= 6)
+            {
+                score += (23 - destinationColumn) * 2;
+            }
+            else
+            {
+                score += 23 - destinationColumn;
+            }
 
             return score;
         }
 
-        // Sum of opponent pieces within single-die striking range of col
-        int ThreatLevel(int col)
+        // Sum of opponent pieces within single-die striking range of a column
+        int ThreatLevel(int column)
         {
-            int[] tv = game.TableValues;
-            int threat = 0;
-            for (int dist = 1; dist <= 6; dist++)
+            int[] boardValues = game.TableValues;
+            int totalThreat = 0;
+
+            for (int distance = 1; distance <= 6; distance++)
             {
-                int attacker = col + dist;
-                if (attacker < 24 && tv[attacker] > 0)
+                int attackerColumn = column + distance;
+
+                if (attackerColumn < 24 && boardValues[attackerColumn] > 0)
                 {
-                    threat += tv[attacker];
+                    totalThreat += boardValues[attackerColumn];
                 }
             }
-            return threat;
+
+            return totalThreat;
         }
 
         // 0..1: how close the human is to winning, based on pip count
         float HumanProgress()
         {
-            int[] tv = game.TableValues;
-            int pipsLeft = 0;
-            for (int i = 0; i < 24; i++)
+            int[] boardValues = game.TableValues;
+            int pipsRemaining = 0;
+
+            for (int column = 0; column < 24; column++)
             {
-                if (tv[i] > 0)
+                if (boardValues[column] > 0)
                 {
-                    pipsLeft += tv[i] * (24 - i);
+                    pipsRemaining += boardValues[column] * (24 - column);
                 }
             }
 
-            pipsLeft += game.Player1.OutedPieces * 25;
+            pipsRemaining += game.Player1.OutedPieces * 25;
+
             const int maxPips = 167;
 
-            return 1f - System.Math.Min(pipsLeft, maxPips) / (float)maxPips;
+            return 1f - Math.Min(pipsRemaining, maxPips) / (float)maxPips;
         }
 
         bool CanBearOff()
@@ -280,9 +312,9 @@ namespace BackgammonByHoratiu.GameLogic.AI
                 return false;
             }
 
-            for (int i = 6; i < 24; i++)
+            for (int column = 6; column < 24; column++)
             {
-                if (game.TableValues[i] < 0)
+                if (game.TableValues[column] < 0)
                 {
                     return false;
                 }
