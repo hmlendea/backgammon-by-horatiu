@@ -213,8 +213,10 @@ namespace BackgammonByHoratiu.Gui.Controls
             spriteBatch.Draw(dieTex, dice1Rect, Color.White);
             spriteBatch.Draw(dieTex, dice2Rect, Color.White);
 
-            DrawCenteredText(spriteBatch, game.Dice1.ToString(), dice1Rect, Color.Black);
-            DrawCenteredText(spriteBatch, game.Dice2.ToString(), dice2Rect, Color.Black);
+            Color dieTextColor = game.ActivePlayer == 1 ? Color.Black : Color.White;
+
+            DrawCenteredText(spriteBatch, game.Dice1.ToString(), dice1Rect, dieTextColor);
+            DrawCenteredText(spriteBatch, game.Dice2.ToString(), dice2Rect, dieTextColor);
         }
 
         void DrawCompletedPieces(SpriteBatch spriteBatch)
