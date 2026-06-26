@@ -95,7 +95,17 @@ namespace BackgammonByHoratiu.Gui.Screens
                 return;
             }
 
-            int col = gameBoard.ColumnAt(e.Location.X, e.Location.Y);
+            int x = e.Location.X;
+            int y = e.Location.Y;
+
+            if (gameBoard.IsOnDice(x, y))
+            {
+                game.ThrowDice();
+                dragBeginCol = -1;
+                return;
+            }
+
+            int col = gameBoard.ColumnAt(x, y);
             if (col < 0)
             {
                 dragBeginCol = -1;

@@ -276,7 +276,7 @@ namespace BackgammonByHoratiu.Entities
             ThrowDice();
         }
 
-        void ThrowDice()
+        public void ThrowDice()
         {
             Player player;
             Random rnd = new Random();
@@ -291,6 +291,8 @@ namespace BackgammonByHoratiu.Entities
             {
                 player = player2;
             }
+
+            player.MovesLeft.Clear();
 
             if (dice1 == dice2)
             {

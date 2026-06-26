@@ -42,6 +42,8 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         public int SelectedColumn { get; set; } = -1;
 
+        public bool IsOnDice(int x, int y) => dice1Rect.Contains(x, y) || dice2Rect.Contains(x, y);
+
         public GuiGameBoard(IGameManager game)
         {
             this.game = game;
