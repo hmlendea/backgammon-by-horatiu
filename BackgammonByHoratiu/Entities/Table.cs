@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace BackgammonByHoratiu.Entities
 {
@@ -172,6 +172,16 @@ namespace BackgammonByHoratiu.Entities
                 else
                     throw new PieceMoveException("Invalid destination");
             }
+        }
+
+        public void MovePieceDirect(int from, int to)
+        {
+            if (table[from] == 0)
+                return;
+
+            int sign = table[from] > 0 ? 1 : -1;
+            table[from] -= sign;
+            table[to] += sign;
         }
 
         void NextTurn()

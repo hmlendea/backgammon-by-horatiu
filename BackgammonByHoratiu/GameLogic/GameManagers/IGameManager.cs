@@ -22,6 +22,8 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
 
         void MovePiece(int pos, int move);
 
+        void MovePieceDirect(int from, int to);
+
         void NewGame();
     }
 }
