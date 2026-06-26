@@ -99,8 +99,16 @@ namespace BackgammonByHoratiu.Gui.Screens
 
             if (gameBoard.IsOnDice(x, y))
             {
-                game.NextTurn();
-                dragBeginCol = -1;
+                try
+                {
+                    game.NextTurn();
+                    dragBeginCol = -1;
+                }
+                catch (PieceMoveException ex)
+                {
+                    Console.Error.WriteLine($"[Backgammon] {ex.Message}");
+                }
+
                 return;
             }
 

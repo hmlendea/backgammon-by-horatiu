@@ -266,6 +266,13 @@ namespace BackgammonByHoratiu.Entities
 
         public void NextTurn()
         {
+            Player currentPlayer = ActivePlayer == 1 ? Player1 : Player2;
+
+            if (currentPlayer.MovesLeft.Count > 0)
+            {
+                throw new PieceMoveException("You still have moves left");
+            }
+
             if (ActivePlayer == 1)
             {
                 ActivePlayer = 2;
