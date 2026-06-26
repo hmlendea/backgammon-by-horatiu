@@ -18,10 +18,9 @@ namespace BackgammonByHoratiu.Gui.Controls
         static readonly Color ColorOddColumn    = new(255, 255, 127);
         static readonly Color ColorEvenColumn   = new(0, 127, 0);
         static readonly Color ColorHouseColumn  = new(63, 63, 63);
-        static readonly Color ColorOutColumn    = Color.Black;
-        static readonly Color ColorPlayer1      = Color.White;
-        static readonly Color ColorPlayer2      = new(139, 69, 19);
-        static readonly Color ColorColumnBorder = Color.Black;
+        static readonly Color ColorOutColumn = Color.Black;
+        static readonly Color ColorPlayer1   = Color.White;
+        static readonly Color ColorPlayer2   = new(139, 69, 19);
 
         readonly IGameManager game;
 
@@ -133,8 +132,6 @@ namespace BackgammonByHoratiu.Gui.Controls
 
                 Texture2D tri = isTopHalf ? triangleDownTexture : triangleUpTexture;
                 spriteBatch.Draw(tri, col, fillColor);
-
-                DrawBorder(spriteBatch, col, ColorColumnBorder, 1);
             }
         }
 
