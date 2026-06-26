@@ -22,6 +22,9 @@ namespace BackgammonByHoratiu.Gui.Screens
 
         int dragBeginCol = -1;
 
+        const int BarBrown = -2;
+        const int BarWhite = -3;
+
         public GameplayScreen()
         {
             BackgroundColour = Colour.Black;
@@ -129,8 +132,45 @@ namespace BackgammonByHoratiu.Gui.Screens
                 return;
             }
 
+            if (col < 0 && gameBoard.IsInOutColumnTop(x, y))
+            {
+                if (game.Player2.OutedPieces > 0)
+                {
+                    dragBeginCol = BarBrown;
+                }
+
+                return;
+            }
+
+            if (col < 0 && gameBoard.IsInOutColumnBottom(x, y))
+            {
+                if (game.Player1.OutedPieces > 0)
+                {
+                    dragBeginCol = BarWhite;
+                }
+
+                return;
+            }
+
             if (col < 0)
             {
+                dragBeginCol = -1;
+                return;
+            }
+
+            if (dragBeginCol == BarBrown || dragBeginCol == BarWhite)
+            {
+                int distance = dragBeginCol == BarBrown ? 24 - col : col + 1;
+
+                try
+                {
+                    game.MoveOutedPiece(distance);
+                }
+                catch (PieceMoveException ex)
+                {
+                    Console.Error.WriteLine($"[Backgammon] {ex.Message}");
+                }
+
                 dragBeginCol = -1;
                 return;
             }

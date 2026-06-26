@@ -194,6 +194,16 @@ namespace BackgammonByHoratiu.Entities
 
             int sign = TableValues[from] > 0 ? 1 : -1;
 
+            if (sign > 0 && Player1.OutedPieces > 0)
+            {
+                throw new PieceMoveException("You have pieces on the bar that must be re-entered first");
+            }
+
+            if (sign < 0 && Player2.OutedPieces > 0)
+            {
+                throw new PieceMoveException("You have pieces on the bar that must be re-entered first");
+            }
+
             if (sign < 0 && from < 12 && to >= 12)
             {
                 throw new PieceMoveException("Pieces cannot move backwards");
