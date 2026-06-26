@@ -134,7 +134,6 @@ namespace BackgammonByHoratiu.GameLogic.AI
 
             if (phase == GamePhase.Racing)
             {
-                // In a race, pip lead is everything; structure rewards are muted
                 score += pipLead * 10;
                 score -= snapshot.AiOutedPieces * 80;
                 score += snapshot.HumanOutedPieces * 30;
@@ -155,7 +154,6 @@ namespace BackgammonByHoratiu.GameLogic.AI
             }
             else if (phase == GamePhase.BackGame)
             {
-                // Far behind in pips: anchor in the human's home board and build a home prime
                 score -= snapshot.AiOutedPieces * 50;
                 score += snapshot.HumanOutedPieces * 80;
 
@@ -165,12 +163,10 @@ namespace BackgammonByHoratiu.GameLogic.AI
                     {
                         if (column >= 18)
                         {
-                            // Anchor point in the human's home board - very high value
                             score += 120;
                         }
                         else if (column <= 5)
                         {
-                            // Home-board point. Valuable for trapping hit pieces
                             score += 70;
                         }
                         else
@@ -179,7 +175,6 @@ namespace BackgammonByHoratiu.GameLogic.AI
                         }
                     }
 
-                    // Blot exposure still matters, but less so in the human's board
                     if (snapshot.ColumnValues[column] == -1)
                     {
                         int threatLevel = CalculateThreatLevel(snapshot, column);
@@ -188,12 +183,10 @@ namespace BackgammonByHoratiu.GameLogic.AI
                     }
                 }
 
-                // Home-board prime for trapping hit pieces
                 score += ScorePrimes(snapshot, maxColumn: 5, primeBaseMultiplier: 10);
             }
             else
             {
-                // Blocking phase: build primes, hit blots, keep the human trapped
                 score += pipLead * 3;
                 score -= snapshot.AiOutedPieces * 60;
                 score += snapshot.HumanOutedPieces * 60;
@@ -208,8 +201,6 @@ namespace BackgammonByHoratiu.GameLogic.AI
                         }
                         else if (column >= 18)
                         {
-                            // Anchor in the human's home board. Constrains the human
-                            // and gives safe re-entry if the AI gets hit
                             score += 80;
                         }
                         else
@@ -234,9 +225,6 @@ namespace BackgammonByHoratiu.GameLogic.AI
             return score;
         }
 
-        // When human pieces are on the bar, each closed AI home-board point (cols 0-5 owned
-        // by 2+ AI pieces) denies a re-entry square. Bonus scales with the number of trapped
-        // human pieces so this becomes the highest-priority goal in that situation.
         static int ScoreHomeBoardClosure(BoardSnapshot snapshot)
         {
             if (snapshot.HumanOutedPieces == 0)
@@ -257,9 +245,6 @@ namespace BackgammonByHoratiu.GameLogic.AI
             return closedPoints * snapshot.HumanOutedPieces * 80;
         }
 
-        // Bonus for holding anchor points (cols 18-23) in the human's home board.
-        // Two or more consecutive anchors constrain the human's home-board construction
-        // and guarantee a safe re-entry square if the AI gets hit.
         static int ScoreAnchorPoints(BoardSnapshot snapshot)
         {
             int totalScore = 0;
@@ -281,9 +266,6 @@ namespace BackgammonByHoratiu.GameLogic.AI
             return totalScore;
         }
 
-        // Scores all prime sequences on the board (columns 0..maxColumn).
-        // Each prime is weighted by its length² × multiplier and by how many human
-        // pieces it actually traps behind it. Milestones at length 4, 5, 6 add extra flat bonuses.
         static int ScorePrimes(BoardSnapshot snapshot, int maxColumn, int primeBaseMultiplier)
         {
             int totalScore = 0;
@@ -305,7 +287,6 @@ namespace BackgammonByHoratiu.GameLogic.AI
                 }
                 else if (primeLength > 0)
                 {
-                    // Count human pieces trapped behind (at lower columns) this prime
                     int trappedHumanPieces = 0;
 
                     for (int behindColumn = 0; behindColumn < primeStart; behindColumn++)
@@ -316,13 +297,11 @@ namespace BackgammonByHoratiu.GameLogic.AI
                         }
                     }
 
-                    // Also count human pieces on the bar (they must re-enter from the far end)
                     trappedHumanPieces += snapshot.HumanOutedPieces;
 
                     int trapMultiplier = 1 + trappedHumanPieces;
                     totalScore += primeLength * primeLength * primeBaseMultiplier * trapMultiplier;
 
-                    // Milestone bonuses for powerful primes
                     if (primeLength >= 6)
                     {
                         totalScore += 200 * trapMultiplier;
@@ -405,7 +384,40 @@ namespace BackgammonByHoratiu.GameLogic.AI
                 }
             }
 
+            int[] twodiceSums = [7, 8, 9, 10, 11, 12];
+
+            foreach (int sum in twodiceSums)
+            {
+                int attackerColumn = column + sum;
+
+                if (attackerColumn >= 24 || snapshot.ColumnValues[attackerColumn] <= 0)
+                {
+                    continue;
+                }
+
+                int attackerPieces = snapshot.ColumnValues[attackerColumn];
+                int waysToCover = CountWaysToCover(sum);
+                totalThreat += attackerPieces * waysToCover / 6;
+            }
+
             return totalThreat;
+        }
+
+        static int CountWaysToCover(int sum)
+        {
+            int ways = 0;
+
+            for (int die1 = 1; die1 <= 6; die1++)
+            {
+                int die2 = sum - die1;
+
+                if (die2 >= 1 && die2 <= 6)
+                {
+                    ways++;
+                }
+            }
+
+            return ways;
         }
 
         void TryNextTurn()
