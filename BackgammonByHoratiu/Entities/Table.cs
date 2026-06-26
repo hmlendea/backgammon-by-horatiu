@@ -416,7 +416,7 @@ namespace BackgammonByHoratiu.Entities
         {
             Player currentPlayer = ActivePlayer == 1 ? Player1 : Player2;
 
-            if (currentPlayer.MovesLeft.Count > 0)
+            if (currentPlayer.MovesLeft.Count > 0 && HasAnyValidMove())
             {
                 throw new PieceMoveException("You still have moves left");
             }
@@ -431,6 +431,64 @@ namespace BackgammonByHoratiu.Entities
             }
 
             ThrowDice();
+        }
+
+        bool HasAnyValidMove()
+        {
+            int sign = ActivePlayer == 1 ? 1 : -1;
+            Player currentPlayer = ActivePlayer == 1 ? Player1 : Player2;
+
+            foreach (int die in currentPlayer.MovesLeft)
+            {
+                if (currentPlayer.OutedPieces > 0)
+                {
+                    int entryCol = sign > 0 ? die - 1 : 24 - die;
+
+                    if (sign > 0 && TableValues[entryCol] >= -1)
+                    {
+                        return true;
+                    }
+
+                    if (sign < 0 && TableValues[entryCol] <= 1)
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < 24; i++)
+                    {
+                        if (sign > 0 && TableValues[i] <= 0)
+                        {
+                            continue;
+                        }
+
+                        if (sign < 0 && TableValues[i] >= 0)
+                        {
+                            continue;
+                        }
+
+                        int target = sign > 0 ? i + die : i - die;
+
+                        if (target < 0 || target >= 24)
+                        {
+                            continue;
+                        }
+
+                        if (sign > 0 && TableValues[target] >= -1)
+                        {
+                            return true;
+                        }
+
+                        if (sign < 0 && TableValues[target] <= 1)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
 
         public void ThrowDice()
