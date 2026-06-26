@@ -180,6 +180,13 @@ namespace BackgammonByHoratiu.Entities
                 return;
 
             int sign = table[from] > 0 ? 1 : -1;
+
+            // Target must not be held by 2 or more enemy pieces
+            if (sign > 0 && table[to] <= -2)
+                throw new PieceMoveException("Column is blocked by the opponent");
+            if (sign < 0 && table[to] >= 2)
+                throw new PieceMoveException("Column is blocked by the opponent");
+
             table[from] -= sign;
             table[to] += sign;
         }

@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -7,6 +8,7 @@ using NuciXNA.Gui.Screens;
 using NuciXNA.Input;
 using NuciXNA.Primitives;
 
+using BackgammonByHoratiu.Entities;
 using BackgammonByHoratiu.GameLogic.GameManagers;
 using BackgammonByHoratiu.Gui.Controls;
 using BackgammonByHoratiu.Settings;
@@ -112,7 +114,15 @@ namespace BackgammonByHoratiu.Gui.Screens
             else
             {
                 // Second click: move one piece from selected source to this column
-                game.MovePieceDirect(dragBeginCol, col);
+                try
+                {
+                    game.MovePieceDirect(dragBeginCol, col);
+                }
+                catch (PieceMoveException ex)
+                {
+                    Console.Error.WriteLine($"[Backgammon] {ex.Message}");
+                }
+
                 dragBeginCol = -1;
             }
         }
