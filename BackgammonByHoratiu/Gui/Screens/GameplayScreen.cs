@@ -20,13 +20,10 @@ namespace BackgammonByHoratiu.Gui.Screens
         IGameManager game;
         GuiGameBoard gameBoard;
 
-        // Drag-and-drop state
         int dragBeginCol = -1;
 
-        // Error message overlay
-        string errorMessage;
-        double errorTimer;
-        const double ErrorDisplaySeconds = 3.0;
+        const int BarBrown = -2;
+        const int BarWhite = -3;
 
         public GameplayScreen()
         {
@@ -58,28 +55,10 @@ namespace BackgammonByHoratiu.Gui.Screens
         protected override void DoUpdate(GameTime gameTime)
         {
             game.Update(gameTime.ElapsedGameTime.TotalMilliseconds);
-
-            if (errorTimer > 0)
-                errorTimer -= gameTime.ElapsedGameTime.TotalSeconds;
-
             gameBoard.SelectedColumn = dragBeginCol;
         }
 
-        protected override void DoDraw(SpriteBatch spriteBatch)
-        {
-            if (errorMessage != null && errorTimer > 0)
-            {
-                DrawErrorMessage(spriteBatch);
-            }
-        }
-
-        void DrawErrorMessage(SpriteBatch spriteBatch)
-        {
-            // Simple red text in top-centre area
-            // The font is loaded inside GuiGameBoard but we need one here too.
-            // We use the screen's own DrawString via NuciXNA text if available,
-            // or just skip — the error is printed to console as fallback.
-        }
+        protected override void DoDraw(SpriteBatch spriteBatch) { }
 
         void SetChildrenProperties()
         {
@@ -100,13 +79,6 @@ namespace BackgammonByHoratiu.Gui.Screens
             InputManager.Instance.MouseButtonReleased -= OnMouseButtonReleased;
         }
 
-        void ShowError(string message)
-        {
-            errorMessage = message;
-            errorTimer = ErrorDisplaySeconds;
-            Console.Error.WriteLine($"[Backgammon] {message}");
-        }
-
         void OnKeyboardKeyPressed(object sender, KeyboardKeyEventArgs e)
         {
             if (e.Key == Keys.N || e.Key == Keys.F2)
@@ -116,103 +88,117 @@ namespace BackgammonByHoratiu.Gui.Screens
             }
         }
 
-        void OnMouseButtonPressed(object sender, MouseButtonEventArgs e)
-        {
-            if (e.Button != MouseButton.Left)
-                return;
-
-            int mx = e.Location.X;
-            int my = e.Location.Y;
-
-            dragBeginCol = -1;
-
-            // Check if clicking the bar for outed pieces (on press we just record intent)
-            // Check board columns
-            int col = gameBoard.ColumnAt(mx, my);
-            if (col >= 0 && game.TableValues[col] != 0)
-                dragBeginCol = col;
-        }
+        void OnMouseButtonPressed(object sender, MouseButtonEventArgs e) { }
 
         void OnMouseButtonReleased(object sender, MouseButtonEventArgs e)
         {
             if (e.Button != MouseButton.Left)
-                return;
-
-            int mx = e.Location.X;
-            int my = e.Location.Y;
-
-            // Handle outed-piece re-entry from bar
-            if (gameBoard.IsInOutColumnTop(mx, my) && game.Player1.OutedPieces != 0)
             {
-                if (game.Player1.MovesLeft.Count > 0)
+                return;
+            }
+
+            int x = e.Location.X;
+            int y = e.Location.Y;
+
+            if (gameBoard.IsOnDice(x, y))
+            {
+                try
                 {
-                    try { game.MoveOutedPiece(game.Player1.MovesLeft[0]); }
-                    catch (PieceMoveException pme) { ShowError(pme.Message); }
+                    game.NextTurn();
+                    dragBeginCol = -1;
                 }
+                catch (PieceMoveException ex)
+                {
+                    Console.Error.WriteLine($"[Backgammon] {ex.Message}");
+                }
+
+                return;
+            }
+
+            int col = gameBoard.ColumnAt(x, y);
+
+            if (col < 0 && gameBoard.IsOnHouse(x, y) && dragBeginCol >= 0)
+            {
+                try
+                {
+                    game.BearOffPiece(dragBeginCol);
+                }
+                catch (PieceMoveException ex)
+                {
+                    Console.Error.WriteLine($"[Backgammon] {ex.Message}");
+                }
+
                 dragBeginCol = -1;
                 return;
             }
 
-            if (gameBoard.IsInOutColumnBottom(mx, my) && game.Player2.OutedPieces != 0)
+            if (col < 0 && gameBoard.IsInOutColumnTop(x, y))
             {
-                if (game.Player2.MovesLeft.Count > 0)
+                if (game.Player2.OutedPieces > 0)
                 {
-                    try { game.MoveOutedPiece(game.Player2.MovesLeft[0]); }
-                    catch (PieceMoveException pme) { ShowError(pme.Message); }
+                    dragBeginCol = BarBrown;
                 }
+
+                return;
+            }
+
+            if (col < 0 && gameBoard.IsInOutColumnBottom(x, y))
+            {
+                if (game.Player1.OutedPieces > 0)
+                {
+                    dragBeginCol = BarWhite;
+                }
+
+                return;
+            }
+
+            if (col < 0)
+            {
+                dragBeginCol = -1;
+                return;
+            }
+
+            if (dragBeginCol == BarBrown || dragBeginCol == BarWhite)
+            {
+                int distance = dragBeginCol == BarBrown ? 24 - col : col + 1;
+
+                try
+                {
+                    game.MoveOutedPiece(distance);
+                }
+                catch (PieceMoveException ex)
+                {
+                    Console.Error.WriteLine($"[Backgammon] {ex.Message}");
+                }
+
                 dragBeginCol = -1;
                 return;
             }
 
             if (dragBeginCol == -1)
-                return;
-
-            int destCol = gameBoard.ColumnAt(mx, my);
-            if (destCol < 0)
+            {
+                if (game.TableValues[col] != 0)
+                {
+                    dragBeginCol = col;
+                }
+            }
+            else if (col == dragBeginCol)
             {
                 dragBeginCol = -1;
-                return;
             }
-
-            try
+            else
             {
-                if (game.TableValues[dragBeginCol] > 0)
+                try
                 {
-                    // Player 1 moves left (increasing indices)
-                    if (game.Player1.MovesLeft.Count == 0)
-                    {
-                        dragBeginCol = -1;
-                        return;
-                    }
-
-                    int move = dragBeginCol == destCol
-                        ? game.Player1.MovesLeft[0]
-                        : destCol - dragBeginCol;
-
-                    game.MovePiece(dragBeginCol, move);
+                    game.MovePieceDirect(dragBeginCol, col);
                 }
-                else
+                catch (PieceMoveException ex)
                 {
-                    // Player 2 moves right→left (decreasing indices)
-                    if (game.Player2.MovesLeft.Count == 0)
-                    {
-                        dragBeginCol = -1;
-                        return;
-                    }
-
-                    int move = dragBeginCol == destCol
-                        ? game.Player2.MovesLeft[0]
-                        : dragBeginCol - destCol;
-
-                    game.MovePiece(dragBeginCol, move);
+                    Console.Error.WriteLine($"[Backgammon] {ex.Message}");
                 }
-            }
-            catch (PieceMoveException pme)
-            {
-                ShowError(pme.Message);
-            }
 
-            dragBeginCol = -1;
+                dragBeginCol = -1;
+            }
         }
     }
 }

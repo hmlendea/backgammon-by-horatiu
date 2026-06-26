@@ -6,7 +6,6 @@ using Microsoft.Xna.Framework.Graphics;
 using NuciXNA.DataAccess.Content;
 using NuciXNA.Graphics;
 using NuciXNA.Gui.Controls;
-using NuciXNA.Primitives;
 
 using BackgammonByHoratiu.GameLogic.GameManagers;
 using BackgammonByHoratiu.Settings;
@@ -16,12 +15,12 @@ namespace BackgammonByHoratiu.Gui.Controls
     public class GuiGameBoard : GuiControl
     {
         static readonly Color ColorBackground   = Color.Gray;
-        static readonly Color ColorOddColumn    = new Color(255, 255, 127);
-        static readonly Color ColorEvenColumn   = new Color(0, 127, 0);
-        static readonly Color ColorHouseColumn  = new Color(63, 63, 63);
+        static readonly Color ColorOddColumn    = new(255, 255, 127);
+        static readonly Color ColorEvenColumn   = new(0, 127, 0);
+        static readonly Color ColorHouseColumn  = new(63, 63, 63);
         static readonly Color ColorOutColumn    = Color.Black;
         static readonly Color ColorPlayer1      = Color.White;
-        static readonly Color ColorPlayer2      = new Color(139, 69, 19);   // Brown
+        static readonly Color ColorPlayer2      = new(139, 69, 19);   // Brown
         static readonly Color ColorPieceBorder  = Color.Black;
         static readonly Color ColorColumnBorder = Color.Black;
         static readonly Color ColorDiceBorder   = Color.Black;
@@ -41,6 +40,10 @@ namespace BackgammonByHoratiu.Gui.Controls
         Rectangle dice1Rect, dice2Rect;
 
         public int SelectedColumn { get; set; } = -1;
+
+        public bool IsOnDice(int x, int y) => dice1Rect.Contains(x, y) || dice2Rect.Contains(x, y);
+
+        public bool IsOnHouse(int x, int y) => houseTop.Contains(x, y) || houseBottom.Contains(x, y);
 
         public GuiGameBoard(IGameManager game)
         {
@@ -92,6 +95,8 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             // Pieces on board columns
             DrawPieces(spriteBatch);
+
+            DrawCompletedPieces(spriteBatch);
 
             // Dice
             DrawDice(spriteBatch);
@@ -168,33 +173,32 @@ namespace BackgammonByHoratiu.Gui.Controls
                 }
             }
 
-            // Outed pieces in the bar
             int piecesP1 = game.Player1.OutedPieces;
             int piecesP2 = game.Player2.OutedPieces;
 
-            for (int z = 0; z < Math.Min(piecesP1, piecesPerCol); z++)
-            {
-                int cx = outColumnTop.Left + (outColumnTop.Width - pieceSize) / 2;
-                Rectangle dest = new Rectangle(cx, outColumnTop.Top + z * pieceSize, pieceSize, pieceSize);
-                DrawCircle(spriteBatch, dest, ColorPlayer1);
-            }
-            if (piecesP1 > piecesPerCol)
-            {
-                int cx = outColumnTop.Left + (outColumnTop.Width - pieceSize) / 2;
-                DrawCenteredText(spriteBatch, $"+{piecesP1 - piecesPerCol}",
-                    new Rectangle(cx, outColumnBottom.Top, pieceSize, pieceSize), Color.White);
-            }
-
             for (int z = 0; z < Math.Min(piecesP2, piecesPerCol); z++)
             {
-                int cx = outColumnBottom.Left + (outColumnBottom.Width - pieceSize) / 2;
-                Rectangle dest = new Rectangle(cx, outColumnBottom.Bottom - pieceSize - z * pieceSize, pieceSize, pieceSize);
+                int cx = outColumnTop.Left + (outColumnTop.Width - pieceSize) / 2;
+                Rectangle dest = new(cx, outColumnTop.Top + z * pieceSize, pieceSize, pieceSize);
                 DrawCircle(spriteBatch, dest, ColorPlayer2);
             }
             if (piecesP2 > piecesPerCol)
             {
-                int cx = outColumnBottom.Left + (outColumnBottom.Width - pieceSize) / 2;
+                int cx = outColumnTop.Left + (outColumnTop.Width - pieceSize) / 2;
                 DrawCenteredText(spriteBatch, $"+{piecesP2 - piecesPerCol}",
+                    new Rectangle(cx, outColumnTop.Top, pieceSize, pieceSize), Color.White);
+            }
+
+            for (int z = 0; z < Math.Min(piecesP1, piecesPerCol); z++)
+            {
+                int cx = outColumnBottom.Left + (outColumnBottom.Width - pieceSize) / 2;
+                Rectangle dest = new(cx, outColumnBottom.Bottom - pieceSize - z * pieceSize, pieceSize, pieceSize);
+                DrawCircle(spriteBatch, dest, ColorPlayer1);
+            }
+            if (piecesP1 > piecesPerCol)
+            {
+                int cx = outColumnBottom.Left + (outColumnBottom.Width - pieceSize) / 2;
+                DrawCenteredText(spriteBatch, $"+{piecesP1 - piecesPerCol}",
                     new Rectangle(cx, outColumnBottom.Bottom - pieceSize, pieceSize, pieceSize), Color.White);
             }
         }
@@ -213,10 +217,47 @@ namespace BackgammonByHoratiu.Gui.Controls
             DrawCenteredText(spriteBatch, game.Dice2.ToString(), dice2Rect, Color.Black);
         }
 
+        void DrawCompletedPieces(SpriteBatch spriteBatch)
+        {
+            int pieceSize    = GameDefines.PieceSize;
+            int piecesPerCol = GameDefines.ColumnHeight / pieceSize;
+
+            int completedP2 = game.Player2.CompletedPieces;
+            int completedP1 = game.Player1.CompletedPieces;
+
+            for (int z = 0; z < Math.Min(completedP2, piecesPerCol); z++)
+            {
+                int cx = houseTop.Left + (houseTop.Width - pieceSize) / 2;
+                Rectangle dest = new Rectangle(cx, houseTop.Top + z * pieceSize, pieceSize, pieceSize);
+                DrawCircle(spriteBatch, dest, ColorPlayer2);
+            }
+
+            if (completedP2 > piecesPerCol)
+            {
+                int cx = houseTop.Left + (houseTop.Width - pieceSize) / 2;
+                DrawCenteredText(spriteBatch, $"+{completedP2 - piecesPerCol}",
+                    new Rectangle(cx, houseTop.Top, pieceSize, pieceSize), Color.White);
+            }
+
+            for (int z = 0; z < Math.Min(completedP1, piecesPerCol); z++)
+            {
+                int cx = houseBottom.Left + (houseBottom.Width - pieceSize) / 2;
+                Rectangle dest = new Rectangle(cx, houseBottom.Bottom - pieceSize - z * pieceSize, pieceSize, pieceSize);
+                DrawCircle(spriteBatch, dest, ColorPlayer1);
+            }
+
+            if (completedP1 > piecesPerCol)
+            {
+                int cx = houseBottom.Left + (houseBottom.Width - pieceSize) / 2;
+                DrawCenteredText(spriteBatch, $"+{completedP1 - piecesPerCol}",
+                    new Rectangle(cx, houseBottom.Bottom - pieceSize, pieceSize, pieceSize), Color.White);
+            }
+        }
+
         void DrawCircle(SpriteBatch spriteBatch, Rectangle dest, Color fill)
         {
             // Draw shadow border slightly larger
-            Rectangle border = new Rectangle(dest.X - 1, dest.Y - 1, dest.Width + 2, dest.Height + 2);
+            Rectangle border = new(dest.X - 1, dest.Y - 1, dest.Width + 2, dest.Height + 2);
             spriteBatch.Draw(circleTexture, border, ColorPieceBorder);
             spriteBatch.Draw(circleTexture, dest, fill);
         }
@@ -236,7 +277,7 @@ namespace BackgammonByHoratiu.Gui.Controls
         void DrawCenteredText(SpriteBatch spriteBatch, string text, Rectangle rect, Color color)
         {
             Vector2 size = boardFont.MeasureString(text);
-            Vector2 pos  = new Vector2(
+            Vector2 pos  = new(
                 rect.X + (rect.Width  - size.X) / 2f,
                 rect.Y + (rect.Height - size.Y) / 2f);
 
@@ -319,7 +360,7 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         static Texture2D CreateTriangleTexture(GraphicsDevice gd, int width, int height, bool pointsDown)
         {
-            Texture2D tex  = new Texture2D(gd, width, height);
+            Texture2D tex  = new(gd, width, height);
             Color[]   data = new Color[width * height];
 
             for (int y = 0; y < height; y++)
@@ -343,10 +384,10 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         static Texture2D CreateCircleTexture(GraphicsDevice gd, int diameter)
         {
-            Texture2D tex    = new Texture2D(gd, diameter, diameter);
+            Texture2D tex    = new(gd, diameter, diameter);
             Color[]   data   = new Color[diameter * diameter];
             float     radius = diameter / 2f;
-            Vector2   center = new Vector2(radius, radius);
+            Vector2   center = new(radius, radius);
 
             for (int y = 0; y < diameter; y++)
                 for (int x = 0; x < diameter; x++)

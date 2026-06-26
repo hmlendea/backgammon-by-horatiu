@@ -1,208 +1,841 @@
-using System;
+﻿using System;
 
 namespace BackgammonByHoratiu.Entities
 {
     public class Table
     {
-        Player player1, player2;
-        int[] table;
-        int dice1, dice2;
-        int activePlayer;
+        public int[] TableValues { get; set; }
 
-        public int[] TableValues
-        {
-            get { return table; }
-            set { table = value; }
-        }
+        public Player Player1 { get; }
 
-        public Player Player1
-        {
-            get { return player1; }
-        }
+        public Player Player2 { get; }
 
-        public Player Player2
-        {
-            get { return player2; }
-        }
+        public int Dice1 { get; private set; }
 
-        public int Dice1
-        {
-            get { return dice1; }
-        }
+        public int Dice2 { get; private set; }
 
-        public int Dice2
-        {
-            get { return dice2; }
-        }
-
-        public int ActivePlayer
-        {
-            get { return activePlayer; }
-        }
+        public int ActivePlayer { get; private set; }
 
         public Table()
         {
-            table = new int[24];
+            TableValues = new int[24];
 
-            player1 = new Player();
-            player2 = new Player();
+            Player1 = new();
+            Player2 = new();
 
-            table[0] = 2;
-            table[5] = -5;
-            table[7] = -3;
-            table[11] = 5;
+            TableValues[0] = 2;
+            TableValues[5] = -5;
+            TableValues[7] = -3;
+            TableValues[11] = 5;
+            TableValues[12] = -5;
+            TableValues[16] = 3;
+            TableValues[18] = 5;
+            TableValues[23] = -2;
 
-            table[12] = -5;
-            table[16] = 3;
-            table[18] = 5;
-            table[23] = -2;
+            Dice1 = 2;
+            Dice2 = 4;
 
-            dice1 = 2;
-            dice2 = 4;
-
-            activePlayer = 1;
+            ActivePlayer = 1;
             ThrowDice();
         }
 
         public void MoveOutedPiece(int distance)
         {
-            if (activePlayer == 1)
+            if (ActivePlayer == 1)
             {
-                if (player1.OutedPieces == 0)
-                    throw new PieceMoveException("Player 1 has no outed pieces");
-
-                if (table[distance - 1] >= -1)
+                if (Player1.OutedPieces == 0)
                 {
-                    if (table[distance - 1] == -1)
+                    throw new PieceMoveException("Player 1 has no outed pieces");
+                }
+
+                if (Player1.MovesLeft.Contains(distance))
+                {
+                    int col = distance - 1;
+
+                    if (TableValues[col] < -1)
                     {
-                        table[distance - 1] = 1;
-                        player2.OutedPieces += 1;
+                        throw new PieceMoveException("Invalid destination");
                     }
-                    else
-                        table[distance - 1] += 1;
 
-                    player1.OutedPieces -= 1;
-                    player1.MovesLeft.Remove(distance);
+                    ApplyBarEntry(col, 1);
+                    Player1.OutedPieces -= 1;
+                    Player1.MovesLeft.Remove(distance);
 
-                    if (player1.MovesLeft.Count == 0)
+                    if (Player1.MovesLeft.Count == 0)
+                    {
                         NextTurn();
+                    }
                 }
                 else
-                    throw new PieceMoveException("Invalid destination");
+                {
+                    (int die1, int die2) = FindBarEntryCombo(distance, 1);
+
+                    if (die1 == -1)
+                    {
+                        throw new PieceMoveException("Invalid destination");
+                    }
+
+                    int intermediate = die1 - 1;
+                    int target = distance - 1;
+
+                    ApplyBarEntry(intermediate, 1);
+                    Player1.OutedPieces -= 1;
+                    ApplyMoveStep(intermediate, target, 1);
+                    Player1.MovesLeft.Remove(die1);
+                    Player1.MovesLeft.Remove(die2);
+
+                    if (Player1.MovesLeft.Count == 0)
+                    {
+                        NextTurn();
+                    }
+                }
             }
             else
             {
-                if (player2.OutedPieces == 0)
-                    throw new PieceMoveException("Player 2 has no outed pieces");
-
-                if (table[table.Length - distance] <= 1)
+                if (Player2.OutedPieces == 0)
                 {
-                    if (table[table.Length - distance] == 1)
+                    throw new PieceMoveException("Player 2 has no outed pieces");
+                }
+
+                if (Player2.MovesLeft.Contains(distance))
+                {
+                    int col = 24 - distance;
+
+                    if (TableValues[col] > 1)
                     {
-                        table[table.Length - distance] = -1;
-                        player1.OutedPieces += 1;
+                        throw new PieceMoveException("Invalid destination");
                     }
-                    else
-                        table[table.Length - distance] -= 1;
 
-                    player2.OutedPieces -= 1;
-                    player2.MovesLeft.Remove(distance);
+                    ApplyBarEntry(col, -1);
+                    Player2.OutedPieces -= 1;
+                    Player2.MovesLeft.Remove(distance);
 
-                    if (player2.MovesLeft.Count == 0)
+                    if (Player2.MovesLeft.Count == 0)
+                    {
                         NextTurn();
+                    }
                 }
                 else
-                    throw new PieceMoveException("Invalid destination");
+                {
+                    (int die1, int die2) = FindBarEntryCombo(distance, -1);
+
+                    if (die1 == -1)
+                    {
+                        throw new PieceMoveException("Invalid destination");
+                    }
+
+                    int intermediate = 24 - die1;
+                    int target = 24 - distance;
+
+                    ApplyBarEntry(intermediate, -1);
+                    Player2.OutedPieces -= 1;
+                    ApplyMoveStep(intermediate, target, -1);
+                    Player2.MovesLeft.Remove(die1);
+                    Player2.MovesLeft.Remove(die2);
+
+                    if (Player2.MovesLeft.Count == 0)
+                    {
+                        NextTurn();
+                    }
+                }
             }
+        }
+
+        void ApplyBarEntry(int col, int sign)
+        {
+            if (sign > 0 && TableValues[col] == -1)
+            {
+                Player2.OutedPieces += 1;
+                TableValues[col] = 0;
+            }
+            else if (sign < 0 && TableValues[col] == 1)
+            {
+                Player1.OutedPieces += 1;
+                TableValues[col] = 0;
+            }
+
+            TableValues[col] += sign;
+        }
+
+        (int, int) FindBarEntryCombo(int distance, int sign)
+        {
+            Player movingPlayer = sign > 0 ? Player1 : Player2;
+            var moves = movingPlayer.MovesLeft;
+
+            for (int i = 0; i < moves.Count; i++)
+            {
+                int die1 = moves[i];
+                int die2 = distance - die1;
+
+                if (die2 < 1)
+                {
+                    continue;
+                }
+
+                bool die2Available = false;
+
+                for (int j = 0; j < moves.Count; j++)
+                {
+                    if (j != i && moves[j] == die2)
+                    {
+                        die2Available = true;
+                        break;
+                    }
+                }
+
+                if (!die2Available)
+                {
+                    continue;
+                }
+
+                int intermediate = sign > 0 ? die1 - 1 : 24 - die1;
+
+                if (sign > 0 && TableValues[intermediate] < -1)
+                {
+                    continue;
+                }
+
+                if (sign < 0 && TableValues[intermediate] > 1)
+                {
+                    continue;
+                }
+
+                if (IsStepValid(intermediate, die2, sign))
+                {
+                    return (die1, die2);
+                }
+            }
+
+            return (-1, -1);
         }
 
         public void MovePiece(int pos, int move)
         {
-            if (table[pos] == 0)
+            if (TableValues[pos] == 0)
+            {
                 throw new PieceMoveException("There are no pieces on this column");
-
-            if ((activePlayer == 1 && table[pos] < 0) || (activePlayer == 2 && table[pos] > 0))
-                throw new PieceMoveException("Cannot move the other player s pieces");
-
-            if (activePlayer == 1)
-            {
-                if (player1.OutedPieces != 0)
-                    throw new PieceMoveException("Player 1 has outed pieces");
-
-                if (move > 0 && pos + move < 24 && table[pos + move] >= -1)
-                {
-                    if (table[pos + move] == -1)
-                    {
-                        table[pos + move] = 1;
-                        player2.OutedPieces += 1;
-                    }
-                    else
-                        table[pos + move] += 1;
-
-                    table[pos] -= 1;
-                    player1.MovesLeft.Remove(move);
-
-                    if (player1.MovesLeft.Count == 0)
-                        NextTurn();
-                }
-                else
-                    throw new PieceMoveException("Invalid destination");
             }
-            else if (activePlayer == 2)
-            {
-                if (player2.OutedPieces != 0)
-                    throw new PieceMoveException("Player 2 has outed pieces");
 
-                if (move > 0 && pos - move >= 0 && table[pos - move] <= 1)
+            if ((ActivePlayer == 1 && TableValues[pos] < 0) || (ActivePlayer == 2 && TableValues[pos] > 0))
+            {
+                throw new PieceMoveException("Cannot move the other player s pieces");
+            }
+
+            if (ActivePlayer == 1)
+            {
+                if (Player1.OutedPieces != 0)
                 {
-                    if (table[pos - move] == 1)
+                    throw new PieceMoveException("Player 1 has outed pieces");
+                }
+
+                if (move > 0 && pos + move < 24 && TableValues[pos + move] >= -1)
+                {
+                    if (TableValues[pos + move] == -1)
                     {
-                        table[pos - move] = -1;
-                        player1.OutedPieces += 1;
+                        TableValues[pos + move] = 1;
+                        Player2.OutedPieces += 1;
                     }
                     else
-                        table[pos - move] -= 1;
+                    {
+                        TableValues[pos + move] += 1;
+                    }
 
-                    table[pos] += 1;
-                    player2.MovesLeft.Remove(move);
+                    TableValues[pos] -= 1;
+                    Player1.MovesLeft.Remove(move);
 
-                    if (player2.MovesLeft.Count == 0)
+                    if (Player1.MovesLeft.Count == 0)
+                    {
                         NextTurn();
+                    }
                 }
                 else
+                {
                     throw new PieceMoveException("Invalid destination");
+                }
+            }
+            else if (ActivePlayer == 2)
+            {
+                if (Player2.OutedPieces != 0)
+                {
+                    throw new PieceMoveException("Player 2 has outed pieces");
+                }
+
+                if (move > 0 && pos - move >= 0 && TableValues[pos - move] <= 1)
+                {
+                    if (TableValues[pos - move] == 1)
+                    {
+                        TableValues[pos - move] = -1;
+                        Player1.OutedPieces += 1;
+                    }
+                    else
+                    {
+                        TableValues[pos - move] -= 1;
+                    }
+
+                    TableValues[pos] += 1;
+                    Player2.MovesLeft.Remove(move);
+
+                    if (Player2.MovesLeft.Count == 0)
+                    {
+                        NextTurn();
+                    }
+                }
+                else
+                {
+                    throw new PieceMoveException("Invalid destination");
+                }
             }
         }
 
-        void NextTurn()
+        public void MovePieceDirect(int from, int to)
         {
-            if (activePlayer == 1)
-                activePlayer = 2;
+            if (TableValues[from] == 0)
+            {
+                return;
+            }
+
+            int sign = TableValues[from] > 0 ? 1 : -1;
+
+            if (sign > 0 && Player1.OutedPieces > 0)
+            {
+                throw new PieceMoveException("You have pieces on the bar that must be re-entered first");
+            }
+
+            if (sign < 0 && Player2.OutedPieces > 0)
+            {
+                throw new PieceMoveException("You have pieces on the bar that must be re-entered first");
+            }
+
+            if (sign < 0 && from < 12 && to >= 12)
+            {
+                throw new PieceMoveException("Pieces cannot move backwards");
+            }
+
+            if (sign > 0 && from >= 12 && to < 12)
+            {
+                throw new PieceMoveException("Pieces cannot move backwards");
+            }
+
+            bool sameHalf = (from < 12 && to < 12) || (from >= 12 && to >= 12);
+            if (sameHalf)
+            {
+                if (sign < 0 && to > from)
+                {
+                    throw new PieceMoveException("Pieces cannot move backwards");
+                }
+
+                if (sign > 0 && to < from)
+                {
+                    throw new PieceMoveException("Pieces cannot move backwards");
+                }
+            }
+
+            if (sign > 0 && TableValues[to] <= -2)
+            {
+                throw new PieceMoveException("Column is blocked by the opponent");
+            }
+
+            if (sign < 0 && TableValues[to] >= 2)
+            {
+                throw new PieceMoveException("Column is blocked by the opponent");
+            }
+
+            int distance = sign > 0 ? to - from : from - to;
+            Player movingPlayer = sign > 0 ? Player1 : Player2;
+
+            if (movingPlayer.MovesLeft.Contains(distance))
+            {
+                movingPlayer.MovesLeft.Remove(distance);
+                ApplyMoveStep(from, to, sign);
+            }
             else
-                activePlayer = 1;
+            {
+                (int die1, int die2) = FindTwoDiceCombo(from, distance, sign, movingPlayer);
+
+                if (die1 == -1)
+                {
+                    throw new PieceMoveException("No valid move to that column");
+                }
+
+                int intermediate = from + sign * die1;
+                movingPlayer.MovesLeft.Remove(die1);
+                ApplyMoveStep(from, intermediate, sign);
+                movingPlayer.MovesLeft.Remove(die2);
+                ApplyMoveStep(intermediate, to, sign);
+            }
+        }
+
+        void ApplyMoveStep(int from, int to, int sign)
+        {
+            if (sign > 0 && TableValues[to] == -1)
+            {
+                Player2.OutedPieces += 1;
+                TableValues[to] = 0;
+            }
+            else if (sign < 0 && TableValues[to] == 1)
+            {
+                Player1.OutedPieces += 1;
+                TableValues[to] = 0;
+            }
+
+            TableValues[from] -= sign;
+            TableValues[to] += sign;
+        }
+
+        bool IsStepValid(int from, int die, int sign)
+        {
+            int to = from + sign * die;
+
+            if (to < 0 || to >= 24)
+            {
+                return false;
+            }
+
+            bool sameHalf = (from < 12) == (to < 12);
+
+            if (sameHalf)
+            {
+                if (sign > 0 && to <= from)
+                {
+                    return false;
+                }
+
+                if (sign < 0 && to >= from)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (sign < 0 && from < 12)
+                {
+                    return false;
+                }
+
+                if (sign > 0 && from >= 12)
+                {
+                    return false;
+                }
+            }
+
+            if (sign > 0 && TableValues[to] <= -2)
+            {
+                return false;
+            }
+
+            if (sign < 0 && TableValues[to] >= 2)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        (int, int) FindTwoDiceCombo(int from, int distance, int sign, Player movingPlayer)
+        {
+            var moves = movingPlayer.MovesLeft;
+
+            for (int i = 0; i < moves.Count; i++)
+            {
+                int die1 = moves[i];
+                int die2 = distance - die1;
+
+                if (die2 < 1)
+                {
+                    continue;
+                }
+
+                bool die2Available = false;
+
+                for (int j = 0; j < moves.Count; j++)
+                {
+                    if (j != i && moves[j] == die2)
+                    {
+                        die2Available = true;
+                        break;
+                    }
+                }
+
+                if (!die2Available)
+                {
+                    continue;
+                }
+
+                int intermediate = from + sign * die1;
+
+                if (IsStepValid(from, die1, sign) && IsStepValid(intermediate, die2, sign))
+                {
+                    return (die1, die2);
+                }
+            }
+
+            return (-1, -1);
+        }
+
+        (int, int) FindTwoDiceComboForBearOff(int from, int distance, int sign, Player movingPlayer)
+        {
+            var moves = movingPlayer.MovesLeft;
+
+            for (int i = 0; i < moves.Count; i++)
+            {
+                int die1 = moves[i];
+                int die2 = distance - die1;
+
+                if (die2 < 1)
+                {
+                    continue;
+                }
+
+                bool die2Available = false;
+
+                for (int j = 0; j < moves.Count; j++)
+                {
+                    if (j != i && moves[j] == die2)
+                    {
+                        die2Available = true;
+                        break;
+                    }
+                }
+
+                if (!die2Available)
+                {
+                    continue;
+                }
+
+                int intermediate = from + sign * die1;
+
+                if (intermediate < 0 || intermediate >= 24)
+                {
+                    continue;
+                }
+
+                if (IsStepValid(from, die1, sign) && IsStepValid(intermediate, die2, sign))
+                {
+                    return (die1, die2);
+                }
+            }
+
+            return (-1, -1);
+        }
+
+        public void BearOffPiece(int from)
+        {
+            if (TableValues[from] == 0)
+            {
+                throw new PieceMoveException("No piece on that column");
+            }
+
+            int sign = TableValues[from] > 0 ? 1 : -1;
+
+            if (sign > 0 && ActivePlayer != 1)
+            {
+                throw new PieceMoveException("Not your turn");
+            }
+
+            if (sign < 0 && ActivePlayer != 2)
+            {
+                throw new PieceMoveException("Not your turn");
+            }
+
+            if (!CanBearOff(sign))
+            {
+                throw new PieceMoveException("Not all pieces are in the home board");
+            }
+
+            if (sign > 0 && from < 18)
+            {
+                throw new PieceMoveException("Piece is not in the home board");
+            }
+
+            if (sign < 0 && from > 5)
+            {
+                throw new PieceMoveException("Piece is not in the home board");
+            }
+
+            int distance = sign > 0 ? 24 - from : from + 1;
+            Player movingPlayer = sign > 0 ? Player1 : Player2;
+
+            int usedDie = -1;
+
+            if (movingPlayer.MovesLeft.Contains(distance))
+            {
+                usedDie = distance;
+            }
+            else
+            {
+                foreach (int die in movingPlayer.MovesLeft)
+                {
+                    if (die > distance && IsFarthestPiece(from, sign))
+                    {
+                        usedDie = die;
+                        break;
+                    }
+                }
+            }
+
+            if (usedDie != -1)
+            {
+                movingPlayer.MovesLeft.Remove(usedDie);
+            }
+            else
+            {
+                (int die1, int die2) = FindTwoDiceComboForBearOff(from, distance, sign, movingPlayer);
+
+                if (die1 == -1)
+                {
+                    throw new PieceMoveException("No valid die for this move");
+                }
+
+                movingPlayer.MovesLeft.Remove(die1);
+                movingPlayer.MovesLeft.Remove(die2);
+            }
+            TableValues[from] -= sign;
+
+            if (sign > 0)
+            {
+                Player1.CompletedPieces++;
+
+                if (Player1.CompletedPieces >= 15)
+                {
+                    GameOver();
+                }
+            }
+            else
+            {
+                Player2.CompletedPieces++;
+
+                if (Player2.CompletedPieces >= 15)
+                {
+                    GameOver();
+                }
+            }
+        }
+
+        void GameOver()
+        {
+            TableValues = new int[24];
+
+            Player1.OutedPieces = 0;
+            Player1.CompletedPieces = 0;
+            Player1.MovesLeft.Clear();
+
+            Player2.OutedPieces = 0;
+            Player2.CompletedPieces = 0;
+            Player2.MovesLeft.Clear();
+
+            TableValues[0] = 2;
+            TableValues[5] = -5;
+            TableValues[7] = -3;
+            TableValues[11] = 5;
+            TableValues[12] = -5;
+            TableValues[16] = 3;
+            TableValues[18] = 5;
+            TableValues[23] = -2;
+
+            ActivePlayer = 1;
+            ThrowDice();
+        }
+
+        bool IsFarthestPiece(int col, int sign)
+        {
+            if (sign > 0)
+            {
+                for (int i = 18; i < col; i++)
+                {
+                    if (TableValues[i] > 0)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            else
+            {
+                for (int i = col + 1; i <= 5; i++)
+                {
+                    if (TableValues[i] < 0)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        bool CanBearOff(int sign)
+        {
+            if (sign > 0)
+            {
+                if (Player1.OutedPieces > 0)
+                {
+                    return false;
+                }
+
+                for (int i = 0; i < 18; i++)
+                {
+                    if (TableValues[i] > 0)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            else
+            {
+                if (Player2.OutedPieces > 0)
+                {
+                    return false;
+                }
+
+                for (int i = 6; i < 24; i++)
+                {
+                    if (TableValues[i] < 0)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        public void NextTurn()
+        {
+            Player currentPlayer = ActivePlayer == 1 ? Player1 : Player2;
+
+            if (currentPlayer.MovesLeft.Count > 0 && HasAnyValidMove())
+            {
+                throw new PieceMoveException("You still have moves left");
+            }
+
+            if (ActivePlayer == 1)
+            {
+                ActivePlayer = 2;
+            }
+            else
+            {
+                ActivePlayer = 1;
+            }
 
             ThrowDice();
         }
 
-        void ThrowDice()
+        bool HasAnyValidMove()
+        {
+            int sign = ActivePlayer == 1 ? 1 : -1;
+            Player currentPlayer = ActivePlayer == 1 ? Player1 : Player2;
+
+            foreach (int die in currentPlayer.MovesLeft)
+            {
+                if (currentPlayer.OutedPieces > 0)
+                {
+                    int entryCol = sign > 0 ? die - 1 : 24 - die;
+
+                    if (sign > 0 && TableValues[entryCol] >= -1)
+                    {
+                        return true;
+                    }
+
+                    if (sign < 0 && TableValues[entryCol] <= 1)
+                    {
+                        return true;
+                    }
+                }
+                else if (CanBearOff(sign))
+                {
+                    for (int i = 0; i < 24; i++)
+                    {
+                        if (sign > 0 && TableValues[i] > 0 && i >= 18)
+                        {
+                            int distance = 24 - i;
+
+                            if (distance == die || (die > distance && IsFarthestPiece(i, sign)))
+                            {
+                                return true;
+                            }
+                        }
+
+                        if (sign < 0 && TableValues[i] < 0 && i <= 5)
+                        {
+                            int distance = i + 1;
+
+                            if (distance == die || (die > distance && IsFarthestPiece(i, sign)))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < 24; i++)
+                    {
+                        if (sign > 0 && TableValues[i] <= 0)
+                        {
+                            continue;
+                        }
+
+                        if (sign < 0 && TableValues[i] >= 0)
+                        {
+                            continue;
+                        }
+
+                        int target = sign > 0 ? i + die : i - die;
+
+                        if (target < 0 || target >= 24)
+                        {
+                            continue;
+                        }
+
+                        if (sign > 0 && TableValues[target] >= -1)
+                        {
+                            return true;
+                        }
+
+                        if (sign < 0 && TableValues[target] <= 1)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public void ThrowDice()
         {
             Player player;
-            Random rnd = new Random();
-            dice1 = rnd.Next(1, 7);
-            dice2 = rnd.Next(1, 7);
+            Random rnd = new();
 
-            if (activePlayer == 1)
-                player = player1;
-            else
-                player = player2;
+            Dice1 = rnd.Next(1, 7);
+            Dice2 = rnd.Next(1, 7);
 
-            if (dice1 == dice2)
-                for (int i = 0; i < 4; i++)
-                    player.MovesLeft.Add(dice1);
+            if (ActivePlayer == 1)
+            {
+                player = Player1;
+            }
             else
             {
-                player.MovesLeft.Add(dice1);
-                player.MovesLeft.Add(dice2);
+                player = Player2;
+            }
+
+            player.MovesLeft.Clear();
+
+            if (Dice1 == Dice2)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    player.MovesLeft.Add(Dice1);
+                }
+            }
+            else
+            {
+                player.MovesLeft.Add(Dice1);
+                player.MovesLeft.Add(Dice2);
             }
         }
     }

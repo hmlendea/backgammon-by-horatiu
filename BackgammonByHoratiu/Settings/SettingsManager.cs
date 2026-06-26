@@ -2,7 +2,6 @@ using System.IO;
 using System.Threading;
 
 using NuciDAL.IO;
-using NuciXNA.Graphics;
 
 namespace BackgammonByHoratiu.Settings
 {

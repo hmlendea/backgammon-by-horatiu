@@ -4,30 +4,15 @@ namespace BackgammonByHoratiu.Entities
 {
     public class Player
     {
-        int outedPieces, completedPieces;
-        List<int> movesLeft;
+        public int OutedPieces { get; set; }
 
-        public int OutedPieces
-        {
-            get { return outedPieces; }
-            set { outedPieces = value; }
-        }
+        public int CompletedPieces { get; set; }
 
-        public int CompletedPieces
-        {
-            get { return completedPieces; }
-            set { completedPieces = value; }
-        }
-
-        public List<int> MovesLeft
-        {
-            get { return movesLeft; }
-            set { movesLeft = value; }
-        }
+        public List<int> MovesLeft { get; set; }
 
         public Player()
         {
-            movesLeft = new List<int>();
+            MovesLeft = [];
         }
     }
 }

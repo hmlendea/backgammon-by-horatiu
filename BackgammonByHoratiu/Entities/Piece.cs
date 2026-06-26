@@ -8,13 +8,6 @@
 
     public class Piece
     {
-        PiecePlayer player;
-
-        public PiecePlayer Player
-        {
-            get { return player; }
-            set { player = value; }
-        }
+        public PiecePlayer Player { get; set; }
     }
 }
-

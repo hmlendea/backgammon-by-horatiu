@@ -16,7 +16,10 @@ namespace BackgammonByHoratiu.Utils
             get
             {
                 if (logMain == null)
+                {
                     logMain = new Log("mainlog.log");
+                }
+
                 return logMain;
             }
         }
@@ -127,7 +130,9 @@ namespace BackgammonByHoratiu.Utils
             }
 
             using (StreamWriter sw = File.AppendText(FilePath))
+            {
                 sw.Write(text);
+            }
 
             Console.Write(text);
         }
@@ -140,7 +145,9 @@ namespace BackgammonByHoratiu.Utils
         public void Write(string text, int verbosityLevel)
         {
             if (verbosityLevel <= verbLevel)
+            {
                 Write(text);
+            }
         }
 
         /// <summary>
@@ -161,7 +168,9 @@ namespace BackgammonByHoratiu.Utils
         public void WriteLine(string text, int verbosityLevel)
         {
             if (verbosityLevel <= verbLevel)
+            {
                 WriteLine(text);
+            }
         }
 
         /// <summary>
@@ -182,7 +191,9 @@ namespace BackgammonByHoratiu.Utils
         public void WriteError(string text, int verbosityLevel)
         {
             if (verbosityLevel <= verbLevel)
+            {
                 WriteError(text);
+            }
         }
 
         /// <summary>
@@ -202,7 +213,9 @@ namespace BackgammonByHoratiu.Utils
         public void WriteWarning(string text, int verbosityLevel)
         {
             if (verbosityLevel <= verbLevel)
+            {
                 WriteWarning(text);
+            }
         }
     }
 }
