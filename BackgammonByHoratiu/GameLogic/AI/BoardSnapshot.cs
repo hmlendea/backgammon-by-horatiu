@@ -38,6 +38,7 @@ namespace BackgammonByHoratiu.GameLogic.AI
             else if (CanBearOff())
             {
                 CollectBearOffMoves(legalMoves);
+                CollectHomeBoardRepositionMoves(legalMoves);
             }
             else
             {
@@ -63,6 +64,39 @@ namespace BackgammonByHoratiu.GameLogic.AI
                 if (ColumnValues[destinationColumn] <= 1)
                 {
                     legalMoves.Add(new MoveAction(MoveActionType.BarEntry, -1, destinationColumn, dieValue));
+                }
+            }
+        }
+
+        void CollectHomeBoardRepositionMoves(List<MoveAction> legalMoves)
+        {
+            HashSet<MoveKey> alreadyConsidered = [];
+
+            foreach (int dieValue in MovesLeft)
+            {
+                for (int column = 1; column <= 5; column++)
+                {
+                    if (ColumnValues[column] >= 0)
+                    {
+                        continue;
+                    }
+
+                    int destinationColumn = column - dieValue;
+
+                    if (destinationColumn < 0)
+                    {
+                        continue;
+                    }
+
+                    if (!alreadyConsidered.Add(new MoveKey(column, dieValue)))
+                    {
+                        continue;
+                    }
+
+                    if (ColumnValues[destinationColumn] <= 1)
+                    {
+                        legalMoves.Add(new MoveAction(MoveActionType.Normal, column, destinationColumn, dieValue));
+                    }
                 }
             }
         }
