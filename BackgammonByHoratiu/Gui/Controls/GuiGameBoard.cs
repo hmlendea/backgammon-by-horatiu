@@ -17,11 +17,6 @@ namespace BackgammonByHoratiu.Gui.Controls
 {
     public class GuiGameBoard : GuiControl
     {
-        public const int ColBarP1 = 100;
-        public const int ColBarP2 = 101;
-        public const int ColHouseP1 = 200;
-        public const int ColHouseP2 = 201;
-
         static readonly Color ColorBackground = Color.Gray;
         static readonly Color ColorOddColumn = new(255, 255, 127);
         static readonly Color ColorEvenColumn = new(0, 127, 0);
@@ -71,7 +66,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             var gd = GraphicsManager.Instance.Graphics.GraphicsDevice;
 
             pixelTexture = new Texture2D(gd, 1, 1);
-            pixelTexture.SetData(new[] { Color.White });
+            pixelTexture.SetData([Color.White]);
 
             triangleDownTexture = CreateTriangleTexture(gd, GameDefines.PieceSize, GameDefines.ColumnHeight, pointsDown: true);
             triangleUpTexture = CreateTriangleTexture(gd, GameDefines.PieceSize, GameDefines.ColumnHeight, pointsDown: false);
@@ -250,8 +245,8 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             int piecesP1 = game.Player1.OutedPieces;
             int piecesP2 = game.Player2.OutedPieces;
-            if (suppressFromCol == ColBarP1) piecesP1 = Math.Max(0, piecesP1 - 1);
-            if (suppressFromCol == ColBarP2) piecesP2 = Math.Max(0, piecesP2 - 1);
+            if (suppressFromCol == GameDefines.ColBarP1) piecesP1 = Math.Max(0, piecesP1 - 1);
+            if (suppressFromCol == GameDefines.ColBarP2) piecesP2 = Math.Max(0, piecesP2 - 1);
 
             for (int z = 0; z < Math.Min(piecesP2, piecesPerCol); z++)
             {
@@ -304,7 +299,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             for (int z = 0; z < Math.Min(completedP2, piecesPerCol); z++)
             {
                 int cx = houseTop.Left + (houseTop.Width - pieceSize) / 2;
-                Rectangle dest = new Rectangle(cx, houseTop.Top + z * pieceSize, pieceSize, pieceSize);
+                Rectangle dest = new(cx, houseTop.Top + z * pieceSize, pieceSize, pieceSize);
                 DrawCircle(spriteBatch, dest, ColorPlayer2);
             }
 
@@ -318,7 +313,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             for (int z = 0; z < Math.Min(completedP1, piecesPerCol); z++)
             {
                 int cx = houseBottom.Left + (houseBottom.Width - pieceSize) / 2;
-                Rectangle dest = new Rectangle(cx, houseBottom.Bottom - pieceSize - z * pieceSize, pieceSize, pieceSize);
+                Rectangle dest = new(cx, houseBottom.Bottom - pieceSize - z * pieceSize, pieceSize, pieceSize);
                 DrawCircle(spriteBatch, dest, ColorPlayer1);
             }
 
@@ -415,7 +410,7 @@ namespace BackgammonByHoratiu.Gui.Controls
                     return new Point2D(columnRects[fromCol].Left, columnRects[fromCol].Bottom - count * ps);
             }
 
-            if (fromCol == ColBarP1)
+            if (fromCol == GameDefines.ColBarP1)
             {
                 int cx = outColumnBottom.Left + (outColumnBottom.Width - ps) / 2;
                 int count = Math.Min(game.Player1.OutedPieces, piecesPerCol);
@@ -442,7 +437,7 @@ namespace BackgammonByHoratiu.Gui.Controls
                     return new Point2D(columnRects[toCol].Left, columnRects[toCol].Bottom - (existing + 1) * ps);
             }
 
-            if (toCol == ColHouseP1)
+            if (toCol == GameDefines.ColHouseP1)
             {
                 int cx = houseBottom.Left + (houseBottom.Width - ps) / 2;
                 int count = Math.Min(game.Player1.CompletedPieces, piecesPerCol);

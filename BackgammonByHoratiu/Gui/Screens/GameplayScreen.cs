@@ -33,13 +33,17 @@ namespace BackgammonByHoratiu.Gui.Screens
 
         protected override void DoLoadContent()
         {
-            game = new AiGameManager();
+            AiGameManager aiManager = new AiGameManager();
+            game = aiManager;
             game.LoadContent();
 
             gameBoard = new GuiGameBoard(game)
             {
                 Size = new Size2D(GameDefines.WindowWidth, GameDefines.WindowHeight)
             };
+
+            aiManager.AnimateMoveRequested += (fromCol, toCol, player, onComplete) =>
+                gameBoard.BeginPieceMoveAnimation(fromCol, toCol, player, onComplete);
 
             GuiManager.Instance.RegisterControls(gameBoard);
             RegisterEvents();
@@ -127,7 +131,7 @@ namespace BackgammonByHoratiu.Gui.Screens
             {
                 int savedFrom = dragBeginCol;
                 dragBeginCol = -1;
-                int toHouse = game.ActivePlayer == 1 ? GuiGameBoard.ColHouseP1 : GuiGameBoard.ColHouseP2;
+                int toHouse = game.ActivePlayer == 1 ? GameDefines.ColHouseP1 : GameDefines.ColHouseP2;
 
                 gameBoard.BeginPieceMoveAnimation(savedFrom, toHouse, game.ActivePlayer, () =>
                 {
@@ -173,7 +177,7 @@ namespace BackgammonByHoratiu.Gui.Screens
             if (dragBeginCol == BarBrown || dragBeginCol == BarWhite)
             {
                 int distance = dragBeginCol == BarBrown ? 24 - col : col + 1;
-                int fromBar = dragBeginCol == BarBrown ? GuiGameBoard.ColBarP2 : GuiGameBoard.ColBarP1;
+                int fromBar = dragBeginCol == BarBrown ? GameDefines.ColBarP2 : GameDefines.ColBarP1;
                 int savedDist = distance;
                 dragBeginCol = -1;
 
