@@ -370,6 +370,52 @@ namespace BackgammonByHoratiu.Entities
             return (-1, -1);
         }
 
+        (int, int) FindTwoDiceComboForBearOff(int from, int distance, int sign, Player movingPlayer)
+        {
+            var moves = movingPlayer.MovesLeft;
+
+            for (int i = 0; i < moves.Count; i++)
+            {
+                int die1 = moves[i];
+                int die2 = distance - die1;
+
+                if (die2 < 1)
+                {
+                    continue;
+                }
+
+                bool die2Available = false;
+
+                for (int j = 0; j < moves.Count; j++)
+                {
+                    if (j != i && moves[j] == die2)
+                    {
+                        die2Available = true;
+                        break;
+                    }
+                }
+
+                if (!die2Available)
+                {
+                    continue;
+                }
+
+                int intermediate = from + sign * die1;
+
+                if (intermediate < 0 || intermediate >= 24)
+                {
+                    continue;
+                }
+
+                if (IsStepValid(from, die1, sign) && IsStepValid(intermediate, die2, sign))
+                {
+                    return (die1, die2);
+                }
+            }
+
+            return (-1, -1);
+        }
+
         public void BearOffPiece(int from)
         {
             if (TableValues[from] == 0)
@@ -425,12 +471,22 @@ namespace BackgammonByHoratiu.Entities
                 }
             }
 
-            if (usedDie == -1)
+            if (usedDie != -1)
             {
-                throw new PieceMoveException($"No valid die for this move");
+                movingPlayer.MovesLeft.Remove(usedDie);
             }
+            else
+            {
+                (int die1, int die2) = FindTwoDiceComboForBearOff(from, distance, sign, movingPlayer);
 
-            movingPlayer.MovesLeft.Remove(usedDie);
+                if (die1 == -1)
+                {
+                    throw new PieceMoveException("No valid die for this move");
+                }
+
+                movingPlayer.MovesLeft.Remove(die1);
+                movingPlayer.MovesLeft.Remove(die2);
+            }
             TableValues[from] -= sign;
 
             if (sign > 0)
