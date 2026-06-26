@@ -806,6 +806,52 @@ namespace BackgammonByHoratiu.Entities
             return false;
         }
 
+        public int FindMovePieceDirectIntermediate(int from, int to)
+        {
+            if (TableValues[from] == 0)
+            {
+                return -1;
+            }
+
+            int sign = TableValues[from] > 0 ? 1 : -1;
+            int distance = sign > 0 ? to - from : from - to;
+            Player movingPlayer = sign > 0 ? Player1 : Player2;
+
+            if (movingPlayer.MovesLeft.Contains(distance))
+            {
+                return -1;
+            }
+
+            (int die1, int _) = FindTwoDiceCombo(from, distance, sign, movingPlayer);
+
+            if (die1 == -1)
+            {
+                return -1;
+            }
+
+            return from + sign * die1;
+        }
+
+        public int FindMoveOutedPieceIntermediate(int distance)
+        {
+            int sign = ActivePlayer == 1 ? 1 : -1;
+            Player movingPlayer = ActivePlayer == 1 ? Player1 : Player2;
+
+            if (movingPlayer.MovesLeft.Contains(distance))
+            {
+                return -1;
+            }
+
+            (int die1, int _) = FindBarEntryCombo(distance, sign);
+
+            if (die1 == -1)
+            {
+                return -1;
+            }
+
+            return ActivePlayer == 1 ? die1 - 1 : 24 - die1;
+        }
+
         public void ThrowDice()
         {
             Player player;

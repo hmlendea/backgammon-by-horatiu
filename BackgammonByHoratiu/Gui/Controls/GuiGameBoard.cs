@@ -399,6 +399,26 @@ namespace BackgammonByHoratiu.Gui.Controls
             pendingMoveAction = null;
         }
 
+        public void ContinuePieceMoveAnimation(int toCol, int activePlayer, Action onComplete)
+        {
+            int ps = GameDefines.PieceSize;
+            int piecesPerCol = GameDefines.ColumnHeight / ps;
+
+            pendingMoveAction = onComplete;
+
+            TextureSprite sprite = activePlayer == 2 ? animSpriteBrown : animSpriteWhite;
+
+            // Hop 1 left sprite.Location at the original start; advance it to the
+            // intermediate pixel (= TargetLocation from hop 1) so hop 2 starts there.
+            sprite.Location = sprite.MovementEffect.TargetLocation;
+
+            Point2D dstPixel = GetAnimDestPixel(toCol, activePlayer, ps, piecesPerCol);
+            sprite.MovementEffect.TargetLocation = dstPixel;
+            sprite.MovementEffect.Activate();
+
+            isAnimating = true;
+        }
+
         Point2D GetAnimSourcePixel(int fromCol, int ps, int piecesPerCol)
         {
             if (fromCol >= 0 && fromCol < 24)
@@ -456,8 +476,9 @@ namespace BackgammonByHoratiu.Gui.Controls
                 return;
 
             isAnimating = false;
-            pendingMoveAction?.Invoke();
+            Action action = pendingMoveAction;
             pendingMoveAction = null;
+            action?.Invoke();
         }
 
         void BuildLayoutRectangles()

@@ -31,5 +31,9 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
         void NextTurn();
 
         void NewGame();
+
+        int FindMovePieceDirectIntermediate(int from, int to);
+
+        int FindMoveOutedPieceIntermediate(int distance);
     }
 }

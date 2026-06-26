@@ -112,6 +112,10 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
 
         public void MovePieceDirect(int from, int to) => inner.MovePieceDirect(from, to);
 
+        public int FindMovePieceDirectIntermediate(int from, int to) => inner.FindMovePieceDirectIntermediate(from, to);
+
+        public int FindMoveOutedPieceIntermediate(int distance) => inner.FindMoveOutedPieceIntermediate(distance);
+
         public void BearOffPiece(int from)
         {
             if (isInsideAiDispatch && AnimateMoveRequested is not null)
