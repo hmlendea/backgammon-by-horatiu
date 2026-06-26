@@ -436,11 +436,46 @@ namespace BackgammonByHoratiu.Entities
             if (sign > 0)
             {
                 Player1.CompletedPieces++;
+
+                if (Player1.CompletedPieces >= 15)
+                {
+                    GameOver();
+                }
             }
             else
             {
                 Player2.CompletedPieces++;
+
+                if (Player2.CompletedPieces >= 15)
+                {
+                    GameOver();
+                }
             }
+        }
+
+        void GameOver()
+        {
+            TableValues = new int[24];
+
+            Player1.OutedPieces = 0;
+            Player1.CompletedPieces = 0;
+            Player1.MovesLeft.Clear();
+
+            Player2.OutedPieces = 0;
+            Player2.CompletedPieces = 0;
+            Player2.MovesLeft.Clear();
+
+            TableValues[0] = 2;
+            TableValues[5] = -5;
+            TableValues[7] = -3;
+            TableValues[11] = 5;
+            TableValues[12] = -5;
+            TableValues[16] = 3;
+            TableValues[18] = 5;
+            TableValues[23] = -2;
+
+            ActivePlayer = 1;
+            ThrowDice();
         }
 
         bool IsFarthestPiece(int col, int sign)
