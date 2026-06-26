@@ -202,7 +202,20 @@ namespace BackgammonByHoratiu.GameLogic.AI
                 {
                     if (snapshot.ColumnValues[column] <= -2)
                     {
-                        score += column <= 5 ? 60 : 30;
+                        if (column <= 5)
+                        {
+                            score += 60;
+                        }
+                        else if (column >= 18)
+                        {
+                            // Anchor in the human's home board. Constrains the human
+                            // and gives safe re-entry if the AI gets hit
+                            score += 80;
+                        }
+                        else
+                        {
+                            score += 25;
+                        }
                     }
 
                     if (snapshot.ColumnValues[column] == -1)
@@ -212,10 +225,35 @@ namespace BackgammonByHoratiu.GameLogic.AI
                     }
                 }
 
+                score += ScoreAnchorPoints(snapshot);
                 score += ScorePrimes(snapshot, maxColumn: 23, primeBaseMultiplier: 8);
             }
 
             return score;
+        }
+
+        // Bonus for holding anchor points (cols 18-23) in the human's home board.
+        // Two or more consecutive anchors constrain the human's home-board construction
+        // and guarantee a safe re-entry square if the AI gets hit.
+        static int ScoreAnchorPoints(BoardSnapshot snapshot)
+        {
+            int totalScore = 0;
+            int consecutiveAnchors = 0;
+
+            for (int column = 18; column <= 23; column++)
+            {
+                if (snapshot.ColumnValues[column] <= -2)
+                {
+                    consecutiveAnchors++;
+                    totalScore += consecutiveAnchors * 20;
+                }
+                else
+                {
+                    consecutiveAnchors = 0;
+                }
+            }
+
+            return totalScore;
         }
 
         // Scores all prime sequences on the board (columns 0..maxColumn).

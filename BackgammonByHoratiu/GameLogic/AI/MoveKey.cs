@@ -20,7 +20,9 @@ namespace BackgammonByHoratiu.GameLogic.AI
                 return false;
             }
 
-            return sourceColumn == other.sourceColumn && dieValue == other.dieValue;
+            return
+                sourceColumn == other.sourceColumn &&
+                dieValue == other.dieValue;
         }
 
         public override bool Equals(object obj) => Equals(obj as MoveKey);
