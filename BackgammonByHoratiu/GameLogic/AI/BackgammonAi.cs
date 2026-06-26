@@ -151,11 +151,14 @@ namespace BackgammonByHoratiu.GameLogic.AI
                         score -= tv[threat] * 20;
             }
 
-            // Urgency tiers — far stragglers (cols 18-23) dominate everything
+            // Urgency tiers — far stragglers (cols 18-23) dominate everything;
+            // scale up with how close the human is to winning (0..1)
+            float pressure = HumanProgress();
+            int pressureBonus = (int)(pressure * 300);
             if (from >= 18)
-                score += 250 + from * 5;
+                score += 250 + from * 5 + pressureBonus;
             else if (from >= 12)
-                score += 80 + from * 3;
+                score += 80 + from * 3 + pressureBonus / 2;
             else if (from >= 6)
                 score += 40 + from * 2;
 
@@ -167,6 +170,23 @@ namespace BackgammonByHoratiu.GameLogic.AI
             score += from >= 6 ? (23 - to) * 2 : (23 - to);
 
             return score;
+        }
+
+        // Returns a 0..1 value representing how close the human (Player 1) is to winning.
+        float HumanProgress()
+        {
+            int[] tv = game.TableValues;
+            int pipsLeft = 0;
+
+            for (int i = 0; i < 24; i++)
+                if (tv[i] > 0)
+                    pipsLeft += tv[i] * (24 - i);
+
+            pipsLeft += game.Player1.OutedPieces * 25;
+
+            // Max possible pip count at game start is ~167; clamp to that range
+            const int maxPips = 167;
+            return 1f - System.Math.Min(pipsLeft, maxPips) / (float)maxPips;
         }
 
         bool CanBearOff()
