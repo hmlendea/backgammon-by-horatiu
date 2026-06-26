@@ -20,7 +20,6 @@ namespace BackgammonByHoratiu.Gui.Screens
         IGameManager game;
         GuiGameBoard gameBoard;
 
-        // Selection state: -1 = nothing selected, >=0 = source column selected
         int dragBeginCol = -1;
 
         public GameplayScreen()
@@ -114,7 +113,6 @@ namespace BackgammonByHoratiu.Gui.Screens
 
             if (dragBeginCol == -1)
             {
-                // First click: select source column if it has pieces
                 if (game.TableValues[col] != 0)
                 {
                     dragBeginCol = col;
@@ -122,12 +120,10 @@ namespace BackgammonByHoratiu.Gui.Screens
             }
             else if (col == dragBeginCol)
             {
-                // Clicking the selected column again deselects it
                 dragBeginCol = -1;
             }
             else
             {
-                // Second click: move one piece from selected source to this column
                 try
                 {
                     game.MovePieceDirect(dragBeginCol, col);
