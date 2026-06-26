@@ -52,9 +52,9 @@ namespace BackgammonByHoratiu.GameLogic.AI
 
         bool TryBarEntry()
         {
-            var moves = new List<int>(game.Player2.MovesLeft);
+            List<int> moves = [.. game.Player2.MovesLeft];
 
-            // Prefer hitting a blot; fall back to any open point
+            // Two passes: prefer hitting a blot, fall back to any open point
             foreach (bool hitsOnly in new[] { true, false })
             {
                 var tried = new HashSet<int>();
@@ -79,12 +79,7 @@ namespace BackgammonByHoratiu.GameLogic.AI
                         continue;
                     }
 
-                    try
-                    {
-                        game.MoveOutedPiece(d);
-                        return true;
-                    }
-                    catch { }
+                    try { game.MoveOutedPiece(d); return true; } catch { }
                 }
             }
 
@@ -100,20 +95,15 @@ namespace BackgammonByHoratiu.GameLogic.AI
                     continue;
                 }
 
-                try
-                {
-                    game.BearOffPiece(i);
-                    return true;
-                }
-                catch { }
+                try { game.BearOffPiece(i); return true; } catch { }
             }
             return false;
         }
 
         bool TryNormalMove()
         {
-            var candidates = new List<(int pos, int die, int score)>();
-            var triedCombos = new HashSet<(int, int)>();
+            List<(int pos, int die, int score)> candidates = [];
+            HashSet<(int, int)> triedCombos = [];
 
             foreach (int d in game.Player2.MovesLeft)
             {
@@ -130,6 +120,7 @@ namespace BackgammonByHoratiu.GameLogic.AI
                     }
 
                     int target = i - d;
+
                     if (target < 0)
                     {
                         continue;
@@ -156,6 +147,7 @@ namespace BackgammonByHoratiu.GameLogic.AI
                 try
                 {
                     game.MovePiece(pos, die);
+
                     return true;
                 }
                 catch { }
@@ -170,7 +162,7 @@ namespace BackgammonByHoratiu.GameLogic.AI
             int score = 0;
             int targetVal = tv[to];
 
-            // Never move a home-board piece while stragglers are still in the far quadrant
+            // Don't move home-board pieces while there are stragglers in the far quadrant
             if (from < 6)
             {
                 for (int i = 18; i < 24; i++)
@@ -179,26 +171,22 @@ namespace BackgammonByHoratiu.GameLogic.AI
                 }
             }
 
-            // Destination quality
             if (targetVal == 1)
             {
-                score += 150;           // hit a blot
+                score += 150;
             }
             else if (targetVal <= -2)
             {
-                score += 80;            // reinforce an owned point
+                score += to <= 5 ? 120 : 80;
             }
             else if (targetVal == -1)
             {
-                score += 60;            // pair up to make a point
+                score += to <= 5 ? 160 : 60;   // home-board gates are high priority
             }
             else
             {
-                // Blot penalty scales with actual threat, not a flat value
-                int threat = ThreatLevel(to);
-                int blotPenalty = threat * 25;
-
-                // Far-back pieces accept more risk; home-board blots are extra bad
+                // Blot penalty proportional to actual threat; reduced for far-back pieces
+                int blotPenalty = ThreatLevel(to) * 25;
                 if (from >= 18)
                 {
                     blotPenalty /= 2;
@@ -211,12 +199,10 @@ namespace BackgammonByHoratiu.GameLogic.AI
                 score -= blotPenalty;
             }
 
-            // Penalty for uncovering a source blot; scales with actual threat
+            // Uncovering a source blot; proportional to threat, reduced for far-back pieces
             if (tv[from] == -2)
             {
-                int threat = ThreatLevel(from);
-                int sourcePenalty = threat * 20;
-
+                int sourcePenalty = ThreatLevel(from) * 20;
                 if (from >= 18)
                 {
                     sourcePenalty /= 2;
@@ -225,10 +211,10 @@ namespace BackgammonByHoratiu.GameLogic.AI
                 score -= sourcePenalty;
             }
 
-            // Urgency tiers — far stragglers (cols 18-23) dominate everything;
-            // scale up with how close the human is to winning (0..1)
+            // Urgency for outer-board pieces, amplified by how close the human is to winning
             float pressure = HumanProgress();
             int pressureBonus = (int)(pressure * 300);
+
             if (from >= 18)
             {
                 score += 250 + from * 5 + pressureBonus;
@@ -242,44 +228,37 @@ namespace BackgammonByHoratiu.GameLogic.AI
                 score += 40 + from * 2;
             }
 
-            // Bonus for crossing into the home board
             if (from >= 6 && to <= 5)
             {
                 score += 80;
             }
 
-            // Positional bonus, doubled for outer-board pieces
             score += from >= 6 ? (23 - to) * 2 : (23 - to);
 
             return score;
         }
 
-        // Counts how many opponent (Player 1) pieces can potentially hit a blot at `col`
-        // by rolling a single die (1-6). Higher = more dangerous.
+        // Sum of opponent pieces within single-die striking range of col
         int ThreatLevel(int col)
         {
             int[] tv = game.TableValues;
             int threat = 0;
-
             for (int dist = 1; dist <= 6; dist++)
             {
                 int attacker = col + dist;
-
                 if (attacker < 24 && tv[attacker] > 0)
                 {
                     threat += tv[attacker];
                 }
             }
-
             return threat;
         }
 
-        // Returns a 0..1 value representing how close the human (Player 1) is to winning.
+        // 0..1: how close the human is to winning, based on pip count
         float HumanProgress()
         {
             int[] tv = game.TableValues;
             int pipsLeft = 0;
-
             for (int i = 0; i < 24; i++)
             {
                 if (tv[i] > 0)
@@ -289,9 +268,8 @@ namespace BackgammonByHoratiu.GameLogic.AI
             }
 
             pipsLeft += game.Player1.OutedPieces * 25;
-
-            // Max possible pip count at game start is ~167; clamp to that range
             const int maxPips = 167;
+
             return 1f - System.Math.Min(pipsLeft, maxPips) / (float)maxPips;
         }
 
