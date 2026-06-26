@@ -170,33 +170,33 @@ namespace BackgammonByHoratiu.Gui.Controls
                 }
             }
 
-            // Outed pieces in the bar
+            // Outed pieces in the bar — brown (Player2) on top, white (Player1) on bottom
             int piecesP1 = game.Player1.OutedPieces;
             int piecesP2 = game.Player2.OutedPieces;
 
-            for (int z = 0; z < Math.Min(piecesP1, piecesPerCol); z++)
+            for (int z = 0; z < Math.Min(piecesP2, piecesPerCol); z++)
             {
                 int cx = outColumnTop.Left + (outColumnTop.Width - pieceSize) / 2;
                 Rectangle dest = new Rectangle(cx, outColumnTop.Top + z * pieceSize, pieceSize, pieceSize);
-                DrawCircle(spriteBatch, dest, ColorPlayer1);
-            }
-            if (piecesP1 > piecesPerCol)
-            {
-                int cx = outColumnTop.Left + (outColumnTop.Width - pieceSize) / 2;
-                DrawCenteredText(spriteBatch, $"+{piecesP1 - piecesPerCol}",
-                    new Rectangle(cx, outColumnBottom.Top, pieceSize, pieceSize), Color.White);
-            }
-
-            for (int z = 0; z < Math.Min(piecesP2, piecesPerCol); z++)
-            {
-                int cx = outColumnBottom.Left + (outColumnBottom.Width - pieceSize) / 2;
-                Rectangle dest = new Rectangle(cx, outColumnBottom.Bottom - pieceSize - z * pieceSize, pieceSize, pieceSize);
                 DrawCircle(spriteBatch, dest, ColorPlayer2);
             }
             if (piecesP2 > piecesPerCol)
             {
-                int cx = outColumnBottom.Left + (outColumnBottom.Width - pieceSize) / 2;
+                int cx = outColumnTop.Left + (outColumnTop.Width - pieceSize) / 2;
                 DrawCenteredText(spriteBatch, $"+{piecesP2 - piecesPerCol}",
+                    new Rectangle(cx, outColumnTop.Top, pieceSize, pieceSize), Color.White);
+            }
+
+            for (int z = 0; z < Math.Min(piecesP1, piecesPerCol); z++)
+            {
+                int cx = outColumnBottom.Left + (outColumnBottom.Width - pieceSize) / 2;
+                Rectangle dest = new Rectangle(cx, outColumnBottom.Bottom - pieceSize - z * pieceSize, pieceSize, pieceSize);
+                DrawCircle(spriteBatch, dest, ColorPlayer1);
+            }
+            if (piecesP1 > piecesPerCol)
+            {
+                int cx = outColumnBottom.Left + (outColumnBottom.Width - pieceSize) / 2;
+                DrawCenteredText(spriteBatch, $"+{piecesP1 - piecesPerCol}",
                     new Rectangle(cx, outColumnBottom.Bottom - pieceSize, pieceSize, pieceSize), Color.White);
             }
         }

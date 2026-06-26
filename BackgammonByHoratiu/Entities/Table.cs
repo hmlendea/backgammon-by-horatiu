@@ -269,6 +269,18 @@ namespace BackgammonByHoratiu.Entities
 
             movingPlayer.MovesLeft.Remove(distance);
 
+            // Hit: target has exactly 1 enemy blot → send it to the bar
+            if (sign > 0 && table[to] == -1)
+            {
+                player2.OutedPieces += 1;
+                table[to] = 0;
+            }
+            else if (sign < 0 && table[to] == 1)
+            {
+                player1.OutedPieces += 1;
+                table[to] = 0;
+            }
+
             table[from] -= sign;
             table[to] += sign;
         }
