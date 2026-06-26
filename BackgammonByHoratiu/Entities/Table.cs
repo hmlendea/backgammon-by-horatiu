@@ -258,6 +258,17 @@ namespace BackgammonByHoratiu.Entities
                 throw new PieceMoveException("Column is blocked by the opponent");
             }
 
+            // Dice validation: distance must match one of the moving player's available dice
+            int distance = sign > 0 ? to - from : from - to;
+            Player movingPlayer = sign > 0 ? player1 : player2;
+
+            if (!movingPlayer.MovesLeft.Contains(distance))
+            {
+                throw new PieceMoveException($"No die showing {distance}");
+            }
+
+            movingPlayer.MovesLeft.Remove(distance);
+
             table[from] -= sign;
             table[to] += sign;
         }
