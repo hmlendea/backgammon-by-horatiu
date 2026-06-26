@@ -1,8 +1,7 @@
 using System.Collections.Generic;
-
 using BackgammonByHoratiu.GameLogic.GameManagers;
 
-namespace BackgammonByHoratiu.GameLogic.AI
+namespace BackgammonByHoratiu.GameLogic.AI.Search
 {
     internal sealed class BoardSnapshot
     {
@@ -59,7 +58,7 @@ namespace BackgammonByHoratiu.GameLogic.AI
                     continue;
                 }
 
-                int destinationColumn = 24 - dieValue;
+                int destinationColumn = BoardLayout.ColumnCount - dieValue;
 
                 if (ColumnValues[destinationColumn] <= 1)
                 {
@@ -74,7 +73,7 @@ namespace BackgammonByHoratiu.GameLogic.AI
 
             foreach (int dieValue in MovesLeft)
             {
-                for (int column = 1; column <= 5; column++)
+                for (int column = 1; column <= BoardLayout.AiHomeBoardLastColumn; column++)
                 {
                     if (ColumnValues[column] >= 0)
                     {
@@ -107,7 +106,7 @@ namespace BackgammonByHoratiu.GameLogic.AI
 
             foreach (int dieValue in MovesLeft)
             {
-                for (int column = 0; column <= 5; column++)
+                for (int column = 0; column <= BoardLayout.AiHomeBoardLastColumn; column++)
                 {
                     if (ColumnValues[column] >= 0)
                     {
@@ -135,7 +134,7 @@ namespace BackgammonByHoratiu.GameLogic.AI
 
             foreach (int dieValue in MovesLeft)
             {
-                for (int column = 0; column < 24; column++)
+                for (int column = 0; column < BoardLayout.ColumnCount; column++)
                 {
                     if (ColumnValues[column] >= 0)
                     {
@@ -223,7 +222,7 @@ namespace BackgammonByHoratiu.GameLogic.AI
                 return false;
             }
 
-            for (int column = 6; column < 24; column++)
+            for (int column = BoardLayout.AiFirstNonHomeColumn; column < BoardLayout.ColumnCount; column++)
             {
                 if (ColumnValues[column] < 0)
                 {
@@ -236,7 +235,7 @@ namespace BackgammonByHoratiu.GameLogic.AI
 
         bool IsFarthestAiPiece(int column)
         {
-            for (int checkColumn = column + 1; checkColumn <= 5; checkColumn++)
+            for (int checkColumn = column + 1; checkColumn <= BoardLayout.AiHomeBoardLastColumn; checkColumn++)
             {
                 if (ColumnValues[checkColumn] < 0)
                 {

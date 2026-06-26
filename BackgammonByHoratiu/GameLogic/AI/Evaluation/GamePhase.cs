@@ -1,4 +1,4 @@
-namespace BackgammonByHoratiu.GameLogic.AI
+namespace BackgammonByHoratiu.GameLogic.AI.Evaluation
 {
     internal enum GamePhase
     {

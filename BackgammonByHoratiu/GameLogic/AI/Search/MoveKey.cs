@@ -1,6 +1,6 @@
 using System;
 
-namespace BackgammonByHoratiu.GameLogic.AI
+namespace BackgammonByHoratiu.GameLogic.AI.Search
 {
     internal sealed class MoveKey : IEquatable<MoveKey>
     {
