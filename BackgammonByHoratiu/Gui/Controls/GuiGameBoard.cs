@@ -14,13 +14,13 @@ namespace BackgammonByHoratiu.Gui.Controls
 {
     public class GuiGameBoard : GuiControl
     {
-        static readonly Color ColorBackground   = Color.Gray;
-        static readonly Color ColorOddColumn    = new(255, 255, 127);
-        static readonly Color ColorEvenColumn   = new(0, 127, 0);
-        static readonly Color ColorHouseColumn  = new(63, 63, 63);
+        static readonly Color ColorBackground = Color.Gray;
+        static readonly Color ColorOddColumn = new(255, 255, 127);
+        static readonly Color ColorEvenColumn = new(0, 127, 0);
+        static readonly Color ColorHouseColumn = new(63, 63, 63);
         static readonly Color ColorOutColumn = Color.Black;
-        static readonly Color ColorPlayer1   = Color.White;
-        static readonly Color ColorPlayer2   = new(139, 69, 19);
+        static readonly Color ColorPlayer1 = Color.White;
+        static readonly Color ColorPlayer2 = new(139, 69, 19);
 
         readonly IGameManager game;
 
@@ -58,11 +58,11 @@ namespace BackgammonByHoratiu.Gui.Controls
             pixelTexture.SetData(new[] { Color.White });
 
             triangleDownTexture = CreateTriangleTexture(gd, GameDefines.PieceSize, GameDefines.ColumnHeight, pointsDown: true);
-            triangleUpTexture   = CreateTriangleTexture(gd, GameDefines.PieceSize, GameDefines.ColumnHeight, pointsDown: false);
-            brownPieceTexture   = NuciContentManager.Instance.LoadTexture2D("Table/BrownPiece");
-            whitePieceTexture   = NuciContentManager.Instance.LoadTexture2D("Table/WhitePiece");
-            brownDieTexture     = NuciContentManager.Instance.LoadTexture2D("Table/BrownDie");
-            whiteDieTexture     = NuciContentManager.Instance.LoadTexture2D("Table/WhiteDie");
+            triangleUpTexture = CreateTriangleTexture(gd, GameDefines.PieceSize, GameDefines.ColumnHeight, pointsDown: false);
+            brownPieceTexture = NuciContentManager.Instance.LoadTexture2D("Table/BrownPiece");
+            whitePieceTexture = NuciContentManager.Instance.LoadTexture2D("Table/WhitePiece");
+            brownDieTexture = NuciContentManager.Instance.LoadTexture2D("Table/BrownDie");
+            whiteDieTexture = NuciContentManager.Instance.LoadTexture2D("Table/WhiteDie");
 
             boardFont = NuciContentManager.Instance.LoadSpriteFont("Fonts/InfoBarFont");
 
@@ -90,10 +90,10 @@ namespace BackgammonByHoratiu.Gui.Controls
             DrawColumns(spriteBatch);
 
             // Bar and house backgrounds
-            spriteBatch.Draw(pixelTexture, outColumnTop,    ColorOutColumn);
+            spriteBatch.Draw(pixelTexture, outColumnTop, ColorOutColumn);
             spriteBatch.Draw(pixelTexture, outColumnBottom, ColorOutColumn);
-            spriteBatch.Draw(pixelTexture, houseTop,        ColorHouseColumn);
-            spriteBatch.Draw(pixelTexture, houseBottom,     ColorHouseColumn);
+            spriteBatch.Draw(pixelTexture, houseTop, ColorHouseColumn);
+            spriteBatch.Draw(pixelTexture, houseBottom, ColorHouseColumn);
 
             // Pieces on board columns
             DrawPieces(spriteBatch);
@@ -122,7 +122,7 @@ namespace BackgammonByHoratiu.Gui.Controls
                 Rectangle col = columnRects[i];
 
                 bool isTopHalf = i < 12;
-                bool isOdd     = i % 2 != 0;
+                bool isOdd = i % 2 != 0;
 
                 Color fillColor;
                 if (isTopHalf)
@@ -137,9 +137,9 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         void DrawPieces(SpriteBatch spriteBatch)
         {
-            int pieceSize    = GameDefines.PieceSize;
+            int pieceSize = GameDefines.PieceSize;
             int piecesPerCol = GameDefines.ColumnHeight / pieceSize;
-            int[] values     = game.TableValues;
+            int[] values = game.TableValues;
 
             for (int i = 0; i < 24; i++)
             {
@@ -218,7 +218,7 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         void DrawCompletedPieces(SpriteBatch spriteBatch)
         {
-            int pieceSize    = GameDefines.PieceSize;
+            int pieceSize = GameDefines.PieceSize;
             int piecesPerCol = GameDefines.ColumnHeight / pieceSize;
 
             int completedP2 = game.Player2.CompletedPieces;
@@ -274,8 +274,8 @@ namespace BackgammonByHoratiu.Gui.Controls
         void DrawCenteredText(SpriteBatch spriteBatch, string text, Rectangle rect, Color color)
         {
             Vector2 size = boardFont.MeasureString(text);
-            Vector2 pos  = new(
-                rect.X + (rect.Width  - size.X) / 2f,
+            Vector2 pos = new(
+                rect.X + (rect.Width - size.X) / 2f,
                 rect.Y + (rect.Height - size.Y) / 2f);
 
             spriteBatch.DrawString(boardFont, text, pos, color);
@@ -295,10 +295,6 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         public bool IsInOutColumnTop(int x, int y) => outColumnTop.Contains(x, y);
         public bool IsInOutColumnBottom(int x, int y) => outColumnBottom.Contains(x, y);
-
-        // ------------------------------------------------------------------ //
-        //  Layout builder — mirrors original MainWindow constructor logic     //
-        // ------------------------------------------------------------------ //
 
         void BuildLayoutRectangles()
         {
@@ -335,20 +331,20 @@ namespace BackgammonByHoratiu.Gui.Controls
                         columnRects[i - 1].Right, bottomY, ps, colH);
             }
 
-            int barX      = columnRects[6].Right;           // 288
-            int barWidth  = ps + pad * 2;                   // 64
-            int halfH     = bh / 2;                         // 312
-            int houseX    = columnRects[0].Right;           // 640
+            int barX = columnRects[6].Right;           // 288
+            int barWidth = ps + pad * 2;                   // 64
+            int halfH = bh / 2;                         // 312
+            int houseX = columnRects[0].Right;           // 640
             int houseWidth = ps + pad * 3;                  // 72
 
-            outColumnTop    = new Rectangle(barX, 0, barWidth, halfH);
+            outColumnTop = new Rectangle(barX, 0, barWidth, halfH);
             outColumnBottom = new Rectangle(barX, halfH, barWidth, halfH);
-            houseTop        = new Rectangle(houseX, 0, houseWidth, halfH);
-            houseBottom     = new Rectangle(houseX, halfH, houseWidth, halfH);
+            houseTop = new Rectangle(houseX, 0, houseWidth, halfH);
+            houseBottom = new Rectangle(houseX, halfH, houseWidth, halfH);
 
-            int diceY   = (bh - ps) / 2;
-            dice1Rect   = new Rectangle(barX - barWidth - pad * 4, diceY, ps, ps);
-            dice2Rect   = new Rectangle(outColumnTop.Right + pad * 4, diceY, ps, ps);
+            int diceY = (bh - ps) / 2;
+            dice1Rect = new Rectangle(barX - barWidth - pad * 4, diceY, ps, ps);
+            dice2Rect = new Rectangle(outColumnTop.Right + pad * 4, diceY, ps, ps);
         }
 
         // ------------------------------------------------------------------ //
@@ -357,8 +353,8 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         static Texture2D CreateTriangleTexture(GraphicsDevice gd, int width, int height, bool pointsDown)
         {
-            Texture2D tex  = new(gd, width, height);
-            Color[]   data = new Color[width * height];
+            Texture2D tex = new(gd, width, height);
+            Color[] data = new Color[width * height];
 
             for (int y = 0; y < height; y++)
             {
@@ -368,7 +364,7 @@ namespace BackgammonByHoratiu.Gui.Controls
                     ? (float)y / height          // 0..1 as we go down
                     : (float)(height - y) / height; // 0..1 as we go up
 
-                float leftX  = (width / 2f) * t;
+                float leftX = (width / 2f) * t;
                 float rightX = width - leftX;
 
                 for (int x = 0; x < width; x++)
