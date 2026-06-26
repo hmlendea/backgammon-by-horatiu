@@ -153,6 +153,58 @@ namespace BackgammonByHoratiu.GameLogic.AI
                     }
                 }
             }
+            else if (phase == GamePhase.BackGame)
+            {
+                // Far behind in pips: anchor in the human's home board and build a home prime
+                score -= snapshot.AiOutedPieces * 50;
+                score += snapshot.HumanOutedPieces * 80;
+
+                int consecutiveOwnedPoints = 0;
+                int longestHomePrime = 0;
+
+                for (int column = 0; column < 24; column++)
+                {
+                    if (snapshot.ColumnValues[column] <= -2)
+                    {
+                        if (column >= 18)
+                        {
+                            // Anchor point in the human's home board — very high value
+                            score += 120;
+                        }
+                        else if (column <= 5)
+                        {
+                            // Home-board point — valuable for trapping hit pieces
+                            score += 70;
+                            consecutiveOwnedPoints++;
+
+                            if (consecutiveOwnedPoints > longestHomePrime)
+                            {
+                                longestHomePrime = consecutiveOwnedPoints;
+                            }
+                        }
+                        else
+                        {
+                            consecutiveOwnedPoints = 0;
+                            score += 10;
+                        }
+                    }
+                    else
+                    {
+                        consecutiveOwnedPoints = 0;
+                    }
+
+                    // Blot exposure still matters, but less so in the human's board
+                    if (snapshot.ColumnValues[column] == -1)
+                    {
+                        int threatLevel = CalculateThreatLevel(snapshot, column);
+                        bool isInHumanHomeBoard = column >= 18;
+                        score -= isInHumanHomeBoard ? threatLevel * 5 : threatLevel * 20;
+                    }
+                }
+
+                // Quadratic reward for consecutive home-board points (prime)
+                score += longestHomePrime * longestHomePrime * 10;
+            }
             else
             {
                 // Blocking phase: build primes, hit blots, keep the human trapped
@@ -196,6 +248,11 @@ namespace BackgammonByHoratiu.GameLogic.AI
         static GamePhase DetermineGamePhase(int aiPipCount, int humanPipCount)
         {
             int pipDifference = aiPipCount - humanPipCount;
+
+            if (pipDifference > 40)
+            {
+                return GamePhase.BackGame;
+            }
 
             if (pipDifference < -15)
             {
