@@ -221,8 +221,34 @@ namespace BackgammonByHoratiu.GameLogic.AI
             }
 
             score += ScoreHomeBoardClosure(snapshot);
+            score += ScoreReturnHitRisk(snapshot);
 
             return score;
+        }
+
+        static int ScoreReturnHitRisk(BoardSnapshot snapshot)
+        {
+            if (snapshot.HumanOutedPieces == 0)
+            {
+                return 0;
+            }
+
+            int maxReturnThreat = 0;
+
+            for (int column = 0; column < 24; column++)
+            {
+                if (snapshot.ColumnValues[column] == -1)
+                {
+                    int threat = CalculateThreatLevel(snapshot, column);
+
+                    if (threat > maxReturnThreat)
+                    {
+                        maxReturnThreat = threat;
+                    }
+                }
+            }
+
+            return -(maxReturnThreat * snapshot.HumanOutedPieces * 12);
         }
 
         static int ScoreHomeBoardClosure(BoardSnapshot snapshot)
