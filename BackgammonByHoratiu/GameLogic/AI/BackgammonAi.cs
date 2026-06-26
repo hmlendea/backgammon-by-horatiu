@@ -159,9 +159,6 @@ namespace BackgammonByHoratiu.GameLogic.AI
                 score -= snapshot.AiOutedPieces * 50;
                 score += snapshot.HumanOutedPieces * 80;
 
-                int consecutiveOwnedPoints = 0;
-                int longestHomePrime = 0;
-
                 for (int column = 0; column < 24; column++)
                 {
                     if (snapshot.ColumnValues[column] <= -2)
@@ -175,22 +172,11 @@ namespace BackgammonByHoratiu.GameLogic.AI
                         {
                             // Home-board point — valuable for trapping hit pieces
                             score += 70;
-                            consecutiveOwnedPoints++;
-
-                            if (consecutiveOwnedPoints > longestHomePrime)
-                            {
-                                longestHomePrime = consecutiveOwnedPoints;
-                            }
                         }
                         else
                         {
-                            consecutiveOwnedPoints = 0;
                             score += 10;
                         }
-                    }
-                    else
-                    {
-                        consecutiveOwnedPoints = 0;
                     }
 
                     // Blot exposure still matters, but less so in the human's board
@@ -202,8 +188,8 @@ namespace BackgammonByHoratiu.GameLogic.AI
                     }
                 }
 
-                // Quadratic reward for consecutive home-board points (prime)
-                score += longestHomePrime * longestHomePrime * 10;
+                // Home-board prime for trapping hit pieces
+                score += ScorePrimes(snapshot, maxColumn: 5, primeBaseMultiplier: 10);
             }
             else
             {
@@ -212,24 +198,11 @@ namespace BackgammonByHoratiu.GameLogic.AI
                 score -= snapshot.AiOutedPieces * 60;
                 score += snapshot.HumanOutedPieces * 60;
 
-                int consecutiveOwnedPoints = 0;
-                int longestPrime = 0;
-
                 for (int column = 0; column < 24; column++)
                 {
                     if (snapshot.ColumnValues[column] <= -2)
                     {
                         score += column <= 5 ? 60 : 30;
-                        consecutiveOwnedPoints++;
-
-                        if (consecutiveOwnedPoints > longestPrime)
-                        {
-                            longestPrime = consecutiveOwnedPoints;
-                        }
-                    }
-                    else
-                    {
-                        consecutiveOwnedPoints = 0;
                     }
 
                     if (snapshot.ColumnValues[column] == -1)
@@ -239,10 +212,73 @@ namespace BackgammonByHoratiu.GameLogic.AI
                     }
                 }
 
-                score += longestPrime * longestPrime * 8;
+                score += ScorePrimes(snapshot, maxColumn: 23, primeBaseMultiplier: 8);
             }
 
             return score;
+        }
+
+        // Scores all prime sequences on the board (columns 0..maxColumn).
+        // Each prime is weighted by its length² × multiplier and by how many human
+        // pieces it actually traps behind it. Milestones at length 4, 5, 6 add extra flat bonuses.
+        static int ScorePrimes(BoardSnapshot snapshot, int maxColumn, int primeBaseMultiplier)
+        {
+            int totalScore = 0;
+            int primeStart = -1;
+            int primeLength = 0;
+
+            for (int column = 0; column <= maxColumn + 1; column++)
+            {
+                bool isOwnedPoint = column <= maxColumn && snapshot.ColumnValues[column] <= -2;
+
+                if (isOwnedPoint)
+                {
+                    if (primeStart == -1)
+                    {
+                        primeStart = column;
+                    }
+
+                    primeLength++;
+                }
+                else if (primeLength > 0)
+                {
+                    // Count human pieces trapped behind (at lower columns) this prime
+                    int trappedHumanPieces = 0;
+
+                    for (int behindColumn = 0; behindColumn < primeStart; behindColumn++)
+                    {
+                        if (snapshot.ColumnValues[behindColumn] > 0)
+                        {
+                            trappedHumanPieces += snapshot.ColumnValues[behindColumn];
+                        }
+                    }
+
+                    // Also count human pieces on the bar (they must re-enter from the far end)
+                    trappedHumanPieces += snapshot.HumanOutedPieces;
+
+                    int trapMultiplier = 1 + trappedHumanPieces;
+                    totalScore += primeLength * primeLength * primeBaseMultiplier * trapMultiplier;
+
+                    // Milestone bonuses for powerful primes
+                    if (primeLength >= 6)
+                    {
+                        totalScore += 200 * trapMultiplier;
+                    }
+                    else if (primeLength >= 5)
+                    {
+                        totalScore += 100 * trapMultiplier;
+                    }
+                    else if (primeLength >= 4)
+                    {
+                        totalScore += 40 * trapMultiplier;
+                    }
+
+                    primeStart = -1;
+                    primeLength = 0;
+                }
+            }
+
+            return totalScore;
         }
 
         static GamePhase DetermineGamePhase(int aiPipCount, int humanPipCount)
