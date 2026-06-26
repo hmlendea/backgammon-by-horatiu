@@ -69,7 +69,9 @@ namespace BackgammonByHoratiu.Entities
             if (activePlayer == 1)
             {
                 if (player1.OutedPieces == 0)
+                {
                     throw new PieceMoveException("Player 1 has no outed pieces");
+                }
 
                 if (table[distance - 1] >= -1)
                 {
@@ -79,21 +81,29 @@ namespace BackgammonByHoratiu.Entities
                         player2.OutedPieces += 1;
                     }
                     else
+                    {
                         table[distance - 1] += 1;
+                    }
 
                     player1.OutedPieces -= 1;
                     player1.MovesLeft.Remove(distance);
 
                     if (player1.MovesLeft.Count == 0)
+                    {
                         NextTurn();
+                    }
                 }
                 else
+                {
                     throw new PieceMoveException("Invalid destination");
+                }
             }
             else
             {
                 if (player2.OutedPieces == 0)
+                {
                     throw new PieceMoveException("Player 2 has no outed pieces");
+                }
 
                 if (table[table.Length - distance] <= 1)
                 {
@@ -103,31 +113,43 @@ namespace BackgammonByHoratiu.Entities
                         player1.OutedPieces += 1;
                     }
                     else
+                    {
                         table[table.Length - distance] -= 1;
+                    }
 
                     player2.OutedPieces -= 1;
                     player2.MovesLeft.Remove(distance);
 
                     if (player2.MovesLeft.Count == 0)
+                    {
                         NextTurn();
+                    }
                 }
                 else
+                {
                     throw new PieceMoveException("Invalid destination");
+                }
             }
         }
 
         public void MovePiece(int pos, int move)
         {
             if (table[pos] == 0)
+            {
                 throw new PieceMoveException("There are no pieces on this column");
+            }
 
             if ((activePlayer == 1 && table[pos] < 0) || (activePlayer == 2 && table[pos] > 0))
+            {
                 throw new PieceMoveException("Cannot move the other player s pieces");
+            }
 
             if (activePlayer == 1)
             {
                 if (player1.OutedPieces != 0)
+                {
                     throw new PieceMoveException("Player 1 has outed pieces");
+                }
 
                 if (move > 0 && pos + move < 24 && table[pos + move] >= -1)
                 {
@@ -137,21 +159,29 @@ namespace BackgammonByHoratiu.Entities
                         player2.OutedPieces += 1;
                     }
                     else
+                    {
                         table[pos + move] += 1;
+                    }
 
                     table[pos] -= 1;
                     player1.MovesLeft.Remove(move);
 
                     if (player1.MovesLeft.Count == 0)
+                    {
                         NextTurn();
+                    }
                 }
                 else
+                {
                     throw new PieceMoveException("Invalid destination");
+                }
             }
             else if (activePlayer == 2)
             {
                 if (player2.OutedPieces != 0)
+                {
                     throw new PieceMoveException("Player 2 has outed pieces");
+                }
 
                 if (move > 0 && pos - move >= 0 && table[pos - move] <= 1)
                 {
@@ -161,31 +191,72 @@ namespace BackgammonByHoratiu.Entities
                         player1.OutedPieces += 1;
                     }
                     else
+                    {
                         table[pos - move] -= 1;
+                    }
 
                     table[pos] += 1;
                     player2.MovesLeft.Remove(move);
 
                     if (player2.MovesLeft.Count == 0)
+                    {
                         NextTurn();
+                    }
                 }
                 else
+                {
                     throw new PieceMoveException("Invalid destination");
+                }
             }
         }
 
         public void MovePieceDirect(int from, int to)
         {
             if (table[from] == 0)
+            {
                 return;
+            }
 
             int sign = table[from] > 0 ? 1 : -1;
 
+            // Cross-half direction: brown moves top→bottom (0-11 → 12-23) is forbidden;
+            // white moves bottom→top (12-23 → 0-11) is forbidden
+            if (sign < 0 && from < 12 && to >= 12)
+            {
+                throw new PieceMoveException("Pieces cannot move backwards");
+            }
+
+            if (sign > 0 && from >= 12 && to < 12)
+            {
+                throw new PieceMoveException("Pieces cannot move backwards");
+            }
+
+            // Direction check within the same half of the board
+            bool sameHalf = (from < 12 && to < 12) || (from >= 12 && to >= 12);
+            if (sameHalf)
+            {
+                // Brown (-) always moves to a lower index; white (+) always moves to a higher index
+                if (sign < 0 && to > from)
+                {
+                    throw new PieceMoveException("Pieces cannot move backwards");
+                }
+
+                if (sign > 0 && to < from)
+                {
+                    throw new PieceMoveException("Pieces cannot move backwards");
+                }
+            }
+
             // Target must not be held by 2 or more enemy pieces
             if (sign > 0 && table[to] <= -2)
+            {
                 throw new PieceMoveException("Column is blocked by the opponent");
+            }
+
             if (sign < 0 && table[to] >= 2)
+            {
                 throw new PieceMoveException("Column is blocked by the opponent");
+            }
 
             table[from] -= sign;
             table[to] += sign;
@@ -194,9 +265,13 @@ namespace BackgammonByHoratiu.Entities
         void NextTurn()
         {
             if (activePlayer == 1)
+            {
                 activePlayer = 2;
+            }
             else
+            {
                 activePlayer = 1;
+            }
 
             ThrowDice();
         }
@@ -209,13 +284,21 @@ namespace BackgammonByHoratiu.Entities
             dice2 = rnd.Next(1, 7);
 
             if (activePlayer == 1)
+            {
                 player = player1;
+            }
             else
+            {
                 player = player2;
+            }
 
             if (dice1 == dice2)
+            {
                 for (int i = 0; i < 4; i++)
+                {
                     player.MovesLeft.Add(dice1);
+                }
+            }
             else
             {
                 player.MovesLeft.Add(dice1);

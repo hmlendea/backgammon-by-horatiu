@@ -91,7 +91,9 @@ namespace BackgammonByHoratiu.Gui.Screens
         void OnMouseButtonReleased(object sender, MouseButtonEventArgs e)
         {
             if (e.Button != MouseButton.Left)
+            {
                 return;
+            }
 
             int col = gameBoard.ColumnAt(e.Location.X, e.Location.Y);
             if (col < 0)
@@ -104,7 +106,9 @@ namespace BackgammonByHoratiu.Gui.Screens
             {
                 // First click: select source column if it has pieces
                 if (game.TableValues[col] != 0)
+                {
                     dragBeginCol = col;
+                }
             }
             else if (col == dragBeginCol)
             {
