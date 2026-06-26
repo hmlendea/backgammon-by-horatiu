@@ -43,6 +43,8 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         public bool IsOnDice(int x, int y) => dice1Rect.Contains(x, y) || dice2Rect.Contains(x, y);
 
+        public bool IsOnHouse(int x, int y) => houseTop.Contains(x, y) || houseBottom.Contains(x, y);
+
         public GuiGameBoard(IGameManager game)
         {
             this.game = game;
@@ -93,6 +95,8 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             // Pieces on board columns
             DrawPieces(spriteBatch);
+
+            DrawCompletedPieces(spriteBatch);
 
             // Dice
             DrawDice(spriteBatch);
@@ -211,6 +215,43 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             DrawCenteredText(spriteBatch, game.Dice1.ToString(), dice1Rect, Color.Black);
             DrawCenteredText(spriteBatch, game.Dice2.ToString(), dice2Rect, Color.Black);
+        }
+
+        void DrawCompletedPieces(SpriteBatch spriteBatch)
+        {
+            int pieceSize    = GameDefines.PieceSize;
+            int piecesPerCol = GameDefines.ColumnHeight / pieceSize;
+
+            int completedP2 = game.Player2.CompletedPieces;
+            int completedP1 = game.Player1.CompletedPieces;
+
+            for (int z = 0; z < Math.Min(completedP2, piecesPerCol); z++)
+            {
+                int cx = houseTop.Left + (houseTop.Width - pieceSize) / 2;
+                Rectangle dest = new Rectangle(cx, houseTop.Top + z * pieceSize, pieceSize, pieceSize);
+                DrawCircle(spriteBatch, dest, ColorPlayer2);
+            }
+
+            if (completedP2 > piecesPerCol)
+            {
+                int cx = houseTop.Left + (houseTop.Width - pieceSize) / 2;
+                DrawCenteredText(spriteBatch, $"+{completedP2 - piecesPerCol}",
+                    new Rectangle(cx, houseTop.Top, pieceSize, pieceSize), Color.White);
+            }
+
+            for (int z = 0; z < Math.Min(completedP1, piecesPerCol); z++)
+            {
+                int cx = houseBottom.Left + (houseBottom.Width - pieceSize) / 2;
+                Rectangle dest = new Rectangle(cx, houseBottom.Bottom - pieceSize - z * pieceSize, pieceSize, pieceSize);
+                DrawCircle(spriteBatch, dest, ColorPlayer1);
+            }
+
+            if (completedP1 > piecesPerCol)
+            {
+                int cx = houseBottom.Left + (houseBottom.Width - pieceSize) / 2;
+                DrawCenteredText(spriteBatch, $"+{completedP1 - piecesPerCol}",
+                    new Rectangle(cx, houseBottom.Bottom - pieceSize, pieceSize, pieceSize), Color.White);
+            }
         }
 
         void DrawCircle(SpriteBatch spriteBatch, Rectangle dest, Color fill)

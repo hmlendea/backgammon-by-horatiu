@@ -113,6 +113,22 @@ namespace BackgammonByHoratiu.Gui.Screens
             }
 
             int col = gameBoard.ColumnAt(x, y);
+
+            if (col < 0 && gameBoard.IsOnHouse(x, y) && dragBeginCol >= 0)
+            {
+                try
+                {
+                    game.BearOffPiece(dragBeginCol);
+                }
+                catch (PieceMoveException ex)
+                {
+                    Console.Error.WriteLine($"[Backgammon] {ex.Message}");
+                }
+
+                dragBeginCol = -1;
+                return;
+            }
+
             if (col < 0)
             {
                 dragBeginCol = -1;

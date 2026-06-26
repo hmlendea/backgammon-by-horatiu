@@ -27,7 +27,6 @@ namespace BackgammonByHoratiu.Entities
             TableValues[5] = -5;
             TableValues[7] = -3;
             TableValues[11] = 5;
-
             TableValues[12] = -5;
             TableValues[16] = 3;
             TableValues[18] = 5;
@@ -262,6 +261,145 @@ namespace BackgammonByHoratiu.Entities
 
             TableValues[from] -= sign;
             TableValues[to] += sign;
+        }
+
+        public void BearOffPiece(int from)
+        {
+            if (TableValues[from] == 0)
+            {
+                throw new PieceMoveException("No piece on that column");
+            }
+
+            int sign = TableValues[from] > 0 ? 1 : -1;
+
+            if (sign > 0 && ActivePlayer != 1)
+            {
+                throw new PieceMoveException("Not your turn");
+            }
+
+            if (sign < 0 && ActivePlayer != 2)
+            {
+                throw new PieceMoveException("Not your turn");
+            }
+
+            if (!CanBearOff(sign))
+            {
+                throw new PieceMoveException("Not all pieces are in the home board");
+            }
+
+            if (sign > 0 && from < 18)
+            {
+                throw new PieceMoveException("Piece is not in the home board");
+            }
+
+            if (sign < 0 && from > 5)
+            {
+                throw new PieceMoveException("Piece is not in the home board");
+            }
+
+            int distance = sign > 0 ? 24 - from : from + 1;
+            Player movingPlayer = sign > 0 ? Player1 : Player2;
+
+            int usedDie = -1;
+
+            if (movingPlayer.MovesLeft.Contains(distance))
+            {
+                usedDie = distance;
+            }
+            else
+            {
+                foreach (int die in movingPlayer.MovesLeft)
+                {
+                    if (die > distance && IsFarthestPiece(from, sign))
+                    {
+                        usedDie = die;
+                        break;
+                    }
+                }
+            }
+
+            if (usedDie == -1)
+            {
+                throw new PieceMoveException($"No valid die for this move");
+            }
+
+            movingPlayer.MovesLeft.Remove(usedDie);
+            TableValues[from] -= sign;
+
+            if (sign > 0)
+            {
+                Player1.CompletedPieces++;
+            }
+            else
+            {
+                Player2.CompletedPieces++;
+            }
+        }
+
+        bool IsFarthestPiece(int col, int sign)
+        {
+            if (sign > 0)
+            {
+                for (int i = 18; i < col; i++)
+                {
+                    if (TableValues[i] > 0)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            else
+            {
+                for (int i = col + 1; i <= 5; i++)
+                {
+                    if (TableValues[i] < 0)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        bool CanBearOff(int sign)
+        {
+            if (sign > 0)
+            {
+                if (Player1.OutedPieces > 0)
+                {
+                    return false;
+                }
+
+                for (int i = 0; i < 18; i++)
+                {
+                    if (TableValues[i] > 0)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            else
+            {
+                if (Player2.OutedPieces > 0)
+                {
+                    return false;
+                }
+
+                for (int i = 6; i < 24; i++)
+                {
+                    if (TableValues[i] < 0)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
         }
 
         public void NextTurn()

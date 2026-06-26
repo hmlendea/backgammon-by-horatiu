@@ -24,6 +24,8 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
 
         void MovePieceDirect(int from, int to);
 
+        void BearOffPiece(int from);
+
         void ThrowDice();
 
         void NextTurn();

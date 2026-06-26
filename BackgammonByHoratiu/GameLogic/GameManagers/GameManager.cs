@@ -36,6 +36,8 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
 
         public void MovePieceDirect(int from, int to) => table.MovePieceDirect(from, to);
 
+        public void BearOffPiece(int from) => table.BearOffPiece(from);
+
         public void ThrowDice() => table.ThrowDice();
 
         public void NextTurn() => table.NextTurn();
