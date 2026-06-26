@@ -9,10 +9,17 @@ namespace BackgammonByHoratiu.GameLogic.AI
     internal sealed class BackgammonAi
     {
         readonly IGameManager game;
+        readonly Queue<MoveAction> plannedMoves;
 
         internal BackgammonAi(IGameManager game)
         {
             this.game = game;
+            plannedMoves = new Queue<MoveAction>();
+        }
+
+        internal void Reset()
+        {
+            plannedMoves.Clear();
         }
 
         internal void TryPlayMove()
@@ -21,306 +28,187 @@ namespace BackgammonByHoratiu.GameLogic.AI
 
             if (aiPlayer.MovesLeft.Count == 0)
             {
+                plannedMoves.Clear();
                 TryNextTurn();
 
                 return;
             }
 
-            if (aiPlayer.OutedPieces > 0)
+            if (plannedMoves.Count == 0)
             {
-                if (!TryBarEntry())
-                {
-                    TryNextTurn();
-                }
-
-                return;
+                PlanTurn();
             }
 
-            if (CanBearOff())
-            {
-                if (!TryBearOff())
-                {
-                    TryNextTurn();
-                }
-
-                return;
-            }
-
-            if (!TryNormalMove())
+            if (plannedMoves.Count == 0)
             {
                 TryNextTurn();
+
+                return;
+            }
+
+            ExecuteNextPlannedMove();
+        }
+
+        void PlanTurn()
+        {
+            BoardSnapshot currentSnapshot = new(game);
+            MoveSequenceResult bestResult = FindBestMoveSequence(currentSnapshot);
+
+            foreach (MoveAction action in bestResult.Actions)
+            {
+                plannedMoves.Enqueue(action);
             }
         }
 
-        bool TryBarEntry()
+        MoveSequenceResult FindBestMoveSequence(BoardSnapshot snapshot)
         {
-            List<int> availableMoves = [.. game.Player2.MovesLeft];
+            List<MoveAction> legalMoves = snapshot.GetLegalMoves();
 
-            // Two passes: prefer hitting a blot, fall back to any open point
-            foreach (bool hitsOnly in new[] { true, false })
+            if (legalMoves.Count == 0)
             {
-                HashSet<int> alreadyTried = [];
+                return new MoveSequenceResult(EvaluatePosition(snapshot), []);
+            }
 
-                foreach (int dieValue in availableMoves)
+            int bestScore = int.MinValue;
+            List<MoveAction> bestSequence = [];
+
+            foreach (MoveAction action in legalMoves)
+            {
+                BoardSnapshot nextSnapshot = snapshot.AfterMove(action);
+                MoveSequenceResult continuationResult = FindBestMoveSequence(nextSnapshot);
+
+                if (continuationResult.Score > bestScore)
                 {
-                    if (!alreadyTried.Add(dieValue))
-                    {
-                        continue;
-                    }
-
-                    int destinationColumn = 24 - dieValue;
-                    bool hitsOpponentBlot = game.TableValues[destinationColumn] == 1;
-                    bool isOpen = game.TableValues[destinationColumn] <= 0;
-
-                    if (hitsOnly && !hitsOpponentBlot)
-                    {
-                        continue;
-                    }
-
-                    if (!hitsOnly && !isOpen && !hitsOpponentBlot)
-                    {
-                        continue;
-                    }
-
-                    try
-                    {
-                        game.MoveOutedPiece(dieValue);
-
-                        return true;
-                    }
-                    catch { }
+                    bestScore = continuationResult.Score;
+                    bestSequence = PrependAction(action, continuationResult.Actions);
                 }
             }
 
-            return false;
+            return new MoveSequenceResult(bestScore, bestSequence);
         }
 
-        bool TryBearOff()
+        static List<MoveAction> PrependAction(MoveAction first, List<MoveAction> rest)
         {
-            for (int column = 5; column >= 0; column--)
-            {
-                if (game.TableValues[column] >= 0)
-                {
-                    continue;
-                }
+            List<MoveAction> sequence = new(rest.Count + 1);
+            sequence.Add(first);
+            sequence.AddRange(rest);
 
-                try
-                {
-                    game.BearOffPiece(column);
-
-                    return true;
-                }
-                catch { }
-            }
-
-            return false;
+            return sequence;
         }
 
-        bool TryNormalMove()
+        void ExecuteNextPlannedMove()
         {
-            List<MoveCandidate> candidates = [];
-            HashSet<MoveKey> alreadyConsidered = [];
+            MoveAction action = plannedMoves.Dequeue();
 
-            foreach (int dieValue in game.Player2.MovesLeft)
+            try
             {
-                for (int column = 0; column < 24; column++)
+                switch (action.Type)
                 {
-                    if (game.TableValues[column] >= 0)
-                    {
-                        continue;
-                    }
-
-                    if (!alreadyConsidered.Add(new MoveKey(column, dieValue)))
-                    {
-                        continue;
-                    }
-
-                    int destinationColumn = column - dieValue;
-
-                    if (destinationColumn < 0)
-                    {
-                        continue;
-                    }
-
-                    if (game.TableValues[destinationColumn] >= 2)
-                    {
-                        continue;
-                    }
-
-                    candidates.Add(new MoveCandidate(column, dieValue, ScoreMove(column, destinationColumn)));
-                }
-            }
-
-            if (candidates.Count == 0)
-            {
-                return false;
-            }
-
-            candidates.Sort((first, second) => second.Score.CompareTo(first.Score));
-
-            foreach (MoveCandidate candidate in candidates)
-            {
-                try
-                {
-                    game.MovePiece(candidate.SourceColumn, candidate.DieValue);
-
-                    return true;
-                }
-                catch { }
-            }
-
-            return false;
-        }
-
-        int ScoreMove(int sourceColumn, int destinationColumn)
-        {
-            int[] boardValues = game.TableValues;
-            int score = 0;
-            int destinationPieceCount = boardValues[destinationColumn];
-
-            // Don't move home-board pieces while there are stragglers in the far quadrant
-            if (sourceColumn < 6)
-            {
-                for (int farColumn = 18; farColumn < 24; farColumn++)
-                {
-                    if (boardValues[farColumn] < 0)
-                    {
-                        score -= 500;
-
+                    case MoveActionType.Normal:
+                        game.MovePiece(action.SourceColumn, action.DieValue);
                         break;
+
+                    case MoveActionType.BarEntry:
+                        game.MoveOutedPiece(action.DieValue);
+                        break;
+
+                    case MoveActionType.BearOff:
+                        game.BearOffPiece(action.SourceColumn);
+                        break;
+                }
+            }
+            catch (PieceMoveException)
+            {
+                plannedMoves.Clear();
+            }
+        }
+
+        int EvaluatePosition(BoardSnapshot snapshot)
+        {
+            int score = 0;
+            int aiPipCount = CalculateAiPipCount(snapshot);
+            int humanPipCount = CalculateHumanPipCount(snapshot);
+            score += (humanPipCount - aiPipCount) * 5;
+
+            int consecutiveOwnedPoints = 0;
+            int longestPrime = 0;
+
+            for (int column = 0; column < 24; column++)
+            {
+                if (snapshot.ColumnValues[column] <= -2)
+                {
+                    score += column <= 5 ? 50 : 20;
+                    consecutiveOwnedPoints++;
+
+                    if (consecutiveOwnedPoints > longestPrime)
+                    {
+                        longestPrime = consecutiveOwnedPoints;
                     }
                 }
-            }
-
-            if (destinationPieceCount == 1)
-            {
-                score += 150;
-            }
-            else if (destinationPieceCount <= -2)
-            {
-                score += destinationColumn <= 5 ? 120 : 80;
-            }
-            else if (destinationPieceCount == -1)
-            {
-                score += destinationColumn <= 5 ? 160 : 60;   // home-board gates are high priority
-            }
-            else
-            {
-                int blotPenalty = ThreatLevel(destinationColumn) * 25;
-
-                if (sourceColumn >= 18)
+                else
                 {
-                    blotPenalty /= 2;
-                }
-                else if (sourceColumn < 6)
-                {
-                    blotPenalty = (int)(blotPenalty * 1.5f);
+                    consecutiveOwnedPoints = 0;
                 }
 
-                score -= blotPenalty;
-            }
-
-            if (boardValues[sourceColumn] == -2)
-            {
-                int sourceBecomesBlotPenalty = ThreatLevel(sourceColumn) * 20;
-
-                if (sourceColumn >= 18)
+                if (snapshot.ColumnValues[column] == -1)
                 {
-                    sourceBecomesBlotPenalty /= 2;
+                    int threatLevel = CalculateThreatLevel(snapshot, column);
+                    score -= threatLevel * 15;
                 }
-
-                score -= sourceBecomesBlotPenalty;
             }
 
-            float humanWinProgress = HumanProgress();
-            int urgencyBonus = (int)(humanWinProgress * 300);
-
-            if (sourceColumn >= 18)
-            {
-                score += 250 + sourceColumn * 5 + urgencyBonus;
-            }
-            else if (sourceColumn >= 12)
-            {
-                score += 80 + sourceColumn * 3 + urgencyBonus / 2;
-            }
-            else if (sourceColumn >= 6)
-            {
-                score += 40 + sourceColumn * 2;
-            }
-
-            if (sourceColumn >= 6 && destinationColumn <= 5)
-            {
-                score += 80;
-            }
-
-            if (sourceColumn >= 6)
-            {
-                score += (23 - destinationColumn) * 2;
-            }
-            else
-            {
-                score += 23 - destinationColumn;
-            }
+            score += longestPrime * longestPrime * 5;
+            score -= snapshot.AiOutedPieces * 60;
+            score += snapshot.HumanOutedPieces * 40;
 
             return score;
         }
 
-        // Sum of opponent pieces within single-die striking range of a column
-        int ThreatLevel(int column)
+        static int CalculateAiPipCount(BoardSnapshot snapshot)
         {
-            int[] boardValues = game.TableValues;
+            int pipCount = snapshot.AiOutedPieces * 25;
+
+            for (int column = 0; column < 24; column++)
+            {
+                if (snapshot.ColumnValues[column] < 0)
+                {
+                    pipCount += Math.Abs(snapshot.ColumnValues[column]) * (column + 1);
+                }
+            }
+
+            return pipCount;
+        }
+
+        static int CalculateHumanPipCount(BoardSnapshot snapshot)
+        {
+            int pipCount = snapshot.HumanOutedPieces * 25;
+
+            for (int column = 0; column < 24; column++)
+            {
+                if (snapshot.ColumnValues[column] > 0)
+                {
+                    pipCount += snapshot.ColumnValues[column] * (24 - column);
+                }
+            }
+
+            return pipCount;
+        }
+
+        static int CalculateThreatLevel(BoardSnapshot snapshot, int column)
+        {
             int totalThreat = 0;
 
             for (int distance = 1; distance <= 6; distance++)
             {
                 int attackerColumn = column + distance;
 
-                if (attackerColumn < 24 && boardValues[attackerColumn] > 0)
+                if (attackerColumn < 24 && snapshot.ColumnValues[attackerColumn] > 0)
                 {
-                    totalThreat += boardValues[attackerColumn];
+                    totalThreat += snapshot.ColumnValues[attackerColumn];
                 }
             }
 
             return totalThreat;
-        }
-
-        // 0..1: how close the human is to winning, based on pip count
-        float HumanProgress()
-        {
-            int[] boardValues = game.TableValues;
-            int pipsRemaining = 0;
-
-            for (int column = 0; column < 24; column++)
-            {
-                if (boardValues[column] > 0)
-                {
-                    pipsRemaining += boardValues[column] * (24 - column);
-                }
-            }
-
-            pipsRemaining += game.Player1.OutedPieces * 25;
-
-            const int maxPips = 167;
-
-            return 1f - Math.Min(pipsRemaining, maxPips) / (float)maxPips;
-        }
-
-        bool CanBearOff()
-        {
-            if (game.Player2.OutedPieces > 0)
-            {
-                return false;
-            }
-
-            for (int column = 6; column < 24; column++)
-            {
-                if (game.TableValues[column] < 0)
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         void TryNextTurn()

@@ -37,7 +37,7 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
 
             if (ActivePlayer != 2)
             {
-                aiTimer = AiMoveDelayMs; // reset delay so AI doesn't move immediately on its turn
+                aiTimer = AiMoveDelayMs;
                 return;
             }
 
@@ -58,6 +58,7 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
         public void NewGame()
         {
             inner.NewGame();
+            ai.Reset();
             aiTimer = AiMoveDelayMs;
         }
     }
