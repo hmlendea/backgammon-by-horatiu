@@ -151,6 +151,8 @@ namespace BackgammonByHoratiu.GameLogic.AI
                         score -= threatLevel * 8;
                     }
                 }
+
+                score += ScoreHomeBoardDistribution(snapshot);
             }
             else if (phase == GamePhase.BackGame)
             {
@@ -224,6 +226,44 @@ namespace BackgammonByHoratiu.GameLogic.AI
             score += ScoreReturnHitRisk(snapshot);
 
             return score;
+        }
+
+        static int ScoreHomeBoardDistribution(BoardSnapshot snapshot)
+        {
+            int totalPieces = 0;
+            int occupiedPoints = 0;
+
+            for (int column = 0; column <= 5; column++)
+            {
+                int count = -snapshot.ColumnValues[column];
+
+                if (count > 0)
+                {
+                    totalPieces += count;
+                    occupiedPoints++;
+                }
+            }
+
+            if (occupiedPoints == 0)
+            {
+                return 0;
+            }
+
+            int averagePerPoint = totalPieces / occupiedPoints;
+            int penalty = 0;
+
+            for (int column = 0; column <= 5; column++)
+            {
+                int count = -snapshot.ColumnValues[column];
+
+                if (count > averagePerPoint)
+                {
+                    int excess = count - averagePerPoint;
+                    penalty += excess * excess * 6;
+                }
+            }
+
+            return -penalty;
         }
 
         static int ScoreReturnHitRisk(BoardSnapshot snapshot)
