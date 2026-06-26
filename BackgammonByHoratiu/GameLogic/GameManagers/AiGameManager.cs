@@ -20,13 +20,13 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
             ai = new BackgammonAi(this);
         }
 
-        public bool IsRunning    => inner.IsRunning;
+        public bool IsRunning => inner.IsRunning;
         public int[] TableValues => inner.TableValues;
-        public int Dice1         => inner.Dice1;
-        public int Dice2         => inner.Dice2;
-        public int ActivePlayer  => inner.ActivePlayer;
-        public Player Player1    => inner.Player1;
-        public Player Player2    => inner.Player2;
+        public int Dice1 => inner.Dice1;
+        public int Dice2 => inner.Dice2;
+        public int ActivePlayer => inner.ActivePlayer;
+        public Player Player1 => inner.Player1;
+        public Player Player2 => inner.Player2;
 
         public void LoadContent()   => inner.LoadContent();
         public void UnloadContent() => inner.UnloadContent();
@@ -38,22 +38,27 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
             if (ActivePlayer != 2)
             {
                 aiTimer = AiMoveDelayMs;
+
                 return;
             }
 
             aiTimer -= elapsedMs;
-            if (aiTimer > 0) return;
-            aiTimer = AiMoveDelayMs;
 
+            if (aiTimer > 0)
+            {
+                return;
+            }
+
+            aiTimer = AiMoveDelayMs;
             ai.TryPlayMove();
         }
 
-        public void MoveOutedPiece(int distance)  => inner.MoveOutedPiece(distance);
-        public void MovePiece(int pos, int move)   => inner.MovePiece(pos, move);
+        public void MoveOutedPiece(int distance) => inner.MoveOutedPiece(distance);
+        public void MovePiece(int pos, int move) => inner.MovePiece(pos, move);
         public void MovePieceDirect(int from, int to) => inner.MovePieceDirect(from, to);
-        public void BearOffPiece(int from)         => inner.BearOffPiece(from);
-        public void ThrowDice()                    => inner.ThrowDice();
-        public void NextTurn()                     => inner.NextTurn();
+        public void BearOffPiece(int from) => inner.BearOffPiece(from);
+        public void ThrowDice() => inner.ThrowDice();
+        public void NextTurn() => inner.NextTurn();
 
         public void NewGame()
         {

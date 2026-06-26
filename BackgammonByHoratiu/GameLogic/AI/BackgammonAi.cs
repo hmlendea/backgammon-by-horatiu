@@ -128,40 +128,81 @@ namespace BackgammonByHoratiu.GameLogic.AI
             int score = 0;
             int aiPipCount = CalculateAiPipCount(snapshot);
             int humanPipCount = CalculateHumanPipCount(snapshot);
-            score += (humanPipCount - aiPipCount) * 5;
+            int pipLead = humanPipCount - aiPipCount;
 
-            int consecutiveOwnedPoints = 0;
-            int longestPrime = 0;
+            GamePhase phase = DetermineGamePhase(aiPipCount, humanPipCount);
 
-            for (int column = 0; column < 24; column++)
+            if (phase == GamePhase.Racing)
             {
-                if (snapshot.ColumnValues[column] <= -2)
-                {
-                    score += column <= 5 ? 50 : 20;
-                    consecutiveOwnedPoints++;
+                // In a race, pip lead is everything; structure rewards are muted
+                score += pipLead * 10;
+                score -= snapshot.AiOutedPieces * 80;
+                score += snapshot.HumanOutedPieces * 30;
 
-                    if (consecutiveOwnedPoints > longestPrime)
+                for (int column = 0; column < 24; column++)
+                {
+                    if (snapshot.ColumnValues[column] <= -2)
                     {
-                        longestPrime = consecutiveOwnedPoints;
+                        score += column <= 5 ? 20 : 5;
+                    }
+
+                    if (snapshot.ColumnValues[column] == -1)
+                    {
+                        int threatLevel = CalculateThreatLevel(snapshot, column);
+                        score -= threatLevel * 8;
                     }
                 }
-                else
+            }
+            else
+            {
+                // Blocking phase: build primes, hit blots, keep the human trapped
+                score += pipLead * 3;
+                score -= snapshot.AiOutedPieces * 60;
+                score += snapshot.HumanOutedPieces * 60;
+
+                int consecutiveOwnedPoints = 0;
+                int longestPrime = 0;
+
+                for (int column = 0; column < 24; column++)
                 {
-                    consecutiveOwnedPoints = 0;
+                    if (snapshot.ColumnValues[column] <= -2)
+                    {
+                        score += column <= 5 ? 60 : 30;
+                        consecutiveOwnedPoints++;
+
+                        if (consecutiveOwnedPoints > longestPrime)
+                        {
+                            longestPrime = consecutiveOwnedPoints;
+                        }
+                    }
+                    else
+                    {
+                        consecutiveOwnedPoints = 0;
+                    }
+
+                    if (snapshot.ColumnValues[column] == -1)
+                    {
+                        int threatLevel = CalculateThreatLevel(snapshot, column);
+                        score -= threatLevel * 20;
+                    }
                 }
 
-                if (snapshot.ColumnValues[column] == -1)
-                {
-                    int threatLevel = CalculateThreatLevel(snapshot, column);
-                    score -= threatLevel * 15;
-                }
+                score += longestPrime * longestPrime * 8;
             }
 
-            score += longestPrime * longestPrime * 5;
-            score -= snapshot.AiOutedPieces * 60;
-            score += snapshot.HumanOutedPieces * 40;
-
             return score;
+        }
+
+        static GamePhase DetermineGamePhase(int aiPipCount, int humanPipCount)
+        {
+            int pipDifference = aiPipCount - humanPipCount;
+
+            if (pipDifference < -15)
+            {
+                return GamePhase.Racing;
+            }
+
+            return GamePhase.Blocking;
         }
 
         static int CalculateAiPipCount(BoardSnapshot snapshot)
