@@ -22,7 +22,6 @@ namespace BackgammonByHoratiu.Gui.Controls
         static readonly Color ColorPlayer1      = Color.White;
         static readonly Color ColorPlayer2      = new(139, 69, 19);
         static readonly Color ColorColumnBorder = Color.Black;
-        static readonly Color ColorDiceBorder   = Color.Black;
 
         readonly IGameManager game;
 
@@ -31,6 +30,8 @@ namespace BackgammonByHoratiu.Gui.Controls
         Texture2D triangleUpTexture;
         Texture2D brownPieceTexture;
         Texture2D whitePieceTexture;
+        Texture2D brownDieTexture;
+        Texture2D whiteDieTexture;
         SpriteFont boardFont;
 
         // Precomputed hit-test rectangles mirroring the original MainWindow layout
@@ -61,6 +62,8 @@ namespace BackgammonByHoratiu.Gui.Controls
             triangleUpTexture   = CreateTriangleTexture(gd, GameDefines.PieceSize, GameDefines.ColumnHeight, pointsDown: false);
             brownPieceTexture   = NuciContentManager.Instance.LoadTexture2D("Table/BrownPiece");
             whitePieceTexture   = NuciContentManager.Instance.LoadTexture2D("Table/WhitePiece");
+            brownDieTexture     = NuciContentManager.Instance.LoadTexture2D("Table/BrownDie");
+            whiteDieTexture     = NuciContentManager.Instance.LoadTexture2D("Table/WhiteDie");
 
             boardFont = NuciContentManager.Instance.LoadSpriteFont("Fonts/InfoBarFont");
 
@@ -205,13 +208,10 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         void DrawDice(SpriteBatch spriteBatch)
         {
-            Color diceColor = game.ActivePlayer == 1 ? ColorPlayer1 : ColorPlayer2;
+            Texture2D dieTex = game.ActivePlayer == 1 ? whiteDieTexture : brownDieTexture;
 
-            spriteBatch.Draw(pixelTexture, dice1Rect, diceColor);
-            spriteBatch.Draw(pixelTexture, dice2Rect, diceColor);
-
-            DrawBorder(spriteBatch, dice1Rect, ColorDiceBorder, 2);
-            DrawBorder(spriteBatch, dice2Rect, ColorDiceBorder, 2);
+            spriteBatch.Draw(dieTex, dice1Rect, Color.White);
+            spriteBatch.Draw(dieTex, dice2Rect, Color.White);
 
             DrawCenteredText(spriteBatch, game.Dice1.ToString(), dice1Rect, Color.Black);
             DrawCenteredText(spriteBatch, game.Dice2.ToString(), dice2Rect, Color.Black);
