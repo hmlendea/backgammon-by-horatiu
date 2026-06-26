@@ -33,7 +33,7 @@ namespace BackgammonByHoratiu.Gui.Screens
 
         protected override void DoLoadContent()
         {
-            game = new GameManager();
+            game = new AiGameManager();
             game.LoadContent();
 
             gameBoard = new GuiGameBoard(game)
@@ -83,6 +83,7 @@ namespace BackgammonByHoratiu.Gui.Screens
         {
             if (e.Key == Keys.N || e.Key == Keys.F2)
             {
+                gameBoard.CancelAnimation();
                 game.NewGame();
                 dragBeginCol = -1;
             }
@@ -93,6 +94,11 @@ namespace BackgammonByHoratiu.Gui.Screens
         void OnMouseButtonReleased(object sender, MouseButtonEventArgs e)
         {
             if (e.Button != MouseButton.Left)
+            {
+                return;
+            }
+
+            if (gameBoard.IsAnimating)
             {
                 return;
             }
@@ -119,16 +125,22 @@ namespace BackgammonByHoratiu.Gui.Screens
 
             if (col < 0 && gameBoard.IsOnHouse(x, y) && dragBeginCol >= 0)
             {
-                try
-                {
-                    game.BearOffPiece(dragBeginCol);
-                }
-                catch (PieceMoveException ex)
-                {
-                    Console.Error.WriteLine($"[Backgammon] {ex.Message}");
-                }
-
+                int savedFrom = dragBeginCol;
                 dragBeginCol = -1;
+                int toHouse = game.ActivePlayer == 1 ? GuiGameBoard.ColHouseP1 : GuiGameBoard.ColHouseP2;
+
+                gameBoard.BeginPieceMoveAnimation(savedFrom, toHouse, game.ActivePlayer, () =>
+                {
+                    try
+                    {
+                        game.BearOffPiece(savedFrom);
+                    }
+                    catch (PieceMoveException ex)
+                    {
+                        Console.Error.WriteLine($"[Backgammon] {ex.Message}");
+                    }
+                });
+
                 return;
             }
 
@@ -161,17 +173,22 @@ namespace BackgammonByHoratiu.Gui.Screens
             if (dragBeginCol == BarBrown || dragBeginCol == BarWhite)
             {
                 int distance = dragBeginCol == BarBrown ? 24 - col : col + 1;
-
-                try
-                {
-                    game.MoveOutedPiece(distance);
-                }
-                catch (PieceMoveException ex)
-                {
-                    Console.Error.WriteLine($"[Backgammon] {ex.Message}");
-                }
-
+                int fromBar = dragBeginCol == BarBrown ? GuiGameBoard.ColBarP2 : GuiGameBoard.ColBarP1;
+                int savedDist = distance;
                 dragBeginCol = -1;
+
+                gameBoard.BeginPieceMoveAnimation(fromBar, col, game.ActivePlayer, () =>
+                {
+                    try
+                    {
+                        game.MoveOutedPiece(savedDist);
+                    }
+                    catch (PieceMoveException ex)
+                    {
+                        Console.Error.WriteLine($"[Backgammon] {ex.Message}");
+                    }
+                });
+
                 return;
             }
 
@@ -188,16 +205,20 @@ namespace BackgammonByHoratiu.Gui.Screens
             }
             else
             {
-                try
-                {
-                    game.MovePieceDirect(dragBeginCol, col);
-                }
-                catch (PieceMoveException ex)
-                {
-                    Console.Error.WriteLine($"[Backgammon] {ex.Message}");
-                }
-
+                int savedFrom = dragBeginCol;
                 dragBeginCol = -1;
+
+                gameBoard.BeginPieceMoveAnimation(savedFrom, col, game.ActivePlayer, () =>
+                {
+                    try
+                    {
+                        game.MovePieceDirect(savedFrom, col);
+                    }
+                    catch (PieceMoveException ex)
+                    {
+                        Console.Error.WriteLine($"[Backgammon] {ex.Message}");
+                    }
+                });
             }
         }
     }
