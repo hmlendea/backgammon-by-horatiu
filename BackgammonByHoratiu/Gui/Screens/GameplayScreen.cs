@@ -179,6 +179,12 @@ namespace BackgammonByHoratiu.Gui.Screens
                 if (game.TableValues[dragBeginCol] > 0)
                 {
                     // Player 1 moves left (increasing indices)
+                    if (game.Player1.MovesLeft.Count == 0)
+                    {
+                        dragBeginCol = -1;
+                        return;
+                    }
+
                     int move = dragBeginCol == destCol
                         ? game.Player1.MovesLeft[0]
                         : destCol - dragBeginCol;
@@ -188,6 +194,12 @@ namespace BackgammonByHoratiu.Gui.Screens
                 else
                 {
                     // Player 2 moves right→left (decreasing indices)
+                    if (game.Player2.MovesLeft.Count == 0)
+                    {
+                        dragBeginCol = -1;
+                        return;
+                    }
+
                     int move = dragBeginCol == destCol
                         ? game.Player2.MovesLeft[0]
                         : dragBeginCol - destCol;
