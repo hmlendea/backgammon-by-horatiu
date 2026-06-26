@@ -52,7 +52,8 @@ namespace BackgammonByHoratiu.GameLogic.AI
         void PlanTurn()
         {
             BoardSnapshot currentSnapshot = new(game);
-            MoveSequenceResult bestResult = FindBestMoveSequence(currentSnapshot);
+            Dictionary<string, MoveSequenceResult> transpositionTable = [];
+            MoveSequenceResult bestResult = FindBestMoveSequence(currentSnapshot, transpositionTable);
 
             foreach (MoveAction action in bestResult.Actions)
             {
@@ -60,7 +61,7 @@ namespace BackgammonByHoratiu.GameLogic.AI
             }
         }
 
-        MoveSequenceResult FindBestMoveSequence(BoardSnapshot snapshot)
+        MoveSequenceResult FindBestMoveSequence(BoardSnapshot snapshot, Dictionary<string, MoveSequenceResult> transpositionTable)
         {
             List<MoveAction> legalMoves = snapshot.GetLegalMoves();
 
@@ -69,13 +70,20 @@ namespace BackgammonByHoratiu.GameLogic.AI
                 return new MoveSequenceResult(EvaluatePosition(snapshot), []);
             }
 
+            string stateKey = ComputeStateKey(snapshot);
+
+            if (transpositionTable.TryGetValue(stateKey, out MoveSequenceResult cached))
+            {
+                return cached;
+            }
+
             int bestScore = int.MinValue;
             List<MoveAction> bestSequence = [];
 
             foreach (MoveAction action in legalMoves)
             {
                 BoardSnapshot nextSnapshot = snapshot.AfterMove(action);
-                MoveSequenceResult continuationResult = FindBestMoveSequence(nextSnapshot);
+                MoveSequenceResult continuationResult = FindBestMoveSequence(nextSnapshot, transpositionTable);
 
                 if (continuationResult.Score > bestScore)
                 {
@@ -84,7 +92,10 @@ namespace BackgammonByHoratiu.GameLogic.AI
                 }
             }
 
-            return new MoveSequenceResult(bestScore, bestSequence);
+            MoveSequenceResult result = new(bestScore, bestSequence);
+            transpositionTable[stateKey] = result;
+
+            return result;
         }
 
         static List<MoveAction> PrependAction(MoveAction first, List<MoveAction> rest)
@@ -94,6 +105,29 @@ namespace BackgammonByHoratiu.GameLogic.AI
             sequence.AddRange(rest);
 
             return sequence;
+        }
+
+        static string ComputeStateKey(BoardSnapshot snapshot)
+        {
+            char[] key = new char[30];
+
+            for (int i = 0; i < 24; i++)
+            {
+                key[i] = (char)(snapshot.ColumnValues[i] + 15);
+            }
+
+            List<int> sortedDice = [.. snapshot.MovesLeft];
+            sortedDice.Sort();
+
+            for (int i = 0; i < 4; i++)
+            {
+                key[24 + i] = i < sortedDice.Count ? (char)sortedDice[i] : (char)0;
+            }
+
+            key[28] = (char)snapshot.AiOutedPieces;
+            key[29] = (char)snapshot.HumanOutedPieces;
+
+            return new string(key);
         }
 
         void ExecuteNextPlannedMove()
