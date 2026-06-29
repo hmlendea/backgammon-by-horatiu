@@ -4,6 +4,12 @@ namespace BackgammonByHoratiu.Settings
     {
         public const int PieceSize = 48;
 
+        // Special column identifiers used by both the animation system and AI dispatch
+        public const int ColBarP1 = 100;
+        public const int ColBarP2 = 101;
+        public const int ColHouseP1 = 200;
+        public const int ColHouseP2 = 201;
+
         public const int Padding = 8;
 
         // Column triangles are 5 pieces tall
