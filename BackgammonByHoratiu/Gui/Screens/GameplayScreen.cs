@@ -59,7 +59,9 @@ namespace BackgammonByHoratiu.Gui.Screens
         protected override void DoUpdate(GameTime gameTime)
         {
             game.Update(gameTime.ElapsedGameTime.TotalMilliseconds);
-            gameBoard.SelectedColumn = dragBeginCol;
+            gameBoard.SelectedColumn = dragBeginCol == BarWhite ? GameDefines.ColBarP1
+                                     : dragBeginCol == BarBrown ? GameDefines.ColBarP2
+                                     : dragBeginCol;
 
             if (!gameBoard.IsAnimating && dragBeginCol != -1)
             {

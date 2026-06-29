@@ -178,22 +178,34 @@ namespace BackgammonByHoratiu.Gui.Controls
             // Dice
             DrawDice(spriteBatch);
 
-            // Highlight selected column
-            if (SelectedColumn >= 0)
+            // Highlight selected column / bar
+            if (SelectedColumn >= 0 && SelectedColumn < 24)
             {
-                Rectangle sel = columnRects[SelectedColumn];
-                DrawBorder(spriteBatch, sel, Color.Yellow, 3);
+                DrawBorder(spriteBatch, columnRects[SelectedColumn], Color.Yellow, 3);
             }
-
+            else if (SelectedColumn == GameDefines.ColBarP1)
+            {
+                DrawBorder(spriteBatch, outColumnTop, Color.Yellow, 3);
+            }
+            else if (SelectedColumn == GameDefines.ColBarP2)
+            {
+                DrawBorder(spriteBatch, outColumnBottom, Color.Yellow, 3);
+            }
             // Highlight valid destination columns in cyan
             foreach (int dest in ValidDestinations)
             {
                 if (dest >= 0 && dest < 24)
+                {
                     DrawBorder(spriteBatch, columnRects[dest], Color.Cyan, 3);
+                }
                 else if (dest == GameDefines.ColHouseP1)
+                {
                     DrawBorder(spriteBatch, houseBottom, Color.Cyan, 3);
+                }
                 else if (dest == GameDefines.ColHouseP2)
+                {
                     DrawBorder(spriteBatch, houseTop, Color.Cyan, 3);
+                }
             }
         }
 
