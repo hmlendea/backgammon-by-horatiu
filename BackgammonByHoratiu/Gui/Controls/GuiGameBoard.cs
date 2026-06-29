@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -51,6 +52,8 @@ namespace BackgammonByHoratiu.Gui.Controls
         Rectangle dice1Rect, dice2Rect;
 
         public int SelectedColumn { get; set; } = -1;
+
+        public IReadOnlyList<int> ValidDestinations { get; set; } = Array.Empty<int>();
 
         public bool IsOnDice(int x, int y) => dice1Rect.Contains(x, y) || dice2Rect.Contains(x, y);
 
@@ -175,6 +178,17 @@ namespace BackgammonByHoratiu.Gui.Controls
             {
                 Rectangle sel = columnRects[SelectedColumn];
                 DrawBorder(spriteBatch, sel, Color.Yellow, 3);
+            }
+
+            // Highlight valid destination columns in cyan
+            foreach (int dest in ValidDestinations)
+            {
+                if (dest >= 0 && dest < 24)
+                    DrawBorder(spriteBatch, columnRects[dest], Color.Cyan, 3);
+                else if (dest == GameDefines.ColHouseP1)
+                    DrawBorder(spriteBatch, houseBottom, Color.Cyan, 3);
+                else if (dest == GameDefines.ColHouseP2)
+                    DrawBorder(spriteBatch, houseTop, Color.Cyan, 3);
             }
         }
 

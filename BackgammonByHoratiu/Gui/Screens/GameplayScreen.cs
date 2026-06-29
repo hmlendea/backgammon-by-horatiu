@@ -60,6 +60,18 @@ namespace BackgammonByHoratiu.Gui.Screens
         {
             game.Update(gameTime.ElapsedGameTime.TotalMilliseconds);
             gameBoard.SelectedColumn = dragBeginCol;
+
+            if (!gameBoard.IsAnimating && dragBeginCol != -1)
+            {
+                int mappedFrom = dragBeginCol == BarWhite ? GameDefines.ColBarP1
+                               : dragBeginCol == BarBrown ? GameDefines.ColBarP2
+                               : dragBeginCol;
+                gameBoard.ValidDestinations = game.GetValidDestinations(mappedFrom);
+            }
+            else
+            {
+                gameBoard.ValidDestinations = Array.Empty<int>();
+            }
         }
 
         protected override void DoDraw(SpriteBatch spriteBatch) { }

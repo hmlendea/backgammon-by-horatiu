@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 using BackgammonByHoratiu.Entities;
 using BackgammonByHoratiu.GameLogic.AI;
@@ -133,6 +134,8 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
                 inner.BearOffPiece(from);
             }
         }
+
+        public IReadOnlyList<int> GetValidDestinations(int fromCol) => inner.GetValidDestinations(fromCol);
 
         public void ThrowDice() => inner.ThrowDice();
         public void NextTurn() => inner.NextTurn();

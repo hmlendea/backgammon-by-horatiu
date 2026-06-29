@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+
+using BackgammonByHoratiu.Settings;
 
 namespace BackgammonByHoratiu.Entities
 {
@@ -850,6 +853,127 @@ namespace BackgammonByHoratiu.Entities
             }
 
             return ActivePlayer == 1 ? die1 - 1 : 24 - die1;
+        }
+
+        /// <summary>
+        /// Returns the valid destination column indices (0-23) for the piece at fromCol.
+        /// fromCol may also be GameDefines.ColBarP1 / ColBarP2 for bar re-entry.
+        /// GameDefines.ColHouseP1 / ColHouseP2 are appended when bear-off is possible.
+        /// </summary>
+        public List<int> GetValidDestinations(int fromCol)
+        {
+            var result = new List<int>();
+            int sign = ActivePlayer == 1 ? 1 : -1;
+            Player movingPlayer = sign > 0 ? Player1 : Player2;
+
+            // --- Bar re-entry ---
+            if (fromCol == GameDefines.ColBarP1 || fromCol == GameDefines.ColBarP2)
+            {
+                if (fromCol == GameDefines.ColBarP1 && sign < 0) return result;
+                if (fromCol == GameDefines.ColBarP2 && sign > 0) return result;
+
+                foreach (int die in movingPlayer.MovesLeft)
+                {
+                    int entryCol = sign > 0 ? die - 1 : 24 - die;
+                    if (entryCol < 0 || entryCol >= 24) continue;
+                    if (result.Contains(entryCol)) continue;
+                    if (sign > 0 && TableValues[entryCol] >= -1) result.Add(entryCol);
+                    else if (sign < 0 && TableValues[entryCol] <= 1) result.Add(entryCol);
+                }
+
+                // Two-die combos from bar
+                for (int i = 0; i < movingPlayer.MovesLeft.Count; i++)
+                {
+                    int die1 = movingPlayer.MovesLeft[i];
+                    int intermediate = sign > 0 ? die1 - 1 : 24 - die1;
+                    if (intermediate < 0 || intermediate >= 24) continue;
+                    bool blocked = sign > 0 ? TableValues[intermediate] < -1 : TableValues[intermediate] > 1;
+                    if (blocked) continue;
+
+                    for (int j = 0; j < movingPlayer.MovesLeft.Count; j++)
+                    {
+                        if (i == j) continue;
+                        int die2 = movingPlayer.MovesLeft[j];
+                        int finalCol = intermediate + sign * die2;
+                        if (finalCol < 0 || finalCol >= 24) continue;
+                        if (result.Contains(finalCol)) continue;
+                        if (IsStepValid(intermediate, die2, sign)) result.Add(finalCol);
+                    }
+                }
+
+                return result;
+            }
+
+            // --- Regular column ---
+            if (fromCol < 0 || fromCol >= 24) return result;
+            if (sign > 0 && TableValues[fromCol] <= 0) return result;
+            if (sign < 0 && TableValues[fromCol] >= 0) return result;
+            if (movingPlayer.OutedPieces > 0) return result;
+
+            // Single-die and two-die board moves
+            for (int to = 0; to < 24; to++)
+            {
+                if (to == fromCol) continue;
+                if (CanMovePieceDirect(fromCol, to, sign, movingPlayer))
+                    result.Add(to);
+            }
+
+            // Bear off
+            if (CanBearOff(sign))
+            {
+                int homeStart = sign > 0 ? 18 : 0;
+                int homeEnd = sign > 0 ? 23 : 5;
+                if (fromCol >= homeStart && fromCol <= homeEnd)
+                {
+                    int distance = sign > 0 ? 24 - fromCol : fromCol + 1;
+                    bool canBearOffHere = movingPlayer.MovesLeft.Contains(distance);
+
+                    if (!canBearOffHere)
+                    {
+                        foreach (int die in movingPlayer.MovesLeft)
+                        {
+                            if (die > distance && IsFarthestPiece(fromCol, sign))
+                            {
+                                canBearOffHere = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!canBearOffHere)
+                    {
+                        (int d1, _) = FindTwoDiceComboForBearOff(fromCol, distance, sign, movingPlayer);
+                        canBearOffHere = d1 != -1;
+                    }
+
+                    if (canBearOffHere)
+                        result.Add(sign > 0 ? GameDefines.ColHouseP1 : GameDefines.ColHouseP2);
+                }
+            }
+
+            return result;
+        }
+
+        bool CanMovePieceDirect(int from, int to, int sign, Player movingPlayer)
+        {
+            if (sign < 0 && from < 12 && to >= 12) return false;
+            if (sign > 0 && from >= 12 && to < 12) return false;
+
+            bool sameHalf = (from < 12 && to < 12) || (from >= 12 && to >= 12);
+            if (sameHalf)
+            {
+                if (sign < 0 && to > from) return false;
+                if (sign > 0 && to < from) return false;
+            }
+
+            if (sign > 0 && TableValues[to] <= -2) return false;
+            if (sign < 0 && TableValues[to] >= 2) return false;
+
+            int distance = sign > 0 ? to - from : from - to;
+            if (movingPlayer.MovesLeft.Contains(distance)) return true;
+
+            (int die1, _) = FindTwoDiceCombo(from, distance, sign, movingPlayer);
+            return die1 != -1;
         }
 
         public void ThrowDice()

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 using BackgammonByHoratiu.Entities;
 
 namespace BackgammonByHoratiu.GameLogic.GameManagers
@@ -45,6 +47,8 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
         public int FindMovePieceDirectIntermediate(int from, int to) => table.FindMovePieceDirectIntermediate(from, to);
 
         public int FindMoveOutedPieceIntermediate(int distance) => table.FindMoveOutedPieceIntermediate(distance);
+
+        public IReadOnlyList<int> GetValidDestinations(int fromCol) => table.GetValidDestinations(fromCol);
 
         public void NewGame()
         {
