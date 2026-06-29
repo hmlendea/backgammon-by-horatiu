@@ -23,6 +23,13 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
         bool isWaitingForAnimation;
 
         /// <summary>
+        /// When set, the AI will also pause while this returns true.
+        /// Use this to block the AI during outing animations that the board
+        /// manages internally (outside the normal AnimateMoveRequested flow).
+        /// </summary>
+        public Func<bool> IsExternallyAnimating { get; set; }
+
+        /// <summary>
         /// Raised when the AI wants to move a piece and animation is wired up.
         /// Parameters: fromCol, toCol, activePlayer (always 2), onComplete callback.
         /// The subscriber must call onComplete once the visual animation finishes.
@@ -55,7 +62,7 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
                 return;
             }
 
-            if (isWaitingForAnimation)
+            if (isWaitingForAnimation || (IsExternallyAnimating?.Invoke() ?? false))
             {
                 return;
             }

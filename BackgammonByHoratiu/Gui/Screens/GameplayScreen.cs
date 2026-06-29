@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -44,6 +45,8 @@ namespace BackgammonByHoratiu.Gui.Screens
 
             aiManager.AnimateMoveRequested += (fromCol, toCol, player, onComplete) =>
                 gameBoard.BeginPieceMoveAnimation(fromCol, toCol, player, onComplete);
+
+            aiManager.IsExternallyAnimating = () => gameBoard.IsAnimating;
 
             GuiManager.Instance.RegisterControls(gameBoard);
             RegisterEvents();
@@ -144,8 +147,15 @@ namespace BackgammonByHoratiu.Gui.Screens
             if (col < 0 && gameBoard.IsOnHouse(x, y) && dragBeginCol >= 0)
             {
                 int savedFrom = dragBeginCol;
-                dragBeginCol = -1;
                 int toHouse = game.ActivePlayer == 1 ? GameDefines.ColHouseP1 : GameDefines.ColHouseP2;
+
+                if (!game.GetValidDestinations(savedFrom).Contains(toHouse))
+                {
+                    dragBeginCol = -1;
+                    return;
+                }
+
+                dragBeginCol = -1;
 
                 gameBoard.BeginPieceMoveAnimation(savedFrom, toHouse, game.ActivePlayer, () =>
                 {
@@ -192,6 +202,13 @@ namespace BackgammonByHoratiu.Gui.Screens
             {
                 int distance = dragBeginCol == BarBrown ? 24 - col : col + 1;
                 int fromBar = dragBeginCol == BarBrown ? GameDefines.ColBarP2 : GameDefines.ColBarP1;
+
+                if (!game.GetValidDestinations(fromBar).Contains(col))
+                {
+                    dragBeginCol = -1;
+                    return;
+                }
+
                 int savedDist = distance;
                 dragBeginCol = -1;
 
@@ -246,6 +263,13 @@ namespace BackgammonByHoratiu.Gui.Screens
             else
             {
                 int savedFrom = dragBeginCol;
+
+                if (!game.GetValidDestinations(savedFrom).Contains(col))
+                {
+                    dragBeginCol = -1;
+                    return;
+                }
+
                 dragBeginCol = -1;
 
                 int directIntermediate = game.FindMovePieceDirectIntermediate(savedFrom, col);

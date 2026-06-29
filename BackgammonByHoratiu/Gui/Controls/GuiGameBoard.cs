@@ -488,25 +488,33 @@ namespace BackgammonByHoratiu.Gui.Controls
             {
                 int sign = activePlayer == 1 ? 1 : -1;
                 int existing = game.TableValues[toCol] * sign > 0
-                    ? Math.Min(Math.Abs(game.TableValues[toCol]), piecesPerCol - 1)
+                    ? Math.Abs(game.TableValues[toCol])
                     : 0;
+                int slot = existing >= piecesPerCol ? piecesPerCol - 1 : existing;
+
                 if (toCol < 12)
-                    return new Point2D(columnRects[toCol].Left, columnRects[toCol].Top + existing * ps);
+                {
+                    return new Point2D(columnRects[toCol].Left, columnRects[toCol].Top + slot * ps);
+                }
                 else
-                    return new Point2D(columnRects[toCol].Left, columnRects[toCol].Bottom - (existing + 1) * ps);
+                {
+                    return new Point2D(columnRects[toCol].Left, columnRects[toCol].Bottom - (slot + 1) * ps);
+                }
             }
 
             if (toCol == GameDefines.ColHouseP1)
             {
                 int cx = houseBottom.Left + (houseBottom.Width - ps) / 2;
-                int count = Math.Min(game.Player1.CompletedPieces, piecesPerCol);
-                return new Point2D(cx, houseBottom.Bottom - (count + 1) * ps);
+                int existing = game.Player1.CompletedPieces;
+                int slot = existing >= piecesPerCol ? 0 : existing;
+                return new Point2D(cx, houseBottom.Bottom - (slot + 1) * ps);
             }
 
             // ColHouseP2
             int cxH = houseTop.Left + (houseTop.Width - ps) / 2;
-            int countH = Math.Min(game.Player2.CompletedPieces, piecesPerCol);
-            return new Point2D(cxH, houseTop.Top + countH * ps);
+            int existingH = game.Player2.CompletedPieces;
+            int slotH = existingH >= piecesPerCol ? piecesPerCol - 1 : existingH;
+            return new Point2D(cxH, houseTop.Top + slotH * ps);
         }
 
         void SetPendingOuting(int toCol, int activePlayer)
