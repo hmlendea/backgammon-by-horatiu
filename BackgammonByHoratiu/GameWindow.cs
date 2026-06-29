@@ -3,8 +3,10 @@ using Microsoft.Xna.Framework.Graphics;
 
 using NuciXNA.DataAccess.Content;
 using NuciXNA.Graphics;
+using NuciXNA.Gui;
 using NuciXNA.Gui.Screens;
 using NuciXNA.Input;
+using NuciXNA.Primitives;
 
 using BackgammonByHoratiu.Gui;
 using BackgammonByHoratiu.Gui.Screens;
@@ -18,6 +20,7 @@ namespace BackgammonByHoratiu
         SpriteBatch spriteBatch;
 
         readonly FpsIndicator fpsIndicator;
+        readonly Cursor cursor;
 
         public GameWindow()
         {
@@ -28,9 +31,14 @@ namespace BackgammonByHoratiu
                 PreferredBackBufferHeight = GameDefines.WindowHeight
             };
             Content.RootDirectory = "Content";
-            IsMouseVisible = true;
+            IsMouseVisible = false;
 
             fpsIndicator = new FpsIndicator();
+            cursor = new Cursor
+            {
+                SpriteSize = new Size2D(442, 409),
+                Scale = new Scale2D(28.0f / 409.0f)
+            };
         }
 
         protected override void LoadContent()
@@ -48,12 +56,14 @@ namespace BackgammonByHoratiu
             ScreenManager.Instance.LoadContent();
 
             fpsIndicator.LoadContent();
+            cursor.LoadContent();
         }
 
         protected override void UnloadContent()
         {
             ScreenManager.Instance.UnloadContent();
             FpsIndicator.UnloadContent();
+            cursor.UnloadContent();
         }
 
         protected override void Update(GameTime gameTime)
@@ -71,6 +81,7 @@ namespace BackgammonByHoratiu
             }
 
             fpsIndicator.Update(gameTime);
+            cursor.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -84,6 +95,7 @@ namespace BackgammonByHoratiu
             ScreenManager.Instance.Draw(spriteBatch);
 
             fpsIndicator.Draw(spriteBatch);
+            cursor.Draw(spriteBatch);
 
             spriteBatch.End();
 
