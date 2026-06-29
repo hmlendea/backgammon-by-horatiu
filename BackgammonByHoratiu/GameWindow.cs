@@ -36,6 +36,7 @@ namespace BackgammonByHoratiu
             fpsIndicator = new FpsIndicator();
             cursor = new Cursor
             {
+                ContentFile = "Cursors/pointer",
                 SpriteSize = new Size2D(442, 409),
                 Scale = new Scale2D(28.0f / 409.0f)
             };
