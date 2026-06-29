@@ -239,7 +239,8 @@ namespace BackgammonByHoratiu.Gui.Controls
                     else
                         labelRect = new Rectangle(columnRects[i].Left, columnRects[i].Bottom - pieceSize, pieceSize, pieceSize);
 
-                    DrawCenteredText(spriteBatch, $"+{count - piecesPerCol}", labelRect, Color.Black);
+                    Color overflowColor = pieceColor == ColorPlayer2 ? Color.White : Color.Black;
+                    DrawCenteredText(spriteBatch, $"+{count - piecesPerCol}", labelRect, overflowColor);
                 }
             }
 
@@ -271,7 +272,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             {
                 int cx = outColumnBottom.Left + (outColumnBottom.Width - pieceSize) / 2;
                 DrawCenteredText(spriteBatch, $"+{piecesP1 - piecesPerCol}",
-                    new Rectangle(cx, outColumnBottom.Bottom - pieceSize, pieceSize, pieceSize), Color.White);
+                    new Rectangle(cx, outColumnBottom.Bottom - pieceSize, pieceSize, pieceSize), Color.Black);
             }
         }
 
@@ -321,7 +322,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             {
                 int cx = houseBottom.Left + (houseBottom.Width - pieceSize) / 2;
                 DrawCenteredText(spriteBatch, $"+{completedP1 - piecesPerCol}",
-                    new Rectangle(cx, houseBottom.Bottom - pieceSize, pieceSize, pieceSize), Color.White);
+                    new Rectangle(cx, houseBottom.Bottom - pieceSize, pieceSize, pieceSize), Color.Black);
             }
         }
 
