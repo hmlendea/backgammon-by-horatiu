@@ -54,6 +54,8 @@ namespace BackgammonByHoratiu.Gui.Controls
         Rectangle houseTop, houseBottom;
         Rectangle dice1Rect, dice2Rect;
 
+        float AnimationSpeed = 12f;
+
         public int SelectedColumn { get; set; } = -1;
 
         public IReadOnlyList<int> ValidDestinations { get; set; } = Array.Empty<int>();
@@ -85,16 +87,16 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             BuildLayoutRectangles();
 
-            animSpriteWhite = new TextureSprite
+            animSpriteWhite = new()
             {
                 ContentFile = "Table/WhitePiece",
-                MovementEffect = new MovementEffect { Speed = 8f },
+                MovementEffect = new MovementEffect { Speed = AnimationSpeed },
                 IsActive = true
             };
-            animSpriteBrown = new TextureSprite
+            animSpriteBrown = new()
             {
                 ContentFile = "Table/BrownPiece",
-                MovementEffect = new MovementEffect { Speed = 8f },
+                MovementEffect = new MovementEffect { Speed = AnimationSpeed },
                 IsActive = true
             };
             animSpriteWhite.LoadContent();
