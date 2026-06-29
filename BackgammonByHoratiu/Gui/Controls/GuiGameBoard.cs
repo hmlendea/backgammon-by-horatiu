@@ -642,7 +642,7 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         static Texture2D CreateTriangleTexture(GraphicsDevice gd, int width, int height, bool pointsDown)
         {
-            Texture2D tex = new(gd, width, height);
+            Texture2D texture = new(gd, width, height);
             Color[] data = new Color[width * height];
 
             for (int y = 0; y < height; y++)
@@ -653,15 +653,24 @@ namespace BackgammonByHoratiu.Gui.Controls
                     ? (float)y / height          // 0..1 as we go down
                     : (float)(height - y) / height; // 0..1 as we go up
 
-                float leftX = (width / 2f) * t;
+                float leftX = width / 2f * t;
                 float rightX = width - leftX;
 
                 for (int x = 0; x < width; x++)
-                    data[y * width + x] = (x >= leftX && x < rightX) ? Color.White : Color.Transparent;
+                {
+                    // Compute signed distance from each edge (positive = inside)
+                    float distLeft  = x + 0.5f - leftX;
+                    float distRight = rightX - (x + 0.5f);
+                    float coverage  = Math.Clamp(Math.Min(distLeft, distRight), 0f, 1f);
+
+                    data[y * width + x] = coverage <= 0f
+                        ? Color.Transparent
+                        : new Color(coverage, coverage, coverage, coverage);
+                }
             }
 
-            tex.SetData(data);
-            return tex;
+            texture.SetData(data);
+            return texture;
         }
 
     }
