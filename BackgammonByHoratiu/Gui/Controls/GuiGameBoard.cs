@@ -32,6 +32,9 @@ namespace BackgammonByHoratiu.Gui.Controls
         TextureSprite animSpriteBrown;
         bool isAnimating;
         int animFromCol;
+        int animDestCol = -1;
+        int pendingOutingCol = -1;
+        int pendingOutingPlayer = -1;
         Action pendingMoveAction;
 
         public bool IsAnimating => isAnimating;
@@ -395,7 +398,9 @@ namespace BackgammonByHoratiu.Gui.Controls
             int piecesPerCol = GameDefines.ColumnHeight / ps;
 
             animFromCol = fromCol;
+            animDestCol = toCol;
             pendingMoveAction = onComplete;
+            SetPendingOuting(toCol, activePlayer);
 
             Point2D srcPixel = GetAnimSourcePixel(fromCol, ps, piecesPerCol);
             Point2D dstPixel = GetAnimDestPixel(toCol, activePlayer, ps, piecesPerCol);
@@ -412,6 +417,9 @@ namespace BackgammonByHoratiu.Gui.Controls
         {
             isAnimating = false;
             pendingMoveAction = null;
+            animDestCol = -1;
+            pendingOutingCol = -1;
+            pendingOutingPlayer = -1;
         }
 
         public void ContinuePieceMoveAnimation(int toCol, int activePlayer, Action onComplete)
@@ -420,6 +428,8 @@ namespace BackgammonByHoratiu.Gui.Controls
             int piecesPerCol = GameDefines.ColumnHeight / ps;
 
             pendingMoveAction = onComplete;
+            animDestCol = toCol;
+            SetPendingOuting(toCol, activePlayer);
 
             TextureSprite sprite = activePlayer == 2 ? animSpriteBrown : animSpriteWhite;
 
@@ -485,15 +495,80 @@ namespace BackgammonByHoratiu.Gui.Controls
             return new Point2D(cxH, houseTop.Top + countH * ps);
         }
 
+        void SetPendingOuting(int toCol, int activePlayer)
+        {
+            int sign = activePlayer == 1 ? 1 : -1;
+            if (toCol >= 0 && toCol < 24 &&
+                game.TableValues[toCol] * sign < 0 &&
+                Math.Abs(game.TableValues[toCol]) == 1)
+            {
+                pendingOutingCol = toCol;
+                pendingOutingPlayer = activePlayer == 1 ? 2 : 1;
+            }
+            else
+            {
+                pendingOutingCol = -1;
+                pendingOutingPlayer = -1;
+            }
+        }
+
+        void BeginOutingAnimation(int hitCol, int hitPlayer)
+        {
+            int ps = GameDefines.PieceSize;
+            int piecesPerCol = GameDefines.ColumnHeight / ps;
+
+            // The hit piece was the only one at hitCol (a blot, count = 1)
+            Point2D srcPixel = hitCol < 12
+                ? new Point2D(columnRects[hitCol].Left, columnRects[hitCol].Top)
+                : new Point2D(columnRects[hitCol].Left, columnRects[hitCol].Bottom - ps);
+
+            Point2D dstPixel;
+            if (hitPlayer == 1)
+            {
+                // White piece flies to P1 bar (outColumnBottom)
+                int cx = outColumnBottom.Left + (outColumnBottom.Width - ps) / 2;
+                int count = Math.Min(game.Player1.OutedPieces, piecesPerCol);
+                dstPixel = new Point2D(cx, outColumnBottom.Bottom - count * ps);
+                animFromCol = GameDefines.ColBarP1;
+            }
+            else
+            {
+                // Brown piece flies to P2 bar (outColumnTop)
+                int cx = outColumnTop.Left + (outColumnTop.Width - ps) / 2;
+                int count = Math.Min(game.Player2.OutedPieces, piecesPerCol);
+                dstPixel = new Point2D(cx, outColumnTop.Top + (count - 1) * ps);
+                animFromCol = GameDefines.ColBarP2;
+            }
+
+            TextureSprite sprite = hitPlayer == 1 ? animSpriteWhite : animSpriteBrown;
+            sprite.Location = srcPixel;
+            sprite.MovementEffect.TargetLocation = dstPixel;
+            sprite.MovementEffect.Activate();
+
+            pendingMoveAction = null;
+            isAnimating = true;
+        }
+
         void OnAnimSpriteDeactivated(object sender, EventArgs e)
         {
             if (!isAnimating)
                 return;
 
             isAnimating = false;
+
+            int outingCol = pendingOutingCol;
+            int outingPlayer = pendingOutingPlayer;
+            pendingOutingCol = -1;
+            pendingOutingPlayer = -1;
+
             Action action = pendingMoveAction;
             pendingMoveAction = null;
             action?.Invoke();
+
+            if (outingCol >= 0 && !isAnimating)
+            {
+                BeginOutingAnimation(outingCol, outingPlayer);
+            }
         }
 
         void BuildLayoutRectangles()
