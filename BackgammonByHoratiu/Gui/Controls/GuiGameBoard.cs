@@ -268,30 +268,30 @@ namespace BackgammonByHoratiu.Gui.Controls
             if (suppressFromCol == GameDefines.ColBarP1) piecesP1 = Math.Max(0, piecesP1 - 1);
             if (suppressFromCol == GameDefines.ColBarP2) piecesP2 = Math.Max(0, piecesP2 - 1);
 
-            for (int z = 0; z < Math.Min(piecesP2, piecesPerCol); z++)
+            for (int z = 0; z < Math.Min(piecesP1, piecesPerCol); z++)
             {
                 int cx = outColumnTop.Left + (outColumnTop.Width - pieceSize) / 2;
                 Rectangle dest = new(cx, outColumnTop.Top + z * pieceSize, pieceSize, pieceSize);
-                DrawCircle(spriteBatch, dest, ColorPlayer2);
-            }
-            if (piecesP2 > piecesPerCol)
-            {
-                int cx = outColumnTop.Left + (outColumnTop.Width - pieceSize) / 2;
-                DrawCenteredText(spriteBatch, $"+{piecesP2 - piecesPerCol}",
-                    new Rectangle(cx, outColumnTop.Top, pieceSize, pieceSize), Color.White);
-            }
-
-            for (int z = 0; z < Math.Min(piecesP1, piecesPerCol); z++)
-            {
-                int cx = outColumnBottom.Left + (outColumnBottom.Width - pieceSize) / 2;
-                Rectangle dest = new(cx, outColumnBottom.Bottom - pieceSize - z * pieceSize, pieceSize, pieceSize);
                 DrawCircle(spriteBatch, dest, ColorPlayer1);
             }
             if (piecesP1 > piecesPerCol)
             {
-                int cx = outColumnBottom.Left + (outColumnBottom.Width - pieceSize) / 2;
+                int cx = outColumnTop.Left + (outColumnTop.Width - pieceSize) / 2;
                 DrawCenteredText(spriteBatch, $"+{piecesP1 - piecesPerCol}",
-                    new Rectangle(cx, outColumnBottom.Bottom - pieceSize, pieceSize, pieceSize), Color.Black);
+                    new Rectangle(cx, outColumnTop.Top, pieceSize, pieceSize), Color.Black);
+            }
+
+            for (int z = 0; z < Math.Min(piecesP2, piecesPerCol); z++)
+            {
+                int cx = outColumnBottom.Left + (outColumnBottom.Width - pieceSize) / 2;
+                Rectangle dest = new(cx, outColumnBottom.Bottom - pieceSize - z * pieceSize, pieceSize, pieceSize);
+                DrawCircle(spriteBatch, dest, ColorPlayer2);
+            }
+            if (piecesP2 > piecesPerCol)
+            {
+                int cx = outColumnBottom.Left + (outColumnBottom.Width - pieceSize) / 2;
+                DrawCenteredText(spriteBatch, $"+{piecesP2 - piecesPerCol}",
+                    new Rectangle(cx, outColumnBottom.Bottom - pieceSize, pieceSize, pieceSize), Color.White);
             }
         }
 
@@ -459,15 +459,15 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             if (fromCol == GameDefines.ColBarP1)
             {
-                int cx = outColumnBottom.Left + (outColumnBottom.Width - ps) / 2;
+                int cx = outColumnTop.Left + (outColumnTop.Width - ps) / 2;
                 int count = Math.Min(game.Player1.OutedPieces, piecesPerCol);
-                return new Point2D(cx, outColumnBottom.Bottom - count * ps);
+                return new Point2D(cx, outColumnTop.Top + (count - 1) * ps);
             }
 
             // ColBarP2
-            int cxBrown = outColumnTop.Left + (outColumnTop.Width - ps) / 2;
+            int cxBrown = outColumnBottom.Left + (outColumnBottom.Width - ps) / 2;
             int countBrown = Math.Min(game.Player2.OutedPieces, piecesPerCol);
-            return new Point2D(cxBrown, outColumnTop.Top + (countBrown - 1) * ps);
+            return new Point2D(cxBrown, outColumnBottom.Bottom - countBrown * ps);
         }
 
         Point2D GetAnimDestPixel(int toCol, int activePlayer, int ps, int piecesPerCol)
@@ -527,18 +527,18 @@ namespace BackgammonByHoratiu.Gui.Controls
             Point2D dstPixel;
             if (hitPlayer == 1)
             {
-                // White piece flies to P1 bar (outColumnBottom)
-                int cx = outColumnBottom.Left + (outColumnBottom.Width - ps) / 2;
+                // White piece flies to P1 bar (outColumnTop)
+                int cx = outColumnTop.Left + (outColumnTop.Width - ps) / 2;
                 int count = Math.Min(game.Player1.OutedPieces, piecesPerCol);
-                dstPixel = new Point2D(cx, outColumnBottom.Bottom - count * ps);
+                dstPixel = new Point2D(cx, outColumnTop.Top + (count - 1) * ps);
                 animFromCol = GameDefines.ColBarP1;
             }
             else
             {
-                // Brown piece flies to P2 bar (outColumnTop)
-                int cx = outColumnTop.Left + (outColumnTop.Width - ps) / 2;
+                // Brown piece flies to P2 bar (outColumnBottom)
+                int cx = outColumnBottom.Left + (outColumnBottom.Width - ps) / 2;
                 int count = Math.Min(game.Player2.OutedPieces, piecesPerCol);
-                dstPixel = new Point2D(cx, outColumnTop.Top + (count - 1) * ps);
+                dstPixel = new Point2D(cx, outColumnBottom.Bottom - count * ps);
                 animFromCol = GameDefines.ColBarP2;
             }
 

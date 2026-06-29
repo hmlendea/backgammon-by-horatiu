@@ -162,9 +162,9 @@ namespace BackgammonByHoratiu.Gui.Screens
 
             if (col < 0 && gameBoard.IsInOutColumnTop(x, y))
             {
-                if (game.Player2.OutedPieces > 0)
+                if (game.Player1.OutedPieces > 0)
                 {
-                    dragBeginCol = BarBrown;
+                    dragBeginCol = BarWhite;
                 }
 
                 return;
@@ -172,9 +172,9 @@ namespace BackgammonByHoratiu.Gui.Screens
 
             if (col < 0 && gameBoard.IsInOutColumnBottom(x, y))
             {
-                if (game.Player1.OutedPieces > 0)
+                if (game.Player2.OutedPieces > 0)
                 {
-                    dragBeginCol = BarWhite;
+                    dragBeginCol = BarBrown;
                 }
 
                 return;
