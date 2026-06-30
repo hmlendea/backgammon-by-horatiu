@@ -311,13 +311,12 @@ namespace BackgammonByHoratiu.Gui.Controls
         {
             Texture2D dieTex = game.ActivePlayer == 1 ? whiteDieTexture : brownDieTexture;
 
-            spriteBatch.Draw(dieTex, dice1Rect, Color.White);
-            spriteBatch.Draw(dieTex, dice2Rect, Color.White);
+            int frameSize = dieTex.Height;
+            Rectangle dice1Source = new((game.Dice1 - 1) * frameSize, 0, frameSize, frameSize);
+            Rectangle dice2Source = new((game.Dice2 - 1) * frameSize, 0, frameSize, frameSize);
 
-            Color dieTextColor = game.ActivePlayer == 1 ? Color.Black : Color.White;
-
-            DrawCenteredText(spriteBatch, game.Dice1.ToString(), dice1Rect, dieTextColor);
-            DrawCenteredText(spriteBatch, game.Dice2.ToString(), dice2Rect, dieTextColor);
+            spriteBatch.Draw(dieTex, dice1Rect, dice1Source, Color.White);
+            spriteBatch.Draw(dieTex, dice2Rect, dice2Source, Color.White);
         }
 
         void DrawCompletedPieces(SpriteBatch spriteBatch)
