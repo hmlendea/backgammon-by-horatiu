@@ -4,6 +4,7 @@ namespace BackgammonByHoratiu.Settings
     {
         Pointer,
         HandPicking,
-        HandGrabbing
+        HandGrabbing,
+        HandOpen
     }
 }
