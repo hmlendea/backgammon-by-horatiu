@@ -44,7 +44,6 @@ namespace BackgammonByHoratiu.Gui.Controls
         GuiImage die1;
         GuiImage die2;
         GameTime lastGameTime = new();
-        SpriteFont boardFont;
 
         Rectangle[] columnRects;
         Rectangle outColumnTop, outColumnBottom;
@@ -52,6 +51,7 @@ namespace BackgammonByHoratiu.Gui.Controls
         Rectangle dice1Rect, dice2Rect;
 
         readonly float AnimationSpeed = 12f;
+        const int OverflowLayerSourceOffset = 19;
 
         public int SelectedColumn { get; set; } = -1;
         public int HoveredColumn { get; set; } = -1;
@@ -68,8 +68,6 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             pixelTexture = new Texture2D(gd, 1, 1);
             pixelTexture.SetData([Color.White]);
-
-            boardFont = NuciContentManager.Instance.LoadSpriteFont("Fonts/InfoBarFont");
 
             BuildLayoutRectangles();
 
@@ -359,6 +357,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             for (int i = 0; i < 24; i++)
             {
                 int count = Math.Abs(values[i]);
+
                 if (suppressFromCol == i && count > 0)
                 {
                     count -= 1;
@@ -370,43 +369,31 @@ namespace BackgammonByHoratiu.Gui.Controls
                 }
 
                 Color pieceColor = values[i] > 0 ? ColorPlayer1 : ColorPlayer2;
-                int visible = Math.Min(count, piecesPerCol);
 
-                for (int z = 0; z < visible; z++)
+                for (int z = 0; z < count; z++)
                 {
+                    int layer = z / piecesPerCol;
+                    int zInLayer = z % piecesPerCol;
+                    int layerOffset = layer * OverflowLayerSourceOffset * pieceSize / pieceFrameSize;
                     Rectangle dest;
+
                     if (i < 12)
                     {
-                        dest = new Rectangle(columnRects[i].Left, columnRects[i].Top + z * pieceSize, pieceSize, pieceSize);
+                        dest = new Rectangle(columnRects[i].Left, columnRects[i].Top - layerOffset + zInLayer * pieceSize, pieceSize, pieceSize);
                     }
                     else
                     {
-                        dest = new Rectangle(columnRects[i].Left, columnRects[i].Bottom - (z + 1) * pieceSize, pieceSize, pieceSize);
+                        dest = new Rectangle(columnRects[i].Left, columnRects[i].Bottom - pieceSize - layerOffset - zInLayer * pieceSize, pieceSize, pieceSize);
                     }
 
-                    bool isTopPiece = z == visible - 1 && i == SelectedColumn;
+                    bool isTopPiece = z == count - 1 && i == SelectedColumn;
                     DrawCircle(spriteBatch, dest, pieceColor, isTopPiece);
-                }
-
-                if (count > piecesPerCol)
-                {
-                    Rectangle labelRect;
-                    if (i < 12)
-                    {
-                        labelRect = new Rectangle(columnRects[i].Left, columnRects[i].Top, pieceSize, pieceSize);
-                    }
-                    else
-                    {
-                        labelRect = new Rectangle(columnRects[i].Left, columnRects[i].Bottom - pieceSize, pieceSize, pieceSize);
-                    }
-
-                    Color overflowColor = pieceColor == ColorPlayer2 ? Color.White : Color.Black;
-                    DrawCenteredText(spriteBatch, $"+{count - piecesPerCol}", labelRect, overflowColor);
                 }
             }
 
             int piecesP1 = game.Player1.OutedPieces;
             int piecesP2 = game.Player2.OutedPieces;
+
             if (suppressFromCol == GameDefines.ColBarP1)
             {
                 piecesP1 = Math.Max(0, piecesP1 - 1);
@@ -417,32 +404,26 @@ namespace BackgammonByHoratiu.Gui.Controls
                 piecesP2 = Math.Max(0, piecesP2 - 1);
             }
 
-            for (int z = 0; z < Math.Min(piecesP1, piecesPerCol); z++)
+            for (int z = 0; z < piecesP1; z++)
             {
+                int layer = z / piecesPerCol;
+                int zInLayer = z % piecesPerCol;
+                int layerOffset = layer * OverflowLayerSourceOffset * pieceSize / pieceFrameSize;
                 int cx = outColumnTop.Left + (outColumnTop.Width - pieceSize) / 2;
-                Rectangle dest = new(cx, outColumnTop.Top + z * pieceSize, pieceSize, pieceSize);
-                bool isTopPiece = z == Math.Min(piecesP1, piecesPerCol) - 1 && SelectedColumn == GameDefines.ColBarP1;
+                Rectangle dest = new(cx, outColumnTop.Top - layerOffset + zInLayer * pieceSize, pieceSize, pieceSize);
+                bool isTopPiece = z == piecesP1 - 1 && SelectedColumn == GameDefines.ColBarP1;
                 DrawCircle(spriteBatch, dest, ColorPlayer1, isTopPiece);
             }
-            if (piecesP1 > piecesPerCol)
-            {
-                int cx = outColumnTop.Left + (outColumnTop.Width - pieceSize) / 2;
-                DrawCenteredText(spriteBatch, $"+{piecesP1 - piecesPerCol}",
-                    new Rectangle(cx, outColumnTop.Top, pieceSize, pieceSize), Color.Black);
-            }
 
-            for (int z = 0; z < Math.Min(piecesP2, piecesPerCol); z++)
+            for (int z = 0; z < piecesP2; z++)
             {
+                int layer = z / piecesPerCol;
+                int zInLayer = z % piecesPerCol;
+                int layerOffset = layer * OverflowLayerSourceOffset * pieceSize / pieceFrameSize;
                 int cx = outColumnBottom.Left + (outColumnBottom.Width - pieceSize) / 2;
-                Rectangle dest = new(cx, outColumnBottom.Bottom - pieceSize - z * pieceSize, pieceSize, pieceSize);
-                bool isTopPiece = z == Math.Min(piecesP2, piecesPerCol) - 1 && SelectedColumn == GameDefines.ColBarP2;
+                Rectangle dest = new(cx, outColumnBottom.Bottom - pieceSize - layerOffset - zInLayer * pieceSize, pieceSize, pieceSize);
+                bool isTopPiece = z == piecesP2 - 1 && SelectedColumn == GameDefines.ColBarP2;
                 DrawCircle(spriteBatch, dest, ColorPlayer2, isTopPiece);
-            }
-            if (piecesP2 > piecesPerCol)
-            {
-                int cx = outColumnBottom.Left + (outColumnBottom.Width - pieceSize) / 2;
-                DrawCenteredText(spriteBatch, $"+{piecesP2 - piecesPerCol}",
-                    new Rectangle(cx, outColumnBottom.Bottom - pieceSize, pieceSize, pieceSize), Color.White);
             }
         }
 
@@ -454,32 +435,24 @@ namespace BackgammonByHoratiu.Gui.Controls
             int completedP2 = game.Player2.CompletedPieces;
             int completedP1 = game.Player1.CompletedPieces;
 
-            for (int z = 0; z < Math.Min(completedP2, piecesPerCol); z++)
+            for (int z = 0; z < completedP2; z++)
             {
+                int layer = z / piecesPerCol;
+                int zInLayer = z % piecesPerCol;
+                int layerOffset = layer * OverflowLayerSourceOffset * pieceSize / pieceFrameSize;
                 int cx = houseTop.Left + (houseTop.Width - pieceSize) / 2;
-                Rectangle dest = new(cx, houseTop.Top + z * pieceSize, pieceSize, pieceSize);
+                Rectangle dest = new(cx, houseTop.Top - layerOffset + zInLayer * pieceSize, pieceSize, pieceSize);
                 DrawCircle(spriteBatch, dest, ColorPlayer2);
             }
 
-            if (completedP2 > piecesPerCol)
+            for (int z = 0; z < completedP1; z++)
             {
-                int cx = houseTop.Left + (houseTop.Width - pieceSize) / 2;
-                DrawCenteredText(spriteBatch, $"+{completedP2 - piecesPerCol}",
-                    new Rectangle(cx, houseTop.Top, pieceSize, pieceSize), Color.White);
-            }
-
-            for (int z = 0; z < Math.Min(completedP1, piecesPerCol); z++)
-            {
+                int layer = z / piecesPerCol;
+                int zInLayer = z % piecesPerCol;
+                int layerOffset = layer * OverflowLayerSourceOffset * pieceSize / pieceFrameSize;
                 int cx = houseBottom.Left + (houseBottom.Width - pieceSize) / 2;
-                Rectangle dest = new(cx, houseBottom.Bottom - pieceSize - z * pieceSize, pieceSize, pieceSize);
+                Rectangle dest = new(cx, houseBottom.Bottom - pieceSize - layerOffset - zInLayer * pieceSize, pieceSize, pieceSize);
                 DrawCircle(spriteBatch, dest, ColorPlayer1);
-            }
-
-            if (completedP1 > piecesPerCol)
-            {
-                int cx = houseBottom.Left + (houseBottom.Width - pieceSize) / 2;
-                DrawCenteredText(spriteBatch, $"+{completedP1 - piecesPerCol}",
-                    new Rectangle(cx, houseBottom.Bottom - pieceSize, pieceSize, pieceSize), Color.Black);
             }
         }
 
@@ -498,16 +471,6 @@ namespace BackgammonByHoratiu.Gui.Controls
             spriteBatch.Draw(pixelTexture, new Rectangle(rect.Left, rect.Bottom - thickness, rect.Width, thickness), color);
             spriteBatch.Draw(pixelTexture, new Rectangle(rect.Left, rect.Top, thickness, rect.Height), color);
             spriteBatch.Draw(pixelTexture, new Rectangle(rect.Right - thickness, rect.Top, thickness, rect.Height), color);
-        }
-
-        void DrawCenteredText(SpriteBatch spriteBatch, string text, Rectangle rect, Color color)
-        {
-            Vector2 size = boardFont.MeasureString(text);
-            Vector2 pos = new(
-                rect.X + (rect.Width - size.X) / 2f,
-                rect.Y + (rect.Height - size.Y) / 2f);
-
-            spriteBatch.DrawString(boardFont, text, pos, color);
         }
 
         public int ColumnAt(int x, int y)
