@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -19,13 +21,17 @@ namespace BackgammonByHoratiu
         readonly GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        static readonly Dictionary<CursorType, string> CursorContentFiles = new()
+        {
+            [CursorType.Pointer]      = "Cursors/pointer",
+            [CursorType.HandPicking]  = "Cursors/hand_picking",
+            [CursorType.HandGrabbing] = "Cursors/hand_holding",
+            [CursorType.HandOpen]     = "Cursors/hand_open",
+            [CursorType.Dice]         = "Cursors/dice",
+        };
+
         readonly FpsIndicator fpsIndicator;
         readonly Cursor cursor;
-
-        Texture2D handPickingTexture;
-        Texture2D handGrabbingTexture;
-        Texture2D handOpenTexture;
-        Texture2D diceTexture;
 
         public static CursorType ActiveCursor { get; set; }
 
@@ -43,8 +49,7 @@ namespace BackgammonByHoratiu
             fpsIndicator = new FpsIndicator();
             cursor = new Cursor
             {
-                ContentFile = "Cursors/pointer",
-                SpriteSize = new Size2D(442, 409),
+                ContentFile = CursorContentFiles[CursorType.Pointer],
                 Scale = new Scale2D(28.0f / 409.0f)
             };
         }
@@ -65,10 +70,6 @@ namespace BackgammonByHoratiu
 
             fpsIndicator.LoadContent();
             cursor.LoadContent();
-            handPickingTexture = NuciContentManager.Instance.LoadTexture2D("Cursors/hand_picking");
-            handGrabbingTexture = NuciContentManager.Instance.LoadTexture2D("Cursors/hand_holding");
-            handOpenTexture = NuciContentManager.Instance.LoadTexture2D("Cursors/hand_open");
-            diceTexture = NuciContentManager.Instance.LoadTexture2D("Cursors/dice");
         }
 
         protected override void UnloadContent()
@@ -92,6 +93,8 @@ namespace BackgammonByHoratiu
                 InputManager.Instance.ResetInputStates();
             }
 
+            cursor.ContentFile = CursorContentFiles[ActiveCursor];
+
             fpsIndicator.Update(gameTime);
             cursor.Update(gameTime);
 
@@ -108,42 +111,7 @@ namespace BackgammonByHoratiu
 
             fpsIndicator.Draw(spriteBatch);
 
-            if (ActiveCursor == CursorType.HandOpen)
-            {
-                Point2D mousePosition = cursor.Location;
-                float scale = 28.0f / 409.0f;
-                int drawWidth = (int)(handOpenTexture.Width * scale);
-                int drawHeight = (int)(handOpenTexture.Height * scale);
-                spriteBatch.Draw(handOpenTexture, new Rectangle(mousePosition.X, mousePosition.Y, drawWidth, drawHeight), Color.White);
-            }
-            else if (ActiveCursor == CursorType.HandGrabbing)
-            {
-                Point2D mousePosition = cursor.Location;
-                float scale = 28.0f / 409.0f;
-                int drawWidth = (int)(handGrabbingTexture.Width * scale);
-                int drawHeight = (int)(handGrabbingTexture.Height * scale);
-                spriteBatch.Draw(handGrabbingTexture, new Rectangle(mousePosition.X, mousePosition.Y, drawWidth, drawHeight), Color.White);
-            }
-            else if (ActiveCursor == CursorType.HandPicking)
-            {
-                Point2D mousePosition = cursor.Location;
-                float scale = 28.0f / 409.0f;
-                int drawWidth = (int)(handPickingTexture.Width * scale);
-                int drawHeight = (int)(handPickingTexture.Height * scale);
-                spriteBatch.Draw(handPickingTexture, new Rectangle(mousePosition.X, mousePosition.Y, drawWidth, drawHeight), Color.White);
-            }
-            else if (ActiveCursor == CursorType.Dice)
-            {
-                Point2D mousePosition = cursor.Location;
-                float scale = 28.0f / 409.0f;
-                int drawWidth = (int)(diceTexture.Width * scale);
-                int drawHeight = (int)(diceTexture.Height * scale);
-                spriteBatch.Draw(diceTexture, new Rectangle(mousePosition.X, mousePosition.Y, drawWidth, drawHeight), Color.White);
-            }
-            else
-            {
-                cursor.Draw(spriteBatch);
-            }
+            cursor.Draw(spriteBatch);
 
             spriteBatch.End();
 
