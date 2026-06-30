@@ -50,7 +50,7 @@ namespace BackgammonByHoratiu
             cursor = new Cursor
             {
                 ContentFile = CursorContentFiles[CursorType.Pointer],
-                Scale = new Scale2D(28.0f / 409.0f)
+                Scale = new Scale2D(32.0f / 409.0f)
             };
         }
 
