@@ -1,3 +1,5 @@
+using NuciXNA.Primitives;
+
 namespace BackgammonByHoratiu.Settings
 {
     public static class GameDefines
@@ -29,6 +31,9 @@ namespace BackgammonByHoratiu.Settings
 
         public const int WindowWidth = HouseX + HouseWidth;        // 712
         public const int WindowHeight = BoardHeight;                // 624
+
+        public static Size2D ColumnFrameSize => new(105, 512);
+        public static Size2D DieFrameSize => new(200, 200);
 
         public const float AnimationSpeed = 12f;
         public const int OverflowLayerSourceOffset = 19;

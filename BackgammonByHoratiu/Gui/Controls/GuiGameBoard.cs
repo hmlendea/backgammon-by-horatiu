@@ -74,23 +74,20 @@ namespace BackgammonByHoratiu.Gui.Controls
             };
             boardImage.Hide();
 
-            const int columnFrameWidth = 105;
-            const int columnFrameHeight = 512;
-
             columnImages = new GuiImage[24];
 
             for (int columnIndex = 0; columnIndex < 24; columnIndex++)
             {
                 bool isTopHalf = columnIndex < 12;
                 bool isYellow = isTopHalf ? columnIndex % 2 != 0 : columnIndex % 2 == 0;
-                int sourceX = isYellow ? 0 : columnFrameWidth;
+                int sourceX = isYellow ? 0 : GameDefines.ColumnFrameSize.Width;
 
                 columnImages[columnIndex] = new GuiImage
                 {
                     ContentFile = "Table/columns",
                     Location = new Point2D(columnRectangles[columnIndex].X, columnRectangles[columnIndex].Y),
                     Size = new Size2D(columnRectangles[columnIndex].Width, columnRectangles[columnIndex].Height),
-                    SourceRectangle = new Rectangle2D(sourceX, 0, columnFrameWidth, columnFrameHeight)
+                    SourceRectangle = new Rectangle2D(sourceX, 0, GameDefines.ColumnFrameSize.Width, GameDefines.ColumnFrameSize.Height)
                 };
 
                 if (isTopHalf)
@@ -104,7 +101,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             targetColumnImage = new GuiImage
             {
                 ContentFile = "Table/columns",
-                SourceRectangle = new Rectangle2D(columnFrameWidth * 2, 0, columnFrameWidth, columnFrameHeight)
+                SourceRectangle = new Rectangle2D(GameDefines.ColumnFrameSize.Width * 2, 0, GameDefines.ColumnFrameSize.Width, GameDefines.ColumnFrameSize.Height)
             };
             targetColumnImage.Hide();
 
@@ -207,11 +204,10 @@ namespace BackgammonByHoratiu.Gui.Controls
                 }
             }
 
-            const int dieFrameSize = 200;
-            int diceRowY = game.ActivePlayer == 1 ? 0 : dieFrameSize;
+            int diceRowY = game.ActivePlayer == 1 ? 0 : GameDefines.DieFrameSize.Height;
 
-            die1.SourceRectangle = new Rectangle2D((game.Dice1 - 1) * dieFrameSize, diceRowY, dieFrameSize, dieFrameSize);
-            die2.SourceRectangle = new Rectangle2D((game.Dice2 - 1) * dieFrameSize, diceRowY, dieFrameSize, dieFrameSize);
+            die1.SourceRectangle = new Rectangle2D((game.Dice1 - 1) * GameDefines.DieFrameSize.Width, diceRowY, GameDefines.DieFrameSize.Width, GameDefines.DieFrameSize.Height);
+            die2.SourceRectangle = new Rectangle2D((game.Dice2 - 1) * GameDefines.DieFrameSize.Width, diceRowY, GameDefines.DieFrameSize.Width, GameDefines.DieFrameSize.Height);
         }
 
         protected override void DoDraw(SpriteBatch spriteBatch)
