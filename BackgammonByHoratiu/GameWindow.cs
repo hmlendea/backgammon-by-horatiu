@@ -21,6 +21,8 @@ namespace BackgammonByHoratiu
         readonly GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        const int CursorTargetHeight = 48;
+
         static readonly Dictionary<CursorType, string> CursorContentFiles = new()
         {
             [CursorType.Pointer]      = "Cursors/pointer",
@@ -29,6 +31,8 @@ namespace BackgammonByHoratiu
             [CursorType.HandOpen]     = "Cursors/hand_open",
             [CursorType.Dice]         = "Cursors/dice",
         };
+
+        readonly Dictionary<CursorType, Scale2D> cursorScales = [];
 
         readonly FpsIndicator fpsIndicator;
         readonly Cursor cursor;
@@ -49,8 +53,7 @@ namespace BackgammonByHoratiu
             fpsIndicator = new FpsIndicator();
             cursor = new Cursor
             {
-                ContentFile = CursorContentFiles[CursorType.Pointer],
-                Scale = new Scale2D(32.0f / 409.0f)
+                ContentFile = CursorContentFiles[CursorType.Pointer]
             };
         }
 
@@ -69,6 +72,15 @@ namespace BackgammonByHoratiu
             ScreenManager.Instance.LoadContent();
 
             fpsIndicator.LoadContent();
+
+            foreach (KeyValuePair<CursorType, string> entry in CursorContentFiles)
+            {
+                Texture2D texture = NuciContentManager.Instance.LoadTexture2D(entry.Value);
+                float scale = (float)CursorTargetHeight / texture.Height;
+                cursorScales[entry.Key] = new Scale2D(scale);
+            }
+
+            cursor.Scale = cursorScales[CursorType.Pointer];
             cursor.LoadContent();
         }
 
@@ -94,6 +106,7 @@ namespace BackgammonByHoratiu
             }
 
             cursor.ContentFile = CursorContentFiles[ActiveCursor];
+            cursor.Scale = cursorScales[ActiveCursor];
 
             fpsIndicator.Update(gameTime);
             cursor.Update(gameTime);
@@ -105,7 +118,7 @@ namespace BackgammonByHoratiu
         {
             graphics.GraphicsDevice.Clear(Color.Black);
 
-            spriteBatch.Begin();
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.AnisotropicClamp);
 
             ScreenManager.Instance.Draw(spriteBatch);
 
