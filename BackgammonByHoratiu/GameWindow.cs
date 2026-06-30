@@ -25,6 +25,7 @@ namespace BackgammonByHoratiu
         Texture2D handPickingTexture;
         Texture2D handGrabbingTexture;
         Texture2D handOpenTexture;
+        Texture2D diceTexture;
 
         public static CursorType ActiveCursor { get; set; }
 
@@ -67,6 +68,7 @@ namespace BackgammonByHoratiu
             handPickingTexture = NuciContentManager.Instance.LoadTexture2D("Cursors/hand_picking");
             handGrabbingTexture = NuciContentManager.Instance.LoadTexture2D("Cursors/hand_holding");
             handOpenTexture = NuciContentManager.Instance.LoadTexture2D("Cursors/hand_open");
+            diceTexture = NuciContentManager.Instance.LoadTexture2D("Cursors/dice");
         }
 
         protected override void UnloadContent()
@@ -100,7 +102,7 @@ namespace BackgammonByHoratiu
         {
             graphics.GraphicsDevice.Clear(Color.Black);
 
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.AnisotropicClamp);
+            spriteBatch.Begin();
 
             ScreenManager.Instance.Draw(spriteBatch);
 
@@ -129,6 +131,14 @@ namespace BackgammonByHoratiu
                 int drawWidth = (int)(handPickingTexture.Width * scale);
                 int drawHeight = (int)(handPickingTexture.Height * scale);
                 spriteBatch.Draw(handPickingTexture, new Rectangle(mousePosition.X, mousePosition.Y, drawWidth, drawHeight), Color.White);
+            }
+            else if (ActiveCursor == CursorType.Dice)
+            {
+                Point2D mousePosition = cursor.Location;
+                float scale = 28.0f / 409.0f;
+                int drawWidth = (int)(diceTexture.Width * scale);
+                int drawHeight = (int)(diceTexture.Height * scale);
+                spriteBatch.Draw(diceTexture, new Rectangle(mousePosition.X, mousePosition.Y, drawWidth, drawHeight), Color.White);
             }
             else
             {

@@ -66,14 +66,19 @@ namespace BackgammonByHoratiu.Gui.Screens
             game.Update(gameTime.ElapsedGameTime.TotalMilliseconds);
 
             bool leftButtonDown = InputManager.Instance.IsMouseButtonDown(MouseButton.Left);
+            bool noPieceSelected = dragBeginCol == -1;
+            bool hoveringDice = noPieceSelected && gameBoard.IsOnDice(mousePosition.X, mousePosition.Y);
+            bool hasNoValidMoves = hoveringDice && !HasAnyValidMoveForPlayer1();
 
             GameWindow.ActiveCursor = dragBeginCol != -1 && leftButtonDown
                 ? CursorType.HandOpen
                 : dragBeginCol != -1
                     ? CursorType.HandGrabbing
-                    : gameBoard.IsHoveringOverWhitePiece(mousePosition.X, mousePosition.Y)
-                        ? CursorType.HandPicking
-                        : CursorType.Pointer;
+                    : hoveringDice && hasNoValidMoves
+                        ? CursorType.Dice
+                        : gameBoard.IsHoveringOverWhitePiece(mousePosition.X, mousePosition.Y)
+                            ? CursorType.HandPicking
+                            : CursorType.Pointer;
 
             gameBoard.SelectedColumn = dragBeginCol == BarWhite ? GameDefines.ColBarP1
                                      : dragBeginCol == BarBrown ? GameDefines.ColBarP2
@@ -113,6 +118,29 @@ namespace BackgammonByHoratiu.Gui.Screens
             InputManager.Instance.MouseButtonPressed -= OnMouseButtonPressed;
             InputManager.Instance.MouseButtonReleased -= OnMouseButtonReleased;
             InputManager.Instance.MouseMoved -= OnMouseMoved;
+        }
+
+        bool HasAnyValidMoveForPlayer1()
+        {
+            if (game.ActivePlayer != 1)
+            {
+                return false;
+            }
+
+            if (game.Player1.OutedPieces > 0)
+            {
+                return game.GetValidDestinations(GameDefines.ColBarP1).Count > 0;
+            }
+
+            for (int i = 0; i < 24; i++)
+            {
+                if (game.TableValues[i] > 0 && game.GetValidDestinations(i).Count > 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         void OnKeyboardKeyPressed(object sender, KeyboardKeyEventArgs e)

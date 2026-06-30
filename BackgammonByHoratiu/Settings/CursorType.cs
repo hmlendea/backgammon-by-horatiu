@@ -5,6 +5,7 @@ namespace BackgammonByHoratiu.Settings
         Pointer,
         HandPicking,
         HandGrabbing,
-        HandOpen
+        HandOpen,
+        Dice
     }
 }
