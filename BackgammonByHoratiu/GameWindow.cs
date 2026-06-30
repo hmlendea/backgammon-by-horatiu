@@ -1,10 +1,14 @@
+using System.Collections.Generic;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 using NuciXNA.DataAccess.Content;
 using NuciXNA.Graphics;
+using NuciXNA.Gui;
 using NuciXNA.Gui.Screens;
 using NuciXNA.Input;
+using NuciXNA.Primitives;
 
 using BackgammonByHoratiu.Gui;
 using BackgammonByHoratiu.Gui.Screens;
@@ -17,7 +21,23 @@ namespace BackgammonByHoratiu
         readonly GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        const int CursorTargetHeight = 48;
+
+        static readonly Dictionary<CursorType, string> CursorContentFiles = new()
+        {
+            [CursorType.Pointer]      = "Cursors/hand_open",
+            [CursorType.HandPicking]  = "Cursors/hand_picking",
+            [CursorType.HandGrabbing] = "Cursors/hand_holding",
+            [CursorType.HandOpen]     = "Cursors/hand_open",
+            [CursorType.Dice]         = "Cursors/dice",
+        };
+
+        readonly Dictionary<CursorType, Scale2D> cursorScales = [];
+
         readonly FpsIndicator fpsIndicator;
+        readonly Cursor cursor;
+
+        public static CursorType ActiveCursor { get; set; }
 
         public GameWindow()
         {
@@ -28,9 +48,13 @@ namespace BackgammonByHoratiu
                 PreferredBackBufferHeight = GameDefines.WindowHeight
             };
             Content.RootDirectory = "Content";
-            IsMouseVisible = true;
+            IsMouseVisible = false;
 
             fpsIndicator = new FpsIndicator();
+            cursor = new Cursor
+            {
+                ContentFile = CursorContentFiles[CursorType.Pointer]
+            };
         }
 
         protected override void LoadContent()
@@ -48,12 +72,23 @@ namespace BackgammonByHoratiu
             ScreenManager.Instance.LoadContent();
 
             fpsIndicator.LoadContent();
+
+            foreach (KeyValuePair<CursorType, string> entry in CursorContentFiles)
+            {
+                Texture2D texture = NuciContentManager.Instance.LoadTexture2D(entry.Value);
+                float scale = (float)CursorTargetHeight / texture.Height;
+                cursorScales[entry.Key] = new Scale2D(scale);
+            }
+
+            cursor.Scale = cursorScales[CursorType.Pointer];
+            cursor.LoadContent();
         }
 
         protected override void UnloadContent()
         {
             ScreenManager.Instance.UnloadContent();
             FpsIndicator.UnloadContent();
+            cursor.UnloadContent();
         }
 
         protected override void Update(GameTime gameTime)
@@ -70,7 +105,11 @@ namespace BackgammonByHoratiu
                 InputManager.Instance.ResetInputStates();
             }
 
+            cursor.ContentFile = CursorContentFiles[ActiveCursor];
+            cursor.Scale = cursorScales[ActiveCursor];
+
             fpsIndicator.Update(gameTime);
+            cursor.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -79,11 +118,13 @@ namespace BackgammonByHoratiu
         {
             graphics.GraphicsDevice.Clear(Color.Black);
 
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.AnisotropicClamp);
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.AnisotropicClamp);
 
             ScreenManager.Instance.Draw(spriteBatch);
 
             fpsIndicator.Draw(spriteBatch);
+
+            cursor.Draw(spriteBatch);
 
             spriteBatch.End();
 

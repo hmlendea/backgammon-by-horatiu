@@ -400,6 +400,56 @@ namespace BackgammonByHoratiu.Gui.Controls
         public bool IsInOutColumnTop(int x, int y) => outColumnTop.Contains(x, y);
         public bool IsInOutColumnBottom(int x, int y) => outColumnBottom.Contains(x, y);
 
+        public bool IsHoveringOverWhitePiece(int x, int y)
+        {
+            int pieceSize = GameDefines.PieceSize;
+            int piecesPerCol = GameDefines.ColumnHeight / pieceSize;
+            int[] values = game.TableValues;
+
+            for (int i = 0; i < 24; i++)
+            {
+                if (values[i] <= 0)
+                {
+                    continue;
+                }
+
+                int count = Math.Min(values[i], piecesPerCol);
+
+                for (int z = 0; z < count; z++)
+                {
+                    Rectangle dest;
+                    if (i < 12)
+                    {
+                        dest = new Rectangle(columnRects[i].Left, columnRects[i].Top + z * pieceSize, pieceSize, pieceSize);
+                    }
+                    else
+                    {
+                        dest = new Rectangle(columnRects[i].Left, columnRects[i].Bottom - (z + 1) * pieceSize, pieceSize, pieceSize);
+                    }
+
+                    if (dest.Contains(x, y))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            int piecesP1 = game.Player1.OutedPieces;
+            int cx = outColumnTop.Left + (outColumnTop.Width - pieceSize) / 2;
+
+            for (int z = 0; z < Math.Min(piecesP1, piecesPerCol); z++)
+            {
+                Rectangle dest = new(cx, outColumnTop.Top + z * pieceSize, pieceSize, pieceSize);
+
+                if (dest.Contains(x, y))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public void BeginPieceMoveAnimation(int fromCol, int toCol, int activePlayer, Action onComplete)
         {
             if (isAnimating)
