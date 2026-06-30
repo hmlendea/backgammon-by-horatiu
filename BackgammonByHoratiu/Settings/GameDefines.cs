@@ -32,7 +32,7 @@ namespace BackgammonByHoratiu.Settings
         public const int HouseX = BarX + FrameWidth;
         public const int HouseWidth = PieceSize + Padding * 3;
 
-        public const int WindowWidth = HouseX + HouseWidth;
+        public const int WindowWidth = HouseX + HouseWidth * 2;
         public const int WindowHeight = FrameHeight;
 
         public static Size2D ColumnFrameSize => new(105, 512);

@@ -42,6 +42,7 @@ namespace BackgammonByHoratiu.Gui.Screens
 
             gameBoard = new GuiGameBoard(game)
             {
+                Location = new Point2D(GameDefines.HouseWidth, 0),
                 Size = new Size2D(GameDefines.WindowWidth, GameDefines.WindowHeight)
             };
 
@@ -52,7 +53,6 @@ namespace BackgammonByHoratiu.Gui.Screens
 
             GuiManager.Instance.RegisterControls(gameBoard);
             RegisterEvents();
-            SetChildrenProperties();
         }
 
         protected override void DoUnloadContent()
@@ -67,7 +67,9 @@ namespace BackgammonByHoratiu.Gui.Screens
 
             bool leftButtonDown = InputManager.Instance.IsMouseButtonDown(MouseButton.Left);
             bool noPieceSelected = dragBeginCol == -1;
-            bool hoveringDice = noPieceSelected && gameBoard.IsOnDice(mousePosition.X, mousePosition.Y);
+            int boardLocalMouseX = mousePosition.X - gameBoard.Location.X;
+            int boardLocalMouseY = mousePosition.Y - gameBoard.Location.Y;
+            bool hoveringDice = noPieceSelected && gameBoard.IsOnDice(boardLocalMouseX, boardLocalMouseY);
             bool hasNoValidMoves = hoveringDice && !HasAnyValidMoveForPlayer1();
 
             GameWindow.ActiveCursor = dragBeginCol != -1 && leftButtonDown
@@ -76,7 +78,7 @@ namespace BackgammonByHoratiu.Gui.Screens
                     ? CursorType.HandGrabbing
                     : hoveringDice && hasNoValidMoves && game.ActivePlayer == 1
                         ? CursorType.Dice
-                        : gameBoard.IsHoveringOverWhitePiece(mousePosition.X, mousePosition.Y)
+                        : gameBoard.IsHoveringOverWhitePiece(boardLocalMouseX, boardLocalMouseY)
                             ? CursorType.HandPicking
                             : CursorType.Pointer;
 
@@ -91,14 +93,12 @@ namespace BackgammonByHoratiu.Gui.Screens
                                : dragBeginCol;
                 gameBoard.ValidDestinations = game.GetValidDestinations(mappedFrom);
 
-                int mx = mousePosition.X;
-                int my = mousePosition.Y;
-                int col = gameBoard.ColumnAt(mx, my);
+                int col = gameBoard.ColumnAt(boardLocalMouseX, boardLocalMouseY);
                 if (col >= 0)
                 {
                     gameBoard.HoveredColumn = col;
                 }
-                else if (gameBoard.IsOnHouse(mx, my))
+                else if (gameBoard.IsOnHouse(boardLocalMouseX, boardLocalMouseY))
                 {
                     gameBoard.HoveredColumn = game.ActivePlayer == 1
                         ? GameDefines.ColHouseP1
@@ -117,11 +117,6 @@ namespace BackgammonByHoratiu.Gui.Screens
         }
 
         protected override void DoDraw(SpriteBatch spriteBatch) { }
-
-        void SetChildrenProperties()
-        {
-            gameBoard.Location = Point2D.Empty;
-        }
 
         void RegisterEvents()
         {
@@ -191,8 +186,8 @@ namespace BackgammonByHoratiu.Gui.Screens
                 return;
             }
 
-            int x = e.Location.X;
-            int y = e.Location.Y;
+            int x = e.Location.X - gameBoard.Location.X;
+            int y = e.Location.Y - gameBoard.Location.Y;
 
             if (gameBoard.IsOnDice(x, y))
             {

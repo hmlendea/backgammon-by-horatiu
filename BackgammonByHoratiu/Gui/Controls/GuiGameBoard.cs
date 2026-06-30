@@ -533,20 +533,17 @@ namespace BackgammonByHoratiu.Gui.Controls
 
                 for (int stackIndex = 0; stackIndex < pieceCount; stackIndex++)
                 {
-                    Rectangle2D destination;
+                    Rectangle2D destination = new(
+                            columnRectangles[columnIndex].Left,
+                            columnRectangles[columnIndex].Bottom - (stackIndex + 1) * GameDefines.PieceSize,
+                            GameDefines.PieceSize,
+                            GameDefines.PieceSize);
+
                     if (columnIndex < GameDefines.TotalColumns / 2)
                     {
                         destination = new Rectangle2D(
                             columnRectangles[columnIndex].Left,
                             columnRectangles[columnIndex].Top + stackIndex * GameDefines.PieceSize,
-                            GameDefines.PieceSize,
-                            GameDefines.PieceSize);
-                    }
-                    else
-                    {
-                        destination = new Rectangle2D(
-                            columnRectangles[columnIndex].Left,
-                            columnRectangles[columnIndex].Bottom - (stackIndex + 1) * GameDefines.PieceSize,
                             GameDefines.PieceSize,
                             GameDefines.PieceSize);
                     }
@@ -558,13 +555,10 @@ namespace BackgammonByHoratiu.Gui.Controls
                 }
             }
 
-            int player1OutedPieces = game.Player1.OutedPieces;
-            int centerX = outColumnTop.Left + (outColumnTop.Width - GameDefines.PieceSize) / 2;
-
-            for (int stackIndex = 0; stackIndex < Math.Min(player1OutedPieces, GameDefines.PiecesPerColumnLayer); stackIndex++)
+            for (int stackIndex = 0; stackIndex < Math.Min(game.Player1.OutedPieces, GameDefines.PiecesPerColumnLayer); stackIndex++)
             {
                 Rectangle2D destination = new(
-                    centerX,
+                    outColumnTop.Left + (outColumnTop.Width - GameDefines.PieceSize) / 2,
                     outColumnTop.Top + stackIndex * GameDefines.PieceSize,
                     GameDefines.PieceSize,
                     GameDefines.PieceSize);
