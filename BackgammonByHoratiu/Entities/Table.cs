@@ -954,8 +954,83 @@ namespace BackgammonByHoratiu.Entities
             return result;
         }
 
-        bool CanMovePieceDirect(int from, int to, int sign, Player movingPlayer)
+        /// <summary>
+        /// Returns the dice values consumed to move from fromCol to toCol.
+        /// Returns one value for a single-die move, two values for a two-die move.
+        /// </summary>
+        public List<int> GetDiceForDestination(int fromCol, int toCol)
         {
+            int sign = ActivePlayer == 1 ? 1 : -1;
+            Player movingPlayer = sign > 0 ? Player1 : Player2;
+
+            // --- Bar re-entry ---
+            if (fromCol == GameDefines.ColBarP1 || fromCol == GameDefines.ColBarP2)
+            {
+                int singleDieValue = sign > 0 ? toCol + 1 : 24 - toCol;
+
+                if (movingPlayer.MovesLeft.Contains(singleDieValue))
+                {
+                    return [singleDieValue];
+                }
+
+                int totalBarDistance = singleDieValue;
+                (int barDie1, int barDie2) = FindBarEntryCombo(totalBarDistance, sign);
+
+                if (barDie1 != -1)
+                {
+                    return [barDie1, barDie2];
+                }
+
+                return [];
+            }
+
+            // --- Bear-off ---
+            if (toCol == GameDefines.ColHouseP1 || toCol == GameDefines.ColHouseP2)
+            {
+                int bearOffDistance = sign > 0 ? 24 - fromCol : fromCol + 1;
+
+                if (movingPlayer.MovesLeft.Contains(bearOffDistance))
+                {
+                    return [bearOffDistance];
+                }
+
+                foreach (int die in movingPlayer.MovesLeft)
+                {
+                    if (die > bearOffDistance && IsFarthestPiece(fromCol, sign))
+                    {
+                        return [die];
+                    }
+                }
+
+                (int bearDie1, int bearDie2) = FindTwoDiceComboForBearOff(fromCol, bearOffDistance, sign, movingPlayer);
+
+                if (bearDie1 != -1)
+                {
+                    return [bearDie1, bearDie2];
+                }
+
+                return [];
+            }
+
+            // --- Regular move ---
+            int distance = sign > 0 ? toCol - fromCol : fromCol - toCol;
+
+            if (movingPlayer.MovesLeft.Contains(distance))
+            {
+                return [distance];
+            }
+
+            (int die1, int die2) = FindTwoDiceCombo(fromCol, distance, sign, movingPlayer);
+
+            if (die1 != -1)
+            {
+                return [die1, die2];
+            }
+
+            return [];
+        }
+
+        bool CanMovePieceDirect(int from, int to, int sign, Player movingPlayer)        {
             if (sign < 0 && from < 12 && to >= 12) return false;
             if (sign > 0 && from >= 12 && to < 12) return false;
 

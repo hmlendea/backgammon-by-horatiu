@@ -43,6 +43,8 @@ namespace BackgammonByHoratiu.Settings
         public const int OverflowLayerSourceOffset = 19;
         public const int TotalPiecesPerPlayer = 15;
         public const int TotalColumns = 24;
+        public const int DiceIndicatorSpacing = 2;
+        public const int DiceIndicatorSize = (PieceSize - DiceIndicatorSpacing) / 2;
         public const int PiecesPerColumnLayer = 5;
         // Right frame has a slightly different measured top border (pixels)
         public const int RightFrameTopY = 47;

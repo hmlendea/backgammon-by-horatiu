@@ -144,6 +144,8 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
 
         public IReadOnlyList<int> GetValidDestinations(int fromCol) => inner.GetValidDestinations(fromCol);
 
+        public IReadOnlyList<int> GetDiceForDestination(int fromCol, int toCol) => inner.GetDiceForDestination(fromCol, toCol);
+
         public void ThrowDice() => inner.ThrowDice();
         public void NextTurn() => inner.NextTurn();
 

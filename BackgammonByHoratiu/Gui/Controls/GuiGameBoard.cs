@@ -4,8 +4,6 @@ using System.Linq;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-
-using NuciXNA.Graphics;
 using NuciXNA.Gui.Controls;
 using NuciXNA.Primitives;
 
@@ -40,6 +38,7 @@ namespace BackgammonByHoratiu.Gui.Controls
         GuiImage[] bottomBar;
         GuiImage die1;
         GuiImage die2;
+        GuiImage moveDiceIndicator;
         GameTime lastGameTime = new();
 
         Rectangle2D[] columnRectangles;
@@ -148,6 +147,13 @@ namespace BackgammonByHoratiu.Gui.Controls
             };
             animPiece.Hide();
 
+            moveDiceIndicator = new GuiImage
+            {
+                ContentFile = "Table/dice",
+                Size = new Size2D(GameDefines.DiceIndicatorSize, GameDefines.DiceIndicatorSize)
+            };
+            moveDiceIndicator.Hide();
+
             pieces =
             [
                 new GuiImage
@@ -210,6 +216,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             RegisterChildren(columnImages);
             RegisterChildren(topBar);
             RegisterChildren(bottomBar);
+            RegisterChildren(moveDiceIndicator);
             RegisterChildren(animPiece);
         }
 
@@ -270,6 +277,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             DrawPieces(spriteBatch);
             DrawCompletedPieces(spriteBatch);
             DrawGhostPiece(spriteBatch);
+            DrawMoveDiceIndicators(spriteBatch);
         }
 
         void DrawGhostPiece(SpriteBatch spriteBatch)
@@ -327,6 +335,53 @@ namespace BackgammonByHoratiu.Gui.Controls
             ghostPiece.Size = new Size2D(destination.Width, destination.Height);
             ghostPiece.Update(lastGameTime);
             ghostPiece.Draw(spriteBatch);
+        }
+
+        void DrawMoveDiceIndicators(SpriteBatch spriteBatch)
+        {
+            if (SelectedColumn < 0)
+            {
+                return;
+            }
+
+            int diceRowSourceY = game.ActivePlayer == 1 ? 0 : GameDefines.DieFrameSize.Height;
+
+            foreach (int destination in ValidDestinations)
+            {
+                if (destination < 0 || destination >= GameDefines.TotalColumns)
+                {
+                    continue;
+                }
+
+                IReadOnlyList<int> diceUsed = game.GetDiceForDestination(SelectedColumn, destination);
+
+                if (diceUsed.Count == 0)
+                {
+                    continue;
+                }
+
+                bool isTopHalf = destination < GameDefines.TotalColumns / 2;
+                int totalDiceWidth = diceUsed.Count * GameDefines.DiceIndicatorSize + (diceUsed.Count - 1) * GameDefines.DiceIndicatorSpacing;
+                int startX = columnRectangles[destination].Left + (GameDefines.PieceSize - totalDiceWidth) / 2;
+                int indicatorY = isTopHalf
+                    ? columnRectangles[destination].Top - GameDefines.DiceIndicatorSize - GameDefines.DiceIndicatorSpacing
+                    : columnRectangles[destination].Bottom + GameDefines.DiceIndicatorSpacing;
+
+                for (int diceIndex = 0; diceIndex < diceUsed.Count; diceIndex++)
+                {
+                    int dieValue = diceUsed[diceIndex];
+                    int indicatorX = startX + diceIndex * (GameDefines.DiceIndicatorSize + GameDefines.DiceIndicatorSpacing);
+
+                    moveDiceIndicator.SourceRectangle = new Rectangle2D(
+                        (dieValue - 1) * GameDefines.DieFrameSize.Width,
+                        diceRowSourceY,
+                        GameDefines.DieFrameSize);
+                    moveDiceIndicator.Location = new Point2D(indicatorX, indicatorY);
+                    moveDiceIndicator.Size = new Size2D(GameDefines.DiceIndicatorSize, GameDefines.DiceIndicatorSize);
+                    moveDiceIndicator.Update(lastGameTime);
+                    moveDiceIndicator.Draw(spriteBatch);
+                }
+            }
         }
 
         void DrawTargetColumn(SpriteBatch spriteBatch, int columnIndex)

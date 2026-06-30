@@ -50,6 +50,8 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
 
         public IReadOnlyList<int> GetValidDestinations(int fromCol) => table.GetValidDestinations(fromCol);
 
+        public IReadOnlyList<int> GetDiceForDestination(int fromCol, int toCol) => table.GetDiceForDestination(fromCol, toCol);
+
         public void NewGame()
         {
             table = new Table();
