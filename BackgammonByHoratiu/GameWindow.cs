@@ -110,7 +110,7 @@ namespace BackgammonByHoratiu
 
             if (ActiveCursor is CursorType.HandPicking or CursorType.HandGrabbing or CursorType.HandOpen)
             {
-                cursor.LocationOffset = new Point2D(0, -12);
+                cursor.LocationOffset = new Point2D(-8, -12);
             }
             else
             {
