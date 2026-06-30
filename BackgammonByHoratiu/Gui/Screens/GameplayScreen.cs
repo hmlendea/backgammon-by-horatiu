@@ -74,7 +74,7 @@ namespace BackgammonByHoratiu.Gui.Screens
                 ? CursorType.HandOpen
                 : dragBeginCol != -1
                     ? CursorType.HandGrabbing
-                    : hoveringDice && hasNoValidMoves
+                    : hoveringDice && hasNoValidMoves && game.ActivePlayer == 1
                         ? CursorType.Dice
                         : gameBoard.IsHoveringOverWhitePiece(mousePosition.X, mousePosition.Y)
                             ? CursorType.HandPicking
