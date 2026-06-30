@@ -22,6 +22,10 @@ namespace BackgammonByHoratiu
         readonly FpsIndicator fpsIndicator;
         readonly Cursor cursor;
 
+        Texture2D handPickingTexture;
+
+        public static bool ShowHandPickingCursor { get; set; }
+
         public GameWindow()
         {
             graphics = new GraphicsDeviceManager(this)
@@ -58,6 +62,7 @@ namespace BackgammonByHoratiu
 
             fpsIndicator.LoadContent();
             cursor.LoadContent();
+            handPickingTexture = NuciContentManager.Instance.LoadTexture2D("Cursors/hand_picking");
         }
 
         protected override void UnloadContent()
@@ -96,7 +101,19 @@ namespace BackgammonByHoratiu
             ScreenManager.Instance.Draw(spriteBatch);
 
             fpsIndicator.Draw(spriteBatch);
-            cursor.Draw(spriteBatch);
+
+            if (ShowHandPickingCursor)
+            {
+                Point2D mousePosition = cursor.Location;
+                float scale = 28.0f / 409.0f;
+                int drawWidth = (int)(handPickingTexture.Width * scale);
+                int drawHeight = (int)(handPickingTexture.Height * scale);
+                spriteBatch.Draw(handPickingTexture, new Rectangle(mousePosition.X, mousePosition.Y, drawWidth, drawHeight), Color.White);
+            }
+            else
+            {
+                cursor.Draw(spriteBatch);
+            }
 
             spriteBatch.End();
 

@@ -21,6 +21,8 @@ namespace BackgammonByHoratiu.Gui.Screens
         IGameManager game;
         GuiGameBoard gameBoard;
 
+        Point2D mousePosition;
+
         int dragBeginCol = -1;
 
         const int BarBrown = -2;
@@ -62,6 +64,9 @@ namespace BackgammonByHoratiu.Gui.Screens
         protected override void DoUpdate(GameTime gameTime)
         {
             game.Update(gameTime.ElapsedGameTime.TotalMilliseconds);
+
+            GameWindow.ShowHandPickingCursor = gameBoard.IsHoveringOverWhitePiece(mousePosition.X, mousePosition.Y);
+
             gameBoard.SelectedColumn = dragBeginCol == BarWhite ? GameDefines.ColBarP1
                                      : dragBeginCol == BarBrown ? GameDefines.ColBarP2
                                      : dragBeginCol;
@@ -91,6 +96,7 @@ namespace BackgammonByHoratiu.Gui.Screens
             InputManager.Instance.KeyboardKeyPressed += OnKeyboardKeyPressed;
             InputManager.Instance.MouseButtonPressed += OnMouseButtonPressed;
             InputManager.Instance.MouseButtonReleased += OnMouseButtonReleased;
+            InputManager.Instance.MouseMoved += OnMouseMoved;
         }
 
         void UnregisterEvents()
@@ -98,6 +104,7 @@ namespace BackgammonByHoratiu.Gui.Screens
             InputManager.Instance.KeyboardKeyPressed -= OnKeyboardKeyPressed;
             InputManager.Instance.MouseButtonPressed -= OnMouseButtonPressed;
             InputManager.Instance.MouseButtonReleased -= OnMouseButtonReleased;
+            InputManager.Instance.MouseMoved -= OnMouseMoved;
         }
 
         void OnKeyboardKeyPressed(object sender, KeyboardKeyEventArgs e)
@@ -111,6 +118,11 @@ namespace BackgammonByHoratiu.Gui.Screens
         }
 
         void OnMouseButtonPressed(object sender, MouseButtonEventArgs e) { }
+
+        void OnMouseMoved(object sender, MouseEventArgs e)
+        {
+            mousePosition = e.Location;
+        }
 
         void OnMouseButtonReleased(object sender, MouseButtonEventArgs e)
         {
