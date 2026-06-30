@@ -42,9 +42,10 @@ namespace BackgammonByHoratiu.Gui.Controls
         Texture2D pixelTexture;
         Texture2D triangleDownTexture;
         Texture2D triangleUpTexture;
-        Texture2D piecesTexture;
+        GuiImage[] pieces;
         GuiImage die1;
         GuiImage die2;
+        GameTime lastGameTime = new();
         SpriteFont boardFont;
 
         // Precomputed hit-test rectangles mirroring the original MainWindow layout
@@ -77,7 +78,6 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             triangleDownTexture = CreateTriangleTexture(gd, GameDefines.PieceSize, GameDefines.ColumnHeight, pointsDown: true);
             triangleUpTexture = CreateTriangleTexture(gd, GameDefines.PieceSize, GameDefines.ColumnHeight, pointsDown: false);
-            piecesTexture = NuciContentManager.Instance.LoadTexture2D("Table/pieces");
 
             boardFont = NuciContentManager.Instance.LoadSpriteFont("Fonts/InfoBarFont");
 
@@ -97,19 +97,15 @@ namespace BackgammonByHoratiu.Gui.Controls
                 Size = new Size2D(dice2Rect.Width, dice2Rect.Height)
             };
 
-            int pieceFrameSize = piecesTexture.Height;
-
             animSpriteWhite = new()
             {
                 ContentFile = "Table/pieces",
-                SourceRectangle = new Rectangle2D(0, 0, pieceFrameSize, pieceFrameSize),
                 MovementEffect = new MovementEffect { Speed = AnimationSpeed },
                 IsActive = true
             };
             animSpriteBrown = new()
             {
                 ContentFile = "Table/pieces",
-                SourceRectangle = new Rectangle2D(pieceFrameSize, 0, pieceFrameSize, pieceFrameSize),
                 MovementEffect = new MovementEffect { Speed = AnimationSpeed },
                 IsActive = true
             };
@@ -118,7 +114,29 @@ namespace BackgammonByHoratiu.Gui.Controls
             animSpriteWhite.MovementEffect.Deactivated += OnAnimSpriteDeactivated;
             animSpriteBrown.MovementEffect.Deactivated += OnAnimSpriteDeactivated;
 
-            RegisterChildren(die1, die2);
+            int pieceFrameSize = animSpriteWhite.TextureSize.Height;
+            animSpriteWhite.SourceRectangle = new Rectangle2D(0, 0, pieceFrameSize, pieceFrameSize);
+            animSpriteBrown.SourceRectangle = new Rectangle2D(pieceFrameSize, 0, pieceFrameSize, pieceFrameSize);
+
+            pieces =
+            [
+                new GuiImage
+                {
+                    ContentFile = "Table/pieces",
+                    SourceRectangle = new Rectangle2D(0, 0, pieceFrameSize, pieceFrameSize),
+                    Size = new Size2D(pieceFrameSize, pieceFrameSize)
+                },
+                new GuiImage
+                {
+                    ContentFile = "Table/pieces",
+                    SourceRectangle = new Rectangle2D(pieceFrameSize, 0, pieceFrameSize, pieceFrameSize),
+                    Size = new Size2D(pieceFrameSize, pieceFrameSize)
+                }
+            ];
+            pieces[0].Hide();
+            pieces[1].Hide();
+
+            RegisterChildren(die1, die2, pieces[0], pieces[1]);
         }
 
         protected override void DoUnloadContent()
@@ -135,6 +153,8 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         protected override void DoUpdate(GameTime gameTime)
         {
+            lastGameTime = gameTime;
+
             if (isAnimating)
             {
                 if (animSpriteWhite.MovementEffect.IsActive)
@@ -365,12 +385,11 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         void DrawCircle(SpriteBatch spriteBatch, Rectangle dest, Color fill)
         {
-            int frameSize = piecesTexture.Height;
-            Rectangle source = fill == ColorPlayer2
-                ? new Rectangle(frameSize, 0, frameSize, frameSize)
-                : new Rectangle(0, 0, frameSize, frameSize);
-
-            spriteBatch.Draw(piecesTexture, dest, source, Color.White);
+            int idx = fill == ColorPlayer2 ? 1 : 0;
+            pieces[idx].Location = new Point2D(dest.X, dest.Y);
+            pieces[idx].Size = new Size2D(dest.Width, dest.Height);
+            pieces[idx].Update(lastGameTime);
+            pieces[idx].Draw(spriteBatch);
         }
 
         void DrawBorder(SpriteBatch spriteBatch, Rectangle rect, Color color, int thickness)
