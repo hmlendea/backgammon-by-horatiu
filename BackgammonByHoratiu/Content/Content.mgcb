@@ -156,6 +156,18 @@
 /processorParam:TextureFormat=Color
 /build:Table/pieces.png
 
+#begin Table/columns.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=True
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Table/columns.png
+
 #begin Table/dice.png
 /importer:TextureImporter
 /processor:TextureProcessor

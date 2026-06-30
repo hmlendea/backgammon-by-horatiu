@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -19,8 +20,6 @@ namespace BackgammonByHoratiu.Gui.Controls
     public class GuiGameBoard : GuiControl
     {
         static readonly Color ColorBackground = Color.Gray;
-        static readonly Color ColorOddColumn = new(255, 255, 127);
-        static readonly Color ColorEvenColumn = new(0, 127, 0);
         static readonly Color ColorHouseColumn = new(63, 63, 63);
         static readonly Color ColorOutColumn = Color.Black;
         static readonly Color ColorPlayer1 = Color.White;
@@ -40,8 +39,7 @@ namespace BackgammonByHoratiu.Gui.Controls
         public bool IsAnimating => isAnimating;
 
         Texture2D pixelTexture;
-        Texture2D triangleDownTexture;
-        Texture2D triangleUpTexture;
+        GuiImage[] columnImages;
         GuiImage[] pieces;
         GuiImage die1;
         GuiImage die2;
@@ -76,12 +74,35 @@ namespace BackgammonByHoratiu.Gui.Controls
             pixelTexture = new Texture2D(gd, 1, 1);
             pixelTexture.SetData([Color.White]);
 
-            triangleDownTexture = CreateTriangleTexture(gd, GameDefines.PieceSize, GameDefines.ColumnHeight, pointsDown: true);
-            triangleUpTexture = CreateTriangleTexture(gd, GameDefines.PieceSize, GameDefines.ColumnHeight, pointsDown: false);
-
             boardFont = NuciContentManager.Instance.LoadSpriteFont("Fonts/InfoBarFont");
 
             BuildLayoutRectangles();
+
+            const int colFrameWidth = 105;
+            const int colFrameHeight = 512;
+
+            columnImages = new GuiImage[24];
+            for (int i = 0; i < 24; i++)
+            {
+                bool isTopHalf = i < 12;
+                bool isYellow = isTopHalf ? i % 2 != 0 : i % 2 == 0;
+                int srcX = isYellow ? 0 : colFrameWidth;
+
+                columnImages[i] = new GuiImage
+                {
+                    ContentFile = "Table/columns",
+                    Location = new Point2D(columnRects[i].X, columnRects[i].Y),
+                    Size = new Size2D(columnRects[i].Width, columnRects[i].Height),
+                    SourceRectangle = new Rectangle2D(srcX, 0, colFrameWidth, colFrameHeight)
+                };
+
+                if (isTopHalf)
+                {
+                    columnImages[i].Rotation = MathHelper.Pi;
+                }
+
+                columnImages[i].Hide();
+            }
 
             die1 = new()
             {
@@ -137,6 +158,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             pieces[1].Hide();
 
             RegisterChildren(die1, die2, pieces[0], pieces[1]);
+            RegisterChildren(columnImages);
         }
 
         protected override void DoUnloadContent()
@@ -147,8 +169,6 @@ namespace BackgammonByHoratiu.Gui.Controls
             animSpriteBrown.UnloadContent();
 
             pixelTexture?.Dispose();
-            triangleDownTexture?.Dispose();
-            triangleUpTexture?.Dispose();
         }
 
         protected override void DoUpdate(GameTime gameTime)
@@ -158,9 +178,13 @@ namespace BackgammonByHoratiu.Gui.Controls
             if (isAnimating)
             {
                 if (animSpriteWhite.MovementEffect.IsActive)
+                {
                     animSpriteWhite.Update(gameTime);
+                }
                 else if (animSpriteBrown.MovementEffect.IsActive)
+                {
                     animSpriteBrown.Update(gameTime);
+                }
             }
 
             const int dieFrameSize = 200;
@@ -254,21 +278,9 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         void DrawColumns(SpriteBatch spriteBatch)
         {
-            for (int i = 0; i < 24; i++)
+            foreach (GuiImage img in columnImages)
             {
-                Rectangle col = columnRects[i];
-
-                bool isTopHalf = i < 12;
-                bool isOdd = i % 2 != 0;
-
-                Color fillColor;
-                if (isTopHalf)
-                    fillColor = isOdd ? ColorOddColumn : ColorEvenColumn;
-                else
-                    fillColor = isOdd ? ColorEvenColumn : ColorOddColumn;
-
-                Texture2D tri = isTopHalf ? triangleDownTexture : triangleUpTexture;
-                spriteBatch.Draw(tri, col, fillColor);
+                img.Draw(spriteBatch);
             }
         }
 
@@ -283,9 +295,14 @@ namespace BackgammonByHoratiu.Gui.Controls
             {
                 int count = Math.Abs(values[i]);
                 if (suppressFromCol == i && count > 0)
+                {
                     count -= 1;
+                }
+
                 if (count == 0)
+                {
                     continue;
+                }
 
                 Color pieceColor = values[i] > 0 ? ColorPlayer1 : ColorPlayer2;
                 int visible = Math.Min(count, piecesPerCol);
@@ -294,9 +311,13 @@ namespace BackgammonByHoratiu.Gui.Controls
                 {
                     Rectangle dest;
                     if (i < 12)
+                    {
                         dest = new Rectangle(columnRects[i].Left, columnRects[i].Top + z * pieceSize, pieceSize, pieceSize);
+                    }
                     else
+                    {
                         dest = new Rectangle(columnRects[i].Left, columnRects[i].Bottom - (z + 1) * pieceSize, pieceSize, pieceSize);
+                    }
 
                     DrawCircle(spriteBatch, dest, pieceColor);
                 }
@@ -305,9 +326,13 @@ namespace BackgammonByHoratiu.Gui.Controls
                 {
                     Rectangle labelRect;
                     if (i < 12)
+                    {
                         labelRect = new Rectangle(columnRects[i].Left, columnRects[i].Top, pieceSize, pieceSize);
+                    }
                     else
+                    {
                         labelRect = new Rectangle(columnRects[i].Left, columnRects[i].Bottom - pieceSize, pieceSize, pieceSize);
+                    }
 
                     Color overflowColor = pieceColor == ColorPlayer2 ? Color.White : Color.Black;
                     DrawCenteredText(spriteBatch, $"+{count - piecesPerCol}", labelRect, overflowColor);
@@ -316,8 +341,15 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             int piecesP1 = game.Player1.OutedPieces;
             int piecesP2 = game.Player2.OutedPieces;
-            if (suppressFromCol == GameDefines.ColBarP1) piecesP1 = Math.Max(0, piecesP1 - 1);
-            if (suppressFromCol == GameDefines.ColBarP2) piecesP2 = Math.Max(0, piecesP2 - 1);
+            if (suppressFromCol == GameDefines.ColBarP1)
+            {
+                piecesP1 = Math.Max(0, piecesP1 - 1);
+            }
+
+            if (suppressFromCol == GameDefines.ColBarP2)
+            {
+                piecesP2 = Math.Max(0, piecesP2 - 1);
+            }
 
             for (int z = 0; z < Math.Min(piecesP1, piecesPerCol); z++)
             {
@@ -421,8 +453,13 @@ namespace BackgammonByHoratiu.Gui.Controls
         public int ColumnAt(int x, int y)
         {
             for (int i = 0; i < 24; i++)
+            {
                 if (columnRects[i].Contains(x, y))
+                {
                     return i;
+                }
+            }
+
             return -1;
         }
 
@@ -543,9 +580,13 @@ namespace BackgammonByHoratiu.Gui.Controls
             {
                 int count = Math.Min(Math.Abs(game.TableValues[fromCol]), piecesPerCol);
                 if (fromCol < 12)
+                {
                     return new Point2D(columnRects[fromCol].Left, columnRects[fromCol].Top + (count - 1) * ps);
+                }
                 else
+                {
                     return new Point2D(columnRects[fromCol].Left, columnRects[fromCol].Bottom - count * ps);
+                }
             }
 
             if (fromCol == GameDefines.ColBarP1)
@@ -653,7 +694,9 @@ namespace BackgammonByHoratiu.Gui.Controls
         void OnAnimSpriteDeactivated(object sender, EventArgs e)
         {
             if (!isAnimating)
+            {
                 return;
+            }
 
             isAnimating = false;
 
@@ -687,11 +730,15 @@ namespace BackgammonByHoratiu.Gui.Controls
             for (int i = 10; i >= 0; i--)
             {
                 if (i == 5)
+                {
                     columnRects[i] = new Rectangle(
                         columnRects[i + 1].Right + ps + pad * 2, 0, ps, colH);
+                }
                 else
+                {
                     columnRects[i] = new Rectangle(
                         columnRects[i + 1].Right, 0, ps, colH);
+                }
             }
 
             // Bottom-half columns 12-23 (triangles point UP from bottom)
@@ -700,11 +747,15 @@ namespace BackgammonByHoratiu.Gui.Controls
             for (int i = 13; i < 24; i++)
             {
                 if (i == 18)
+                {
                     columnRects[i] = new Rectangle(
                         columnRects[i - 1].Right + ps + pad * 2, bottomY, ps, colH);
+                }
                 else
+                {
                     columnRects[i] = new Rectangle(
                         columnRects[i - 1].Right, bottomY, ps, colH);
+                }
             }
 
             int barX = columnRects[6].Right;           // 288
@@ -721,43 +772,6 @@ namespace BackgammonByHoratiu.Gui.Controls
             int diceY = (bh - ps) / 2;
             dice1Rect = new Rectangle(barX - barWidth - pad * 4, diceY, ps, ps);
             dice2Rect = new Rectangle(outColumnTop.Right + pad * 4, diceY, ps, ps);
-        }
-
-        // ------------------------------------------------------------------ //
-        //  Texture factories                                                  //
-        // ------------------------------------------------------------------ //
-
-        static Texture2D CreateTriangleTexture(GraphicsDevice gd, int width, int height, bool pointsDown)
-        {
-            Texture2D texture = new(gd, width, height);
-            Color[] data = new Color[width * height];
-
-            for (int y = 0; y < height; y++)
-            {
-                // For pointsDown: wide at top (y=0), apex at bottom (y=height)
-                // For pointsUp:   apex at top (y=0), wide at bottom (y=height)
-                float t = pointsDown
-                    ? (float)y / height          // 0..1 as we go down
-                    : (float)(height - y) / height; // 0..1 as we go up
-
-                float leftX = width / 2f * t;
-                float rightX = width - leftX;
-
-                for (int x = 0; x < width; x++)
-                {
-                    // Compute signed distance from each edge (positive = inside)
-                    float distLeft  = x + 0.5f - leftX;
-                    float distRight = rightX - (x + 0.5f);
-                    float coverage  = Math.Clamp(Math.Min(distLeft, distRight), 0f, 1f);
-
-                    data[y * width + x] = coverage <= 0f
-                        ? Color.Transparent
-                        : new Color(coverage, coverage, coverage, coverage);
-                }
-            }
-
-            texture.SetData(data);
-            return texture;
         }
 
     }
