@@ -8,7 +8,6 @@ using Microsoft.Xna.Framework.Graphics;
 using NuciXNA.DataAccess.Content;
 using NuciXNA.Graphics;
 using NuciXNA.Graphics.Drawing;
-using NuciXNA.Graphics.SpriteEffects;
 using NuciXNA.Gui.Controls;
 using NuciXNA.Primitives;
 
@@ -22,11 +21,10 @@ namespace BackgammonByHoratiu.Gui.Controls
         static readonly Color ColorPlayer1 = Color.White;
         static readonly Color ColorHouseColumn = new(63, 63, 63);
         static readonly Color ColorPlayer2 = new(139, 69, 19);
-        TextureSprite animSpriteWhite;
-        TextureSprite animSpriteBrown;
+        GuiImage animPiece;
+        Point2D animTargetLocation;
         bool isAnimating;
         int animationFromColumn;
-        int animationDestinationColumn = -1;
         int pendingOutingColumn = -1;
         int pendingOutingPlayer = -1;
         Action pendingMoveAction;
@@ -95,8 +93,22 @@ namespace BackgammonByHoratiu.Gui.Controls
                 Size = rightFrame.Size - new Size2D(GameDefines.FrameBorder * 2)
             };
 
-            leftFrame.Hide();
-            rightFrame.Hide();
+            die1 = new()
+            {
+                ContentFile = "Table/dice",
+                Location = new Point2D(
+                    leftBoardBackground.Location.X + leftBoardBackground.Size.Width * 3 / 4 - GameDefines.DieSize / 2,
+                    leftBoardBackground.Location.Y + leftBoardBackground.Size.Height / 2 - GameDefines.DieSize / 2),
+                Size = new Size2D(GameDefines.DieSize)
+            };
+            die2 = new()
+            {
+                ContentFile = "Table/dice",
+                Location = new Point2D(
+                    rightBoardBackground.Location.X + rightBoardBackground.Size.Width * 1 / 4 - GameDefines.DieSize / 2,
+                    rightBoardBackground.Location.Y + rightBoardBackground.Size.Height / 2 - GameDefines.DieSize / 2),
+                Size = new Size2D(GameDefines.DieSize)
+            };
 
             leftBoardBackground.Hide();
             rightBoardBackground.Hide();
@@ -132,44 +144,18 @@ namespace BackgammonByHoratiu.Gui.Controls
             };
             targetColumn.Hide();
 
-            die1 = new()
-            {
-                ContentFile = "Table/dice",
-                Location = new Point2D(
-                    leftBoardBackground.Location.X + leftBoardBackground.Size.Width * 3 / 4 - GameDefines.DieSize / 2,
-                    leftBoardBackground.Location.Y + leftBoardBackground.Size.Height / 2 - GameDefines.DieSize / 2),
-                Size = new Size2D(GameDefines.DieSize)
-            };
 
-            die2 = new()
-            {
-                ContentFile = "Table/dice",
-                Location = new Point2D(
-                    rightBoardBackground.Location.X + rightBoardBackground.Size.Width * 1 / 4 - GameDefines.DieSize / 2,
-                    rightBoardBackground.Location.Y + rightBoardBackground.Size.Height / 2 - GameDefines.DieSize / 2),
-                Size = new Size2D(GameDefines.DieSize)
-            };
+            var sizeProbe = new TextureSprite { ContentFile = "Table/pieces" };
+            sizeProbe.LoadContent();
+            pieceFrameSize = sizeProbe.TextureSize.Height;
+            sizeProbe.UnloadContent();
 
-            animSpriteWhite = new()
+            animPiece = new GuiImage
             {
                 ContentFile = "Table/pieces",
-                MovementEffect = new MovementEffect { Speed = GameDefines.AnimationSpeed },
-                IsActive = true
+                Size = new Size2D(GameDefines.PieceSize, GameDefines.PieceSize)
             };
-            animSpriteBrown = new()
-            {
-                ContentFile = "Table/pieces",
-                MovementEffect = new MovementEffect { Speed = GameDefines.AnimationSpeed },
-                IsActive = true
-            };
-            animSpriteWhite.LoadContent();
-            animSpriteBrown.LoadContent();
-            animSpriteWhite.MovementEffect.Deactivated += OnAnimSpriteDeactivated;
-            animSpriteBrown.MovementEffect.Deactivated += OnAnimSpriteDeactivated;
-
-            this.pieceFrameSize = animSpriteWhite.TextureSize.Height;
-            animSpriteWhite.SourceRectangle = new Rectangle2D(0, 0, pieceFrameSize, pieceFrameSize);
-            animSpriteBrown.SourceRectangle = new Rectangle2D(pieceFrameSize, 0, pieceFrameSize, pieceFrameSize);
+            animPiece.Hide();
 
             pieces =
             [
@@ -205,18 +191,15 @@ namespace BackgammonByHoratiu.Gui.Controls
             };
             ghostPiece.Hide();
 
-            RegisterChildren(die1, die2, ghostPiece, leftBoardBackground, rightBoardBackground, leftFrame, rightFrame, targetColumn);
+            RegisterChildren(leftFrame, rightFrame, leftBoardBackground, rightBoardBackground);
+            RegisterChildren(die1, die2, ghostPiece, targetColumn);
             RegisterChildren(pieces);
             RegisterChildren(columnImages);
+            RegisterChildren(animPiece);
         }
 
         protected override void DoUnloadContent()
         {
-            animSpriteWhite.MovementEffect.Deactivated -= OnAnimSpriteDeactivated;
-            animSpriteBrown.MovementEffect.Deactivated -= OnAnimSpriteDeactivated;
-            animSpriteWhite.UnloadContent();
-            animSpriteBrown.UnloadContent();
-
             pixelTexture?.Dispose();
         }
 
@@ -226,14 +209,7 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             if (isAnimating)
             {
-                if (animSpriteWhite.MovementEffect.IsActive)
-                {
-                    animSpriteWhite.Update(gameTime);
-                }
-                else if (animSpriteBrown.MovementEffect.IsActive)
-                {
-                    animSpriteBrown.Update(gameTime);
-                }
+                StepAnimation();
             }
 
             int diceRowY = game.ActivePlayer == 1 ? 0 : GameDefines.DieFrameSize.Height;
@@ -276,34 +252,6 @@ namespace BackgammonByHoratiu.Gui.Controls
             DrawCompletedPieces(spriteBatch);
 
             DrawGhostPiece(spriteBatch);
-
-            if (isAnimating)
-            {
-                TextureSprite activeAnimSprite = null;
-                Color activeAnimColor = Color.Black;
-
-                if (animSpriteWhite.MovementEffect.IsActive)
-                {
-                    activeAnimSprite = animSpriteWhite;
-                    activeAnimColor = ColorPlayer1;
-                }
-                else if (animSpriteBrown.MovementEffect.IsActive)
-                {
-                    activeAnimSprite = animSpriteBrown;
-                    activeAnimColor = ColorPlayer2;
-                }
-
-                if (activeAnimSprite is not null)
-                {
-                    Point2D animationPosition = activeAnimSprite.Location + activeAnimSprite.MovementEffect.LocationOffset;
-                    int pieceSize = GameDefines.PieceSize;
-
-                    DrawCircle(spriteBatch, new Rectangle(animationPosition.X, animationPosition.Y, pieceSize, pieceSize), activeAnimColor);
-                }
-            }
-
-            leftFrame.Draw(spriteBatch);
-            rightFrame.Draw(spriteBatch);
         }
 
         void DrawGhostPiece(SpriteBatch spriteBatch)
@@ -576,17 +524,16 @@ namespace BackgammonByHoratiu.Gui.Controls
             int piecesPerColumn = GameDefines.ColumnHeight / pieceSize;
 
             animationFromColumn = fromColumn;
-            animationDestinationColumn = toColumn;
             pendingMoveAction = onComplete;
             SetPendingOuting(toColumn, activePlayer);
 
             Point2D sourcePixel = GetAnimSourcePixel(fromColumn, pieceSize, piecesPerColumn);
             Point2D destinationPixel = GetAnimDestPixel(toColumn, activePlayer, pieceSize, piecesPerColumn);
 
-            TextureSprite animationSprite = activePlayer == 2 ? animSpriteBrown : animSpriteWhite;
-            animationSprite.Location = sourcePixel;
-            animationSprite.MovementEffect.TargetLocation = destinationPixel;
-            animationSprite.MovementEffect.Activate();
+            animPiece.SourceRectangle = new Rectangle2D(activePlayer == 2 ? pieceFrameSize : 0, 0, pieceFrameSize, pieceFrameSize);
+            animPiece.Location = sourcePixel;
+            animTargetLocation = destinationPixel;
+            animPiece.Show();
 
             isAnimating = true;
         }
@@ -594,8 +541,8 @@ namespace BackgammonByHoratiu.Gui.Controls
         public void CancelAnimation()
         {
             isAnimating = false;
+            animPiece.Hide();
             pendingMoveAction = null;
-            animationDestinationColumn = -1;
             pendingOutingColumn = -1;
             pendingOutingPlayer = -1;
         }
@@ -606,16 +553,12 @@ namespace BackgammonByHoratiu.Gui.Controls
             int piecesPerColumn = GameDefines.ColumnHeight / pieceSize;
 
             pendingMoveAction = onComplete;
-            animationDestinationColumn = toColumn;
             SetPendingOuting(toColumn, activePlayer);
 
-            TextureSprite animationSprite = activePlayer == 2 ? animSpriteBrown : animSpriteWhite;
-
-            animationSprite.Location = animationSprite.MovementEffect.TargetLocation;
-
-            Point2D destinationPixel = GetAnimDestPixel(toColumn, activePlayer, pieceSize, piecesPerColumn);
-            animationSprite.MovementEffect.TargetLocation = destinationPixel;
-            animationSprite.MovementEffect.Activate();
+            animPiece.SourceRectangle = new Rectangle2D(activePlayer == 2 ? pieceFrameSize : 0, 0, pieceFrameSize, pieceFrameSize);
+            animPiece.Location = animTargetLocation;
+            animTargetLocation = GetAnimDestPixel(toColumn, activePlayer, pieceSize, piecesPerColumn);
+            animPiece.Show();
 
             isAnimating = true;
         }
@@ -734,23 +677,38 @@ namespace BackgammonByHoratiu.Gui.Controls
                 animationFromColumn = GameDefines.ColBarP2;
             }
 
-            TextureSprite animationSprite = hitPlayer == 1 ? animSpriteWhite : animSpriteBrown;
-            animationSprite.Location = sourcePixel;
-            animationSprite.MovementEffect.TargetLocation = destinationPixel;
-            animationSprite.MovementEffect.Activate();
+            animPiece.SourceRectangle = new Rectangle2D(hitPlayer == 1 ? 0 : pieceFrameSize, 0, pieceFrameSize, pieceFrameSize);
+            animPiece.Location = sourcePixel;
+            animTargetLocation = destinationPixel;
+            animPiece.Show();
 
             pendingMoveAction = null;
             isAnimating = true;
         }
 
-        void OnAnimSpriteDeactivated(object sender, EventArgs e)
+        void StepAnimation()
         {
-            if (!isAnimating)
-            {
-                return;
-            }
+            Point2D current = animPiece.Location;
+            Point2D delta = animTargetLocation - current;
+            double distance = Math.Sqrt((double)delta.X * delta.X + (double)delta.Y * delta.Y);
 
+            if (distance <= GameDefines.AnimationSpeed)
+            {
+                animPiece.Location = animTargetLocation;
+                OnAnimationComplete();
+            }
+            else
+            {
+                float stepX = (float)(delta.X / distance * GameDefines.AnimationSpeed);
+                float stepY = (float)(delta.Y / distance * GameDefines.AnimationSpeed);
+                animPiece.Location = new Point2D(current.X + (int)Math.Round(stepX), current.Y + (int)Math.Round(stepY));
+            }
+        }
+
+        void OnAnimationComplete()
+        {
             isAnimating = false;
+            animPiece.Hide();
 
             int outingColumn = pendingOutingColumn;
             int outingPlayer = pendingOutingPlayer;
