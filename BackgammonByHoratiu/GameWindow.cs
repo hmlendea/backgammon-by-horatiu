@@ -25,7 +25,7 @@ namespace BackgammonByHoratiu
 
         static readonly Dictionary<CursorType, string> CursorContentFiles = new()
         {
-            [CursorType.Pointer]      = "Cursors/pointer",
+            [CursorType.Pointer]      = "Cursors/hand_open",
             [CursorType.HandPicking]  = "Cursors/hand_picking",
             [CursorType.HandGrabbing] = "Cursors/hand_holding",
             [CursorType.HandOpen]     = "Cursors/hand_open",
