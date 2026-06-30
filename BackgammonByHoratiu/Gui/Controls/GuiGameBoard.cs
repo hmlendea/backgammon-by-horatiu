@@ -21,7 +21,6 @@ namespace BackgammonByHoratiu.Gui.Controls
     {
         static readonly Color ColorPlayer1 = Color.White;
         static readonly Color ColorHouseColumn = new(63, 63, 63);
-        static readonly Color ColorOutColumn = Color.Black;
         static readonly Color ColorPlayer2 = new(139, 69, 19);
         TextureSprite animSpriteWhite;
         TextureSprite animSpriteBrown;
@@ -35,7 +34,10 @@ namespace BackgammonByHoratiu.Gui.Controls
         public bool IsAnimating => isAnimating;
 
         Texture2D pixelTexture;
-        GuiImage boardImage;
+        GuiImage boardLeftImage;
+        GuiImage boardRightImage;
+        GuiImage frameLeftImage;
+        GuiImage frameRightImage;
         GuiImage[] columnImages;
         GuiImage targetColumnImage;
         GuiImage ghostPiece;
@@ -49,7 +51,6 @@ namespace BackgammonByHoratiu.Gui.Controls
         Rectangle outColumnTop, outColumnBottom;
         Rectangle houseTop, houseBottom;
         Rectangle dice1Rectangle, dice2Rectangle;
-
 
         public int SelectedColumn { get; set; } = -1;
         public int HoveredColumn { get; set; } = -1;
@@ -67,13 +68,39 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             BuildLayoutRectangles();
 
-            boardImage = new GuiImage
+            frameLeftImage = new GuiImage
+            {
+                ContentFile = "Table/frame",
+                Location = new Point2D(0, 0),
+                Size = new Size2D(GameDefines.FrameWidth, GameDefines.FrameHeight)
+            };
+            frameRightImage = new GuiImage
+            {
+                ContentFile = "Table/frame",
+                Location = new Point2D(GameDefines.BarX, 0),
+                Size = new Size2D(GameDefines.FrameWidth, GameDefines.FrameHeight)
+            };
+
+            boardLeftImage = new GuiImage
             {
                 ContentFile = "Table/board",
-                Location = Point2D.Empty,
-                Size = new Size2D(GameDefines.WindowWidth, GameDefines.WindowHeight)
+                Location = new Point2D(GameDefines.FrameBorder, GameDefines.FrameBorder),
+                Size = frameLeftImage.Size - new Size2D(GameDefines.FrameBorder, GameDefines.FrameBorder) * 2
             };
-            boardImage.Hide();
+            boardRightImage = new GuiImage
+            {
+                ContentFile = "Table/board",
+                Location = new Point2D(
+                    boardLeftImage.Location.X + boardLeftImage.Size.Width + GameDefines.FrameBorder * 2,
+                    boardLeftImage.Location.Y),
+                Size = frameRightImage.Size - new Size2D(GameDefines.FrameBorder, GameDefines.FrameBorder) * 2
+            };
+
+            frameLeftImage.Hide();
+            frameRightImage.Hide();
+
+            boardLeftImage.Hide();
+            boardRightImage.Hide();
 
             columnImages = new GuiImage[24];
 
@@ -175,7 +202,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             };
             ghostPiece.Hide();
 
-            RegisterChildren(die1, die2, pieces[0], pieces[1], pieces[2], ghostPiece, boardImage, targetColumnImage);
+            RegisterChildren(die1, die2, pieces[0], pieces[1], pieces[2], ghostPiece, boardLeftImage, boardRightImage, frameLeftImage, frameRightImage, targetColumnImage);
             RegisterChildren(columnImages);
         }
 
@@ -213,7 +240,8 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         protected override void DoDraw(SpriteBatch spriteBatch)
         {
-            boardImage.Draw(spriteBatch);
+            boardLeftImage.Draw(spriteBatch);
+            boardRightImage.Draw(spriteBatch);
 
             foreach (GuiImage columnImage in columnImages)
             {
@@ -236,8 +264,6 @@ namespace BackgammonByHoratiu.Gui.Controls
                 }
             }
 
-            spriteBatch.Draw(pixelTexture, outColumnTop, ColorOutColumn);
-            spriteBatch.Draw(pixelTexture, outColumnBottom, ColorOutColumn);
             spriteBatch.Draw(pixelTexture, houseTop, ColorHouseColumn);
             spriteBatch.Draw(pixelTexture, houseBottom, ColorHouseColumn);
 
@@ -271,6 +297,9 @@ namespace BackgammonByHoratiu.Gui.Controls
                     DrawCircle(spriteBatch, new Rectangle(animationPosition.X, animationPosition.Y, pieceSize, pieceSize), activeAnimColor);
                 }
             }
+
+            frameLeftImage.Draw(spriteBatch);
+            frameRightImage.Draw(spriteBatch);
         }
 
         void DrawGhostPiece(SpriteBatch spriteBatch)
@@ -737,58 +766,67 @@ namespace BackgammonByHoratiu.Gui.Controls
         void BuildLayoutRectangles()
         {
             int pieceSize = GameDefines.PieceSize;
-            int padding = GameDefines.Padding;
             int columnHeight = GameDefines.ColumnHeight;
-            int boardHeight = GameDefines.BoardHeight;
+            int boardHalfHeight = GameDefines.BoardHalfHeight;
+            int frameBorder = GameDefines.FrameBorder;
+            // Right half has a slightly different vertical border (measured)
+            const int rightTopY = 47;
+            // Gap: right-half first column (439) minus left-half last column right edge (337)
+            const int halfSeparatorWidth = 102;
 
             columnRectangles = new Rectangle[24];
-            columnRectangles[11] = new Rectangle(0, 0, pieceSize, columnHeight);
+            columnRectangles[11] = new Rectangle(frameBorder, frameBorder, pieceSize, columnHeight);
 
             for (int columnIndex = 10; columnIndex >= 0; columnIndex--)
             {
+                int topY = columnIndex < 6 ? rightTopY : frameBorder;
                 if (columnIndex == 5)
                 {
                     columnRectangles[columnIndex] = new Rectangle(
-                        columnRectangles[columnIndex + 1].Right + pieceSize + padding * 2, 0, pieceSize, columnHeight);
+                        columnRectangles[columnIndex + 1].Right + halfSeparatorWidth, topY, pieceSize, columnHeight);
                 }
                 else
                 {
                     columnRectangles[columnIndex] = new Rectangle(
-                        columnRectangles[columnIndex + 1].Right, 0, pieceSize, columnHeight);
+                        columnRectangles[columnIndex + 1].Right, topY, pieceSize, columnHeight);
                 }
             }
 
-            int bottomY = boardHeight - columnHeight;
-            columnRectangles[12] = new Rectangle(0, bottomY, pieceSize, columnHeight);
+            int bottomY = frameBorder + boardHalfHeight - columnHeight;
+            int rightBottomY = rightTopY + boardHalfHeight - columnHeight;
+            columnRectangles[12] = new Rectangle(frameBorder, bottomY, pieceSize, columnHeight);
 
             for (int columnIndex = 13; columnIndex < 24; columnIndex++)
             {
+                int colBottomY = columnIndex >= 18 ? rightBottomY : bottomY;
                 if (columnIndex == 18)
                 {
                     columnRectangles[columnIndex] = new Rectangle(
-                        columnRectangles[columnIndex - 1].Right + pieceSize + padding * 2, bottomY, pieceSize, columnHeight);
+                        columnRectangles[columnIndex - 1].Right + halfSeparatorWidth, colBottomY, pieceSize, columnHeight);
                 }
                 else
                 {
                     columnRectangles[columnIndex] = new Rectangle(
-                        columnRectangles[columnIndex - 1].Right, bottomY, pieceSize, columnHeight);
+                        columnRectangles[columnIndex - 1].Right, colBottomY, pieceSize, columnHeight);
                 }
             }
 
-            int barPositionX = columnRectangles[6].Right;
-            int barWidth = pieceSize + padding * 2;
-            int halfHeight = boardHeight / 2;
-            int housePositionX = columnRectangles[0].Right;
-            int houseWidth = pieceSize + padding * 3;
+            int barPositionX = GameDefines.BarX;
+            int halfHeight = GameDefines.WindowHeight / 2;
+            int housePositionX = GameDefines.HouseX;
+            int houseWidth = GameDefines.HouseWidth;
 
-            outColumnTop = new Rectangle(barPositionX, 0, barWidth, halfHeight);
-            outColumnBottom = new Rectangle(barPositionX, halfHeight, barWidth, halfHeight);
-            houseTop = new Rectangle(housePositionX, 0, houseWidth, halfHeight);
-            houseBottom = new Rectangle(housePositionX, halfHeight, houseWidth, halfHeight);
+            // Outed pieces span the gap between left board right edge (339) and right board left edge (439)
+            int outColumnX = barPositionX - frameBorder;
+            int outColumnWidth = columnRectangles[5].X - outColumnX;
+            outColumnTop = new Rectangle(outColumnX, 0, outColumnWidth, halfHeight);
+            outColumnBottom = new Rectangle(outColumnX, halfHeight, outColumnWidth, halfHeight);
+            houseTop = new Rectangle(housePositionX, frameBorder, houseWidth, boardHalfHeight / 2);
+            houseBottom = new Rectangle(housePositionX, frameBorder + boardHalfHeight / 2, houseWidth, boardHalfHeight / 2);
 
-            int dicePositionY = (boardHeight - pieceSize) / 2;
-            dice1Rectangle = new Rectangle(barPositionX - barWidth - padding * 4, dicePositionY, pieceSize, pieceSize);
-            dice2Rectangle = new Rectangle(outColumnTop.Right + padding * 4, dicePositionY, pieceSize, pieceSize);
+            int dicePositionY = (GameDefines.WindowHeight - pieceSize) / 2;
+            dice1Rectangle = new Rectangle(barPositionX - frameBorder - pieceSize, dicePositionY, pieceSize, pieceSize);
+            dice2Rectangle = new Rectangle(barPositionX + frameBorder, dicePositionY, pieceSize, pieceSize);
         }
 
     }
