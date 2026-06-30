@@ -44,8 +44,7 @@ namespace BackgammonByHoratiu.Gui.Controls
         Texture2D triangleUpTexture;
         Texture2D brownPieceTexture;
         Texture2D whitePieceTexture;
-        Texture2D brownDieTexture;
-        Texture2D whiteDieTexture;
+        Texture2D diceTexture;
         SpriteFont boardFont;
 
         // Precomputed hit-test rectangles mirroring the original MainWindow layout
@@ -80,8 +79,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             triangleUpTexture = CreateTriangleTexture(gd, GameDefines.PieceSize, GameDefines.ColumnHeight, pointsDown: false);
             brownPieceTexture = NuciContentManager.Instance.LoadTexture2D("Table/BrownPiece");
             whitePieceTexture = NuciContentManager.Instance.LoadTexture2D("Table/WhitePiece");
-            brownDieTexture = NuciContentManager.Instance.LoadTexture2D("Table/BrownDie");
-            whiteDieTexture = NuciContentManager.Instance.LoadTexture2D("Table/WhiteDie");
+            diceTexture = NuciContentManager.Instance.LoadTexture2D("Table/dice");
 
             boardFont = NuciContentManager.Instance.LoadSpriteFont("Fonts/InfoBarFont");
 
@@ -309,14 +307,14 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         void DrawDice(SpriteBatch spriteBatch)
         {
-            Texture2D dieTex = game.ActivePlayer == 1 ? whiteDieTexture : brownDieTexture;
+            const int frameSize = 200;
+            int rowY = game.ActivePlayer == 1 ? 0 : frameSize;
 
-            int frameSize = dieTex.Height;
-            Rectangle dice1Source = new((game.Dice1 - 1) * frameSize, 0, frameSize, frameSize);
-            Rectangle dice2Source = new((game.Dice2 - 1) * frameSize, 0, frameSize, frameSize);
+            Rectangle dice1Source = new((game.Dice1 - 1) * frameSize, rowY, frameSize, frameSize);
+            Rectangle dice2Source = new((game.Dice2 - 1) * frameSize, rowY, frameSize, frameSize);
 
-            spriteBatch.Draw(dieTex, dice1Rect, dice1Source, Color.White);
-            spriteBatch.Draw(dieTex, dice2Rect, dice2Source, Color.White);
+            spriteBatch.Draw(diceTexture, dice1Rect, dice1Source, Color.White);
+            spriteBatch.Draw(diceTexture, dice2Rect, dice2Source, Color.White);
         }
 
         void DrawCompletedPieces(SpriteBatch spriteBatch)
