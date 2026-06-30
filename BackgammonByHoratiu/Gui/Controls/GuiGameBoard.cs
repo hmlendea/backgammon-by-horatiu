@@ -28,7 +28,6 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         public bool IsAnimating => isAnimating;
 
-        Texture2D pixelTexture;
         GuiImage leftBoardBackground;
         GuiImage rightBoardBackground;
         GuiImage leftFrame;
@@ -58,9 +57,6 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         protected override void DoLoadContent()
         {
-            pixelTexture = new Texture2D(GraphicsManager.Instance.Graphics.GraphicsDevice, 1, 1);
-            pixelTexture.SetData([Color.White]);
-
             BuildLayoutRectangles();
 
             leftFrame = new GuiImage
@@ -217,7 +213,6 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         protected override void DoUnloadContent()
         {
-            pixelTexture?.Dispose();
         }
 
         protected override void DoUpdate(GameTime gameTime)
@@ -265,14 +260,7 @@ namespace BackgammonByHoratiu.Gui.Controls
                 {
                     DrawTargetColumn(spriteBatch, destination);
                 }
-                else if (destination == GameDefines.ColHouseP1)
-                {
-                    DrawBorder(spriteBatch, houseBottom, Color.Cyan, 3);
-                }
-                else if (destination == GameDefines.ColHouseP2)
-                {
-                    DrawBorder(spriteBatch, houseTop, Color.Cyan, 3);
-                }
+
             }
 
             DrawPieces(spriteBatch);
@@ -510,14 +498,6 @@ namespace BackgammonByHoratiu.Gui.Controls
             pieces[spriteIndex].Size = new Size2D(destination.Width, destination.Height);
             pieces[spriteIndex].Update(lastGameTime);
             pieces[spriteIndex].Draw(spriteBatch);
-        }
-
-        void DrawBorder(SpriteBatch spriteBatch, Rectangle2D rectangle, Color color, int thickness)
-        {
-            spriteBatch.Draw(pixelTexture, new Rectangle2D(rectangle.Left, rectangle.Top, rectangle.Width, thickness), color);
-            spriteBatch.Draw(pixelTexture, new Rectangle2D(rectangle.Left, rectangle.Bottom - thickness, rectangle.Width, thickness), color);
-            spriteBatch.Draw(pixelTexture, new Rectangle2D(rectangle.Left, rectangle.Top, thickness, rectangle.Height), color);
-            spriteBatch.Draw(pixelTexture, new Rectangle2D(rectangle.Right - thickness, rectangle.Top, thickness, rectangle.Height), color);
         }
 
         public int ColumnAt(int x, int y)
