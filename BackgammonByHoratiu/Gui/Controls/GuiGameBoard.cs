@@ -19,7 +19,6 @@ namespace BackgammonByHoratiu.Gui.Controls
     public class GuiGameBoard(IGameManager game) : GuiControl
     {
         static readonly Color ColorPlayer1 = Color.White;
-        static readonly Color ColorHouseColumn = new(63, 63, 63);
         static readonly Color ColorPlayer2 = new(139, 69, 19);
         GuiImage animPiece;
         Point2D animTargetLocation;
@@ -147,7 +146,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             targetColumn.Hide();
 
 
-            var sizeProbe = new TextureSprite { ContentFile = "Table/pieces" };
+            TextureSprite sizeProbe = new() { ContentFile = "Table/pieces" };
             sizeProbe.LoadContent();
             pieceFrameSize = sizeProbe.TextureSize.Height;
             sizeProbe.UnloadContent();
@@ -278,9 +277,6 @@ namespace BackgammonByHoratiu.Gui.Controls
                     DrawBorder(spriteBatch, houseTop, Color.Cyan, 3);
                 }
             }
-
-            spriteBatch.Draw(pixelTexture, houseTop, ColorHouseColumn);
-            spriteBatch.Draw(pixelTexture, houseBottom, ColorHouseColumn);
 
             DrawPieces(spriteBatch);
             DrawCompletedPieces(spriteBatch);
