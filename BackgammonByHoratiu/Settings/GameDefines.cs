@@ -36,6 +36,7 @@ namespace BackgammonByHoratiu.Settings
 
         public static Size2D ColumnFrameSize => new(105, 512);
         public static Size2D DieFrameSize => new(200, 200);
+        public const int DieSize = 48;
 
         public const float AnimationSpeed = 12f;
         public const int OverflowLayerSourceOffset = 19;
