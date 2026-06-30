@@ -40,8 +40,8 @@ namespace BackgammonByHoratiu.Gui.Controls
         GuiImage targetColumn;
         GuiImage ghostPiece;
         GuiImage[] pieces;
-        GuiImage[] outedTopSlots;
-        GuiImage[] outedBottomSlots;
+        GuiImage[] topBar;
+        GuiImage[] bottomBar;
         int pieceFrameSize;
         GuiImage die1;
         GuiImage die2;
@@ -194,34 +194,34 @@ namespace BackgammonByHoratiu.Gui.Controls
             ghostPiece.Hide();
 
             const int maxOutedPieces = 15;
-            outedTopSlots = new GuiImage[maxOutedPieces];
-            outedBottomSlots = new GuiImage[maxOutedPieces];
+            topBar = new GuiImage[maxOutedPieces];
+            bottomBar = new GuiImage[maxOutedPieces];
 
             for (int i = 0; i < maxOutedPieces; i++)
             {
-                outedTopSlots[i] = new GuiImage
+                topBar[i] = new GuiImage
                 {
                     ContentFile = "Table/pieces",
                     SourceRectangle = new Rectangle2D(0, 0, pieceFrameSize, pieceFrameSize),
                     Size = new Size2D(GameDefines.PieceSize, GameDefines.PieceSize)
                 };
-                outedTopSlots[i].Hide();
+                topBar[i].Hide();
 
-                outedBottomSlots[i] = new GuiImage
+                bottomBar[i] = new GuiImage
                 {
                     ContentFile = "Table/pieces",
                     SourceRectangle = new Rectangle2D(pieceFrameSize, 0, pieceFrameSize, pieceFrameSize),
                     Size = new Size2D(GameDefines.PieceSize, GameDefines.PieceSize)
                 };
-                outedBottomSlots[i].Hide();
+                bottomBar[i].Hide();
             }
 
             RegisterChildren(leftFrame, rightFrame, leftBoardBackground, rightBoardBackground);
             RegisterChildren(die1, die2, ghostPiece, targetColumn);
             RegisterChildren(pieces);
             RegisterChildren(columnImages);
-            RegisterChildren(outedTopSlots);
-            RegisterChildren(outedBottomSlots);
+            RegisterChildren(topBar);
+            RegisterChildren(bottomBar);
             RegisterChildren(animPiece);
         }
 
@@ -283,9 +283,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             spriteBatch.Draw(pixelTexture, houseBottom, ColorHouseColumn);
 
             DrawPieces(spriteBatch);
-
             DrawCompletedPieces(spriteBatch);
-
             DrawGhostPiece(spriteBatch);
         }
 
@@ -416,7 +414,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             int centerTopX = outColumnTop.Left + (outColumnTop.Width - pieceSize) / 2;
             int centerBottomX = outColumnBottom.Left + (outColumnBottom.Width - pieceSize) / 2;
 
-            for (int i = 0; i < outedTopSlots.Length; i++)
+            for (int i = 0; i < topBar.Length; i++)
             {
                 if (i < player1OutedPieces)
                 {
@@ -424,13 +422,13 @@ namespace BackgammonByHoratiu.Gui.Controls
                     int indexInLayer = i % piecesPerColumn;
                     int layerOffset = layer * GameDefines.OverflowLayerSourceOffset * pieceSize / pieceFrameSize;
                     bool isSelected = i == player1OutedPieces - 1 && SelectedColumn == GameDefines.ColBarP1;
-                    outedTopSlots[i].SourceRectangle = new Rectangle2D(isSelected ? pieceFrameSize * 2 : 0, 0, pieceFrameSize, pieceFrameSize);
-                    outedTopSlots[i].Location = new Point2D(centerTopX, outColumnTop.Top - layerOffset + indexInLayer * pieceSize);
-                    outedTopSlots[i].Show();
+                    topBar[i].SourceRectangle = new Rectangle2D(isSelected ? pieceFrameSize * 2 : 0, 0, pieceFrameSize, pieceFrameSize);
+                    topBar[i].Location = new Point2D(centerTopX, outColumnTop.Top - layerOffset + indexInLayer * pieceSize);
+                    topBar[i].Show();
                 }
                 else
                 {
-                    outedTopSlots[i].Hide();
+                    topBar[i].Hide();
                 }
 
                 if (i < player2OutedPieces)
@@ -439,13 +437,13 @@ namespace BackgammonByHoratiu.Gui.Controls
                     int indexInLayer = i % piecesPerColumn;
                     int layerOffset = layer * GameDefines.OverflowLayerSourceOffset * pieceSize / pieceFrameSize;
                     bool isSelected = i == player2OutedPieces - 1 && SelectedColumn == GameDefines.ColBarP2;
-                    outedBottomSlots[i].SourceRectangle = new Rectangle2D(isSelected ? pieceFrameSize * 2 : pieceFrameSize, 0, pieceFrameSize, pieceFrameSize);
-                    outedBottomSlots[i].Location = new Point2D(centerBottomX, outColumnBottom.Bottom - pieceSize - layerOffset - indexInLayer * pieceSize);
-                    outedBottomSlots[i].Show();
+                    bottomBar[i].SourceRectangle = new Rectangle2D(isSelected ? pieceFrameSize * 2 : pieceFrameSize, 0, pieceFrameSize, pieceFrameSize);
+                    bottomBar[i].Location = new Point2D(centerBottomX, outColumnBottom.Bottom - pieceSize - layerOffset - indexInLayer * pieceSize);
+                    bottomBar[i].Show();
                 }
                 else
                 {
-                    outedBottomSlots[i].Hide();
+                    bottomBar[i].Hide();
                 }
             }
         }
