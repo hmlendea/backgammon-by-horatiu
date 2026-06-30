@@ -90,10 +90,29 @@ namespace BackgammonByHoratiu.Gui.Screens
                                : dragBeginCol == BarBrown ? GameDefines.ColBarP2
                                : dragBeginCol;
                 gameBoard.ValidDestinations = game.GetValidDestinations(mappedFrom);
+
+                int mx = mousePosition.X;
+                int my = mousePosition.Y;
+                int col = gameBoard.ColumnAt(mx, my);
+                if (col >= 0)
+                {
+                    gameBoard.HoveredColumn = col;
+                }
+                else if (gameBoard.IsOnHouse(mx, my))
+                {
+                    gameBoard.HoveredColumn = game.ActivePlayer == 1
+                        ? GameDefines.ColHouseP1
+                        : GameDefines.ColHouseP2;
+                }
+                else
+                {
+                    gameBoard.HoveredColumn = -1;
+                }
             }
             else
             {
-                gameBoard.ValidDestinations = Array.Empty<int>();
+                gameBoard.ValidDestinations = [];
+                gameBoard.HoveredColumn = -1;
             }
         }
 

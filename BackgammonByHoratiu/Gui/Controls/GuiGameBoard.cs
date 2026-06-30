@@ -38,7 +38,9 @@ namespace BackgammonByHoratiu.Gui.Controls
         Texture2D pixelTexture;
         GuiImage[] columnImages;
         GuiImage targetColumnImage;
+        GuiImage ghostPiece;
         GuiImage[] pieces;
+        int pieceFrameSize;
         GuiImage die1;
         GuiImage die2;
         GameTime lastGameTime = new();
@@ -52,6 +54,7 @@ namespace BackgammonByHoratiu.Gui.Controls
         readonly float AnimationSpeed = 12f;
 
         public int SelectedColumn { get; set; } = -1;
+        public int HoveredColumn { get; set; } = -1;
 
         public IReadOnlyList<int> ValidDestinations { get; set; } = Array.Empty<int>();
 
@@ -135,6 +138,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             animSpriteBrown.MovementEffect.Deactivated += OnAnimSpriteDeactivated;
 
             int pieceFrameSize = animSpriteWhite.TextureSize.Height;
+            this.pieceFrameSize = pieceFrameSize;
             animSpriteWhite.SourceRectangle = new Rectangle2D(0, 0, pieceFrameSize, pieceFrameSize);
             animSpriteBrown.SourceRectangle = new Rectangle2D(pieceFrameSize, 0, pieceFrameSize, pieceFrameSize);
 
@@ -163,7 +167,14 @@ namespace BackgammonByHoratiu.Gui.Controls
             pieces[1].Hide();
             pieces[2].Hide();
 
-            RegisterChildren(die1, die2, pieces[0], pieces[1], pieces[2], targetColumnImage);
+            ghostPiece = new GuiImage
+            {
+                ContentFile = "Table/pieces",
+                Opacity = 0.5f
+            };
+            ghostPiece.Hide();
+
+            RegisterChildren(die1, die2, pieces[0], pieces[1], pieces[2], ghostPiece, targetColumnImage);
             RegisterChildren(columnImages);
         }
 
@@ -234,6 +245,8 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             DrawCompletedPieces(spriteBatch);
 
+            DrawGhostPiece(spriteBatch);
+
             if (isAnimating)
             {
                 TextureSprite animSprite = null;
@@ -265,6 +278,59 @@ namespace BackgammonByHoratiu.Gui.Controls
             {
                 img.Draw(spriteBatch);
             }
+        }
+
+        void DrawGhostPiece(SpriteBatch spriteBatch)
+        {
+            if (SelectedColumn < 0 || !ValidDestinations.Contains(HoveredColumn))
+            {
+                return;
+            }
+
+            int ps = GameDefines.PieceSize;
+            int piecesPerCol = GameDefines.ColumnHeight / ps;
+            Color pieceColor = game.ActivePlayer == 1 ? ColorPlayer1 : ColorPlayer2;
+            ghostPiece.SourceRectangle = new Rectangle2D(pieceColor == ColorPlayer2 ? pieceFrameSize : 0, 0, pieceFrameSize, pieceFrameSize);
+
+            Rectangle dest;
+
+            if (HoveredColumn >= 0 && HoveredColumn < 24)
+            {
+                int[] values = game.TableValues;
+                int sign = game.ActivePlayer == 1 ? 1 : -1;
+                int existing = values[HoveredColumn] * sign > 0 ? Math.Abs(values[HoveredColumn]) : 0;
+                int slot = Math.Min(existing, piecesPerCol - 1);
+
+                if (HoveredColumn < 12)
+                {
+                    dest = new Rectangle(columnRects[HoveredColumn].Left, columnRects[HoveredColumn].Top + slot * ps, ps, ps);
+                }
+                else
+                {
+                    dest = new Rectangle(columnRects[HoveredColumn].Left, columnRects[HoveredColumn].Bottom - (slot + 1) * ps, ps, ps);
+                }
+            }
+            else if (HoveredColumn == GameDefines.ColHouseP1)
+            {
+                int existing = Math.Min(game.Player1.CompletedPieces, piecesPerCol - 1);
+                int cx = houseBottom.Left + (houseBottom.Width - ps) / 2;
+                dest = new Rectangle(cx, houseBottom.Bottom - (existing + 1) * ps, ps, ps);
+            }
+            else if (HoveredColumn == GameDefines.ColHouseP2)
+            {
+                int existing = Math.Min(game.Player2.CompletedPieces, piecesPerCol - 1);
+                int cx = houseTop.Left + (houseTop.Width - ps) / 2;
+                dest = new Rectangle(cx, houseTop.Top + existing * ps, ps, ps);
+            }
+            else
+            {
+                return;
+            }
+
+            ghostPiece.Location = new Point2D(dest.X, dest.Y);
+            ghostPiece.Size = new Size2D(dest.Width, dest.Height);
+            ghostPiece.Update(lastGameTime);
+            ghostPiece.Draw(spriteBatch);
         }
 
         void DrawTargetColumn(SpriteBatch spriteBatch, int colIndex)
