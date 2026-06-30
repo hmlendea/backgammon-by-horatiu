@@ -23,8 +23,9 @@ namespace BackgammonByHoratiu
         readonly Cursor cursor;
 
         Texture2D handPickingTexture;
+        Texture2D handGrabbingTexture;
 
-        public static bool ShowHandPickingCursor { get; set; }
+        public static CursorType ActiveCursor { get; set; }
 
         public GameWindow()
         {
@@ -63,6 +64,7 @@ namespace BackgammonByHoratiu
             fpsIndicator.LoadContent();
             cursor.LoadContent();
             handPickingTexture = NuciContentManager.Instance.LoadTexture2D("Cursors/hand_picking");
+            handGrabbingTexture = NuciContentManager.Instance.LoadTexture2D("Cursors/hand_holding");
         }
 
         protected override void UnloadContent()
@@ -102,7 +104,15 @@ namespace BackgammonByHoratiu
 
             fpsIndicator.Draw(spriteBatch);
 
-            if (ShowHandPickingCursor)
+            if (ActiveCursor == CursorType.HandGrabbing)
+            {
+                Point2D mousePosition = cursor.Location;
+                float scale = 28.0f / 409.0f;
+                int drawWidth = (int)(handGrabbingTexture.Width * scale);
+                int drawHeight = (int)(handGrabbingTexture.Height * scale);
+                spriteBatch.Draw(handGrabbingTexture, new Rectangle(mousePosition.X, mousePosition.Y, drawWidth, drawHeight), Color.White);
+            }
+            else if (ActiveCursor == CursorType.HandPicking)
             {
                 Point2D mousePosition = cursor.Location;
                 float scale = 28.0f / 409.0f;

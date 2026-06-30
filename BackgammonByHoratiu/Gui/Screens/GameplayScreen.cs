@@ -65,7 +65,11 @@ namespace BackgammonByHoratiu.Gui.Screens
         {
             game.Update(gameTime.ElapsedGameTime.TotalMilliseconds);
 
-            GameWindow.ShowHandPickingCursor = gameBoard.IsHoveringOverWhitePiece(mousePosition.X, mousePosition.Y);
+            GameWindow.ActiveCursor = dragBeginCol != -1
+                ? CursorType.HandGrabbing
+                : gameBoard.IsHoveringOverWhitePiece(mousePosition.X, mousePosition.Y)
+                    ? CursorType.HandPicking
+                    : CursorType.Pointer;
 
             gameBoard.SelectedColumn = dragBeginCol == BarWhite ? GameDefines.ColBarP1
                                      : dragBeginCol == BarBrown ? GameDefines.ColBarP2
