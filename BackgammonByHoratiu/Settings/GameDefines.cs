@@ -40,5 +40,11 @@ namespace BackgammonByHoratiu.Settings
 
         public const float AnimationSpeed = 12f;
         public const int OverflowLayerSourceOffset = 19;
+        public const int TotalPiecesPerPlayer = 15;
+        public const int TotalColumns = 24;
+        // Right frame has a slightly different measured top border (pixels)
+        public const int RightFrameTopY = 47;
+        // Gap between left-half last column right edge and right-half first column left edge
+        public const int HalfSeparatorWidth = 102;
     }
 }
