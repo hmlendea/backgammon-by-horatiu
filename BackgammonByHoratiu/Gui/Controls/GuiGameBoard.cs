@@ -43,7 +43,8 @@ namespace BackgammonByHoratiu.Gui.Controls
         Texture2D triangleDownTexture;
         Texture2D triangleUpTexture;
         Texture2D piecesTexture;
-        Texture2D diceTexture;
+        GuiImage die1;
+        GuiImage die2;
         SpriteFont boardFont;
 
         // Precomputed hit-test rectangles mirroring the original MainWindow layout
@@ -77,11 +78,24 @@ namespace BackgammonByHoratiu.Gui.Controls
             triangleDownTexture = CreateTriangleTexture(gd, GameDefines.PieceSize, GameDefines.ColumnHeight, pointsDown: true);
             triangleUpTexture = CreateTriangleTexture(gd, GameDefines.PieceSize, GameDefines.ColumnHeight, pointsDown: false);
             piecesTexture = NuciContentManager.Instance.LoadTexture2D("Table/pieces");
-            diceTexture = NuciContentManager.Instance.LoadTexture2D("Table/dice");
 
             boardFont = NuciContentManager.Instance.LoadSpriteFont("Fonts/InfoBarFont");
 
             BuildLayoutRectangles();
+
+            die1 = new()
+            {
+                ContentFile = "Table/dice",
+                Location = new Point2D(dice1Rect.X, dice1Rect.Y),
+                Size = new Size2D(dice1Rect.Width, dice1Rect.Height)
+            };
+
+            die2 = new()
+            {
+                ContentFile = "Table/dice",
+                Location = new Point2D(dice2Rect.X, dice2Rect.Y),
+                Size = new Size2D(dice2Rect.Width, dice2Rect.Height)
+            };
 
             int pieceFrameSize = piecesTexture.Height;
 
@@ -103,6 +117,8 @@ namespace BackgammonByHoratiu.Gui.Controls
             animSpriteBrown.LoadContent();
             animSpriteWhite.MovementEffect.Deactivated += OnAnimSpriteDeactivated;
             animSpriteBrown.MovementEffect.Deactivated += OnAnimSpriteDeactivated;
+
+            RegisterChildren(die1, die2);
         }
 
         protected override void DoUnloadContent()
@@ -126,6 +142,12 @@ namespace BackgammonByHoratiu.Gui.Controls
                 else if (animSpriteBrown.MovementEffect.IsActive)
                     animSpriteBrown.Update(gameTime);
             }
+
+            const int dieFrameSize = 200;
+            int rowY = game.ActivePlayer == 1 ? 0 : dieFrameSize;
+
+            die1.SourceRectangle = new Rectangle2D((game.Dice1 - 1) * dieFrameSize, rowY, dieFrameSize, dieFrameSize);
+            die2.SourceRectangle = new Rectangle2D((game.Dice2 - 1) * dieFrameSize, rowY, dieFrameSize, dieFrameSize);
         }
 
         protected override void DoDraw(SpriteBatch spriteBatch)
@@ -174,9 +196,6 @@ namespace BackgammonByHoratiu.Gui.Controls
                     DrawCircle(spriteBatch, new Rectangle(pos.X, pos.Y, ps, ps), animColor);
                 }
             }
-
-            // Dice
-            DrawDice(spriteBatch);
 
             // Highlight selected column / bar
             if (SelectedColumn >= 0 && SelectedColumn < 24)
@@ -305,18 +324,6 @@ namespace BackgammonByHoratiu.Gui.Controls
                 DrawCenteredText(spriteBatch, $"+{piecesP2 - piecesPerCol}",
                     new Rectangle(cx, outColumnBottom.Bottom - pieceSize, pieceSize, pieceSize), Color.White);
             }
-        }
-
-        void DrawDice(SpriteBatch spriteBatch)
-        {
-            const int frameSize = 200;
-            int rowY = game.ActivePlayer == 1 ? 0 : frameSize;
-
-            Rectangle dice1Source = new((game.Dice1 - 1) * frameSize, rowY, frameSize, frameSize);
-            Rectangle dice2Source = new((game.Dice2 - 1) * frameSize, rowY, frameSize, frameSize);
-
-            spriteBatch.Draw(diceTexture, dice1Rect, dice1Source, Color.White);
-            spriteBatch.Draw(diceTexture, dice2Rect, dice2Source, Color.White);
         }
 
         void DrawCompletedPieces(SpriteBatch spriteBatch)
