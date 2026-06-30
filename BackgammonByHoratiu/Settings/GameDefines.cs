@@ -4,6 +4,7 @@ namespace BackgammonByHoratiu.Settings
 {
     public static class GameDefines
     {
+        public const int PieceFrameSize = 128;
         public const int PieceSize = 48;
 
         public const int ColBarP1 = 100;

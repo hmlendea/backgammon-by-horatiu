@@ -239,7 +239,7 @@ namespace BackgammonByHoratiu.Gui.Screens
                 return;
             }
 
-            if (col < 0 && gameBoard.IsInOutColumnTop(x, y))
+            if (col < 0 && gameBoard.IsInHumanBar(x, y))
             {
                 if (game.Player1.OutedPieces > 0)
                 {
@@ -249,7 +249,7 @@ namespace BackgammonByHoratiu.Gui.Screens
                 return;
             }
 
-            if (col < 0 && gameBoard.IsInOutColumnBottom(x, y))
+            if (col < 0 && gameBoard.IsInAiBar(x, y))
             {
                 if (game.Player2.OutedPieces > 0)
                 {
