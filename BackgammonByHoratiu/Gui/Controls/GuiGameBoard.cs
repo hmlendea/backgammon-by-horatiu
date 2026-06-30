@@ -19,7 +19,6 @@ namespace BackgammonByHoratiu.Gui.Controls
 {
     public class GuiGameBoard(IGameManager game) : GuiControl
     {
-        static readonly Color ColorBackground = Color.Gray;
         static readonly Color ColorHouseColumn = new(63, 63, 63);
         static readonly Color ColorOutColumn = Color.Black;
         static readonly Color ColorPlayer1 = Color.White;
@@ -36,6 +35,7 @@ namespace BackgammonByHoratiu.Gui.Controls
         public bool IsAnimating => isAnimating;
 
         Texture2D pixelTexture;
+        GuiImage boardImage;
         GuiImage[] columnImages;
         GuiImage targetColumnImage;
         GuiImage ghostPiece;
@@ -72,6 +72,14 @@ namespace BackgammonByHoratiu.Gui.Controls
             boardFont = NuciContentManager.Instance.LoadSpriteFont("Fonts/InfoBarFont");
 
             BuildLayoutRectangles();
+
+            boardImage = new GuiImage
+            {
+                ContentFile = "Table/board",
+                Location = Point2D.Empty,
+                Size = new Size2D(GameDefines.WindowWidth, GameDefines.WindowHeight)
+            };
+            boardImage.Hide();
 
             const int colFrameWidth = 105;
             const int colFrameHeight = 512;
@@ -137,8 +145,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             animSpriteWhite.MovementEffect.Deactivated += OnAnimSpriteDeactivated;
             animSpriteBrown.MovementEffect.Deactivated += OnAnimSpriteDeactivated;
 
-            int pieceFrameSize = animSpriteWhite.TextureSize.Height;
-            this.pieceFrameSize = pieceFrameSize;
+            this.pieceFrameSize = animSpriteWhite.TextureSize.Height;
             animSpriteWhite.SourceRectangle = new Rectangle2D(0, 0, pieceFrameSize, pieceFrameSize);
             animSpriteBrown.SourceRectangle = new Rectangle2D(pieceFrameSize, 0, pieceFrameSize, pieceFrameSize);
 
@@ -174,7 +181,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             };
             ghostPiece.Hide();
 
-            RegisterChildren(die1, die2, pieces[0], pieces[1], pieces[2], ghostPiece, targetColumnImage);
+            RegisterChildren(die1, die2, pieces[0], pieces[1], pieces[2], ghostPiece, boardImage, targetColumnImage);
             RegisterChildren(columnImages);
         }
 
@@ -213,10 +220,7 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         protected override void DoDraw(SpriteBatch spriteBatch)
         {
-            int w = GameDefines.WindowWidth;
-            int h = GameDefines.WindowHeight;
-
-            spriteBatch.Draw(pixelTexture, new Rectangle(0, 0, w, h), ColorBackground);
+            boardImage.Draw(spriteBatch);
 
             DrawColumns(spriteBatch);
 
