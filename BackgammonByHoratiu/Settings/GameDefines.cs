@@ -29,5 +29,8 @@ namespace BackgammonByHoratiu.Settings
 
         public const int WindowWidth = HouseX + HouseWidth;        // 712
         public const int WindowHeight = BoardHeight;                // 624
+
+        public const float AnimationSpeed = 12f;
+        public const int OverflowLayerSourceOffset = 19;
     }
 }

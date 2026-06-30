@@ -50,8 +50,6 @@ namespace BackgammonByHoratiu.Gui.Controls
         Rectangle houseTop, houseBottom;
         Rectangle dice1Rect, dice2Rect;
 
-        readonly float AnimationSpeed = 12f;
-        const int OverflowLayerSourceOffset = 19;
 
         public int SelectedColumn { get; set; } = -1;
         public int HoveredColumn { get; set; } = -1;
@@ -129,13 +127,13 @@ namespace BackgammonByHoratiu.Gui.Controls
             animSpriteWhite = new()
             {
                 ContentFile = "Table/pieces",
-                MovementEffect = new MovementEffect { Speed = AnimationSpeed },
+                MovementEffect = new MovementEffect { Speed = GameDefines.AnimationSpeed },
                 IsActive = true
             };
             animSpriteBrown = new()
             {
                 ContentFile = "Table/pieces",
-                MovementEffect = new MovementEffect { Speed = AnimationSpeed },
+                MovementEffect = new MovementEffect { Speed = GameDefines.AnimationSpeed },
                 IsActive = true
             };
             animSpriteWhite.LoadContent();
@@ -374,7 +372,7 @@ namespace BackgammonByHoratiu.Gui.Controls
                 {
                     int layer = z / piecesPerCol;
                     int zInLayer = z % piecesPerCol;
-                    int layerOffset = layer * OverflowLayerSourceOffset * pieceSize / pieceFrameSize;
+                    int layerOffset = layer * GameDefines.OverflowLayerSourceOffset * pieceSize / pieceFrameSize;
                     Rectangle dest;
 
                     if (i < 12)
@@ -408,7 +406,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             {
                 int layer = z / piecesPerCol;
                 int zInLayer = z % piecesPerCol;
-                int layerOffset = layer * OverflowLayerSourceOffset * pieceSize / pieceFrameSize;
+                int layerOffset = layer * GameDefines.OverflowLayerSourceOffset * pieceSize / pieceFrameSize;
                 int cx = outColumnTop.Left + (outColumnTop.Width - pieceSize) / 2;
                 Rectangle dest = new(cx, outColumnTop.Top - layerOffset + zInLayer * pieceSize, pieceSize, pieceSize);
                 bool isTopPiece = z == piecesP1 - 1 && SelectedColumn == GameDefines.ColBarP1;
@@ -419,7 +417,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             {
                 int layer = z / piecesPerCol;
                 int zInLayer = z % piecesPerCol;
-                int layerOffset = layer * OverflowLayerSourceOffset * pieceSize / pieceFrameSize;
+                int layerOffset = layer * GameDefines.OverflowLayerSourceOffset * pieceSize / pieceFrameSize;
                 int cx = outColumnBottom.Left + (outColumnBottom.Width - pieceSize) / 2;
                 Rectangle dest = new(cx, outColumnBottom.Bottom - pieceSize - layerOffset - zInLayer * pieceSize, pieceSize, pieceSize);
                 bool isTopPiece = z == piecesP2 - 1 && SelectedColumn == GameDefines.ColBarP2;
@@ -439,7 +437,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             {
                 int layer = z / piecesPerCol;
                 int zInLayer = z % piecesPerCol;
-                int layerOffset = layer * OverflowLayerSourceOffset * pieceSize / pieceFrameSize;
+                int layerOffset = layer * GameDefines.OverflowLayerSourceOffset * pieceSize / pieceFrameSize;
                 int cx = houseTop.Left + (houseTop.Width - pieceSize) / 2;
                 Rectangle dest = new(cx, houseTop.Top - layerOffset + zInLayer * pieceSize, pieceSize, pieceSize);
                 DrawCircle(spriteBatch, dest, ColorPlayer2);
@@ -449,7 +447,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             {
                 int layer = z / piecesPerCol;
                 int zInLayer = z % piecesPerCol;
-                int layerOffset = layer * OverflowLayerSourceOffset * pieceSize / pieceFrameSize;
+                int layerOffset = layer * GameDefines.OverflowLayerSourceOffset * pieceSize / pieceFrameSize;
                 int cx = houseBottom.Left + (houseBottom.Width - pieceSize) / 2;
                 Rectangle dest = new(cx, houseBottom.Bottom - pieceSize - layerOffset - zInLayer * pieceSize, pieceSize, pieceSize);
                 DrawCircle(spriteBatch, dest, ColorPlayer1);
