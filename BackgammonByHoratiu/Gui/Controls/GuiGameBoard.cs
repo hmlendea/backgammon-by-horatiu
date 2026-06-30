@@ -21,6 +21,7 @@ namespace BackgammonByHoratiu.Gui.Controls
     {
         static readonly Color ColorPlayer1 = Color.White;
         static readonly Color ColorHouseColumn = new(63, 63, 63);
+        static readonly Color ColorOutColumn = Color.Black;
         static readonly Color ColorPlayer2 = new(139, 69, 19);
         TextureSprite animSpriteWhite;
         TextureSprite animSpriteBrown;
@@ -235,6 +236,8 @@ namespace BackgammonByHoratiu.Gui.Controls
                 }
             }
 
+            spriteBatch.Draw(pixelTexture, outColumnTop, ColorOutColumn);
+            spriteBatch.Draw(pixelTexture, outColumnBottom, ColorOutColumn);
             spriteBatch.Draw(pixelTexture, houseTop, ColorHouseColumn);
             spriteBatch.Draw(pixelTexture, houseBottom, ColorHouseColumn);
 
