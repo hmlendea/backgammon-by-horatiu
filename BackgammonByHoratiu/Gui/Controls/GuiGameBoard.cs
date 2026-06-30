@@ -17,16 +17,13 @@ using BackgammonByHoratiu.Settings;
 
 namespace BackgammonByHoratiu.Gui.Controls
 {
-    public class GuiGameBoard : GuiControl
+    public class GuiGameBoard(IGameManager game) : GuiControl
     {
         static readonly Color ColorBackground = Color.Gray;
         static readonly Color ColorHouseColumn = new(63, 63, 63);
         static readonly Color ColorOutColumn = Color.Black;
         static readonly Color ColorPlayer1 = Color.White;
         static readonly Color ColorPlayer2 = new(139, 69, 19);
-
-        readonly IGameManager game;
-
         TextureSprite animSpriteWhite;
         TextureSprite animSpriteBrown;
         bool isAnimating;
@@ -40,6 +37,7 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         Texture2D pixelTexture;
         GuiImage[] columnImages;
+        GuiImage targetColumnImage;
         GuiImage[] pieces;
         GuiImage die1;
         GuiImage die2;
@@ -52,7 +50,7 @@ namespace BackgammonByHoratiu.Gui.Controls
         Rectangle houseTop, houseBottom;
         Rectangle dice1Rect, dice2Rect;
 
-        float AnimationSpeed = 12f;
+        readonly float AnimationSpeed = 12f;
 
         public int SelectedColumn { get; set; } = -1;
 
@@ -61,11 +59,6 @@ namespace BackgammonByHoratiu.Gui.Controls
         public bool IsOnDice(int x, int y) => dice1Rect.Contains(x, y) || dice2Rect.Contains(x, y);
 
         public bool IsOnHouse(int x, int y) => houseTop.Contains(x, y) || houseBottom.Contains(x, y);
-
-        public GuiGameBoard(IGameManager game)
-        {
-            this.game = game;
-        }
 
         protected override void DoLoadContent()
         {
@@ -103,6 +96,13 @@ namespace BackgammonByHoratiu.Gui.Controls
 
                 columnImages[i].Hide();
             }
+
+            targetColumnImage = new GuiImage
+            {
+                ContentFile = "Table/columns",
+                SourceRectangle = new Rectangle2D(colFrameWidth * 2, 0, colFrameWidth, colFrameHeight)
+            };
+            targetColumnImage.Hide();
 
             die1 = new()
             {
@@ -157,7 +157,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             pieces[0].Hide();
             pieces[1].Hide();
 
-            RegisterChildren(die1, die2, pieces[0], pieces[1]);
+            RegisterChildren(die1, die2, pieces[0], pieces[1], targetColumnImage);
             RegisterChildren(columnImages);
         }
 
@@ -204,6 +204,23 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             // Column triangles
             DrawColumns(spriteBatch);
+
+            // Highlight valid destination columns (below pieces)
+            foreach (int dest in ValidDestinations)
+            {
+                if (dest >= 0 && dest < 24)
+                {
+                    DrawTargetColumn(spriteBatch, dest);
+                }
+                else if (dest == GameDefines.ColHouseP1)
+                {
+                    DrawBorder(spriteBatch, houseBottom, Color.Cyan, 3);
+                }
+                else if (dest == GameDefines.ColHouseP2)
+                {
+                    DrawBorder(spriteBatch, houseTop, Color.Cyan, 3);
+                }
+            }
 
             // Bar and house backgrounds
             spriteBatch.Draw(pixelTexture, outColumnTop, ColorOutColumn);
@@ -254,22 +271,6 @@ namespace BackgammonByHoratiu.Gui.Controls
             {
                 DrawBorder(spriteBatch, outColumnBottom, Color.Yellow, 3);
             }
-            // Highlight valid destination columns in cyan
-            foreach (int dest in ValidDestinations)
-            {
-                if (dest >= 0 && dest < 24)
-                {
-                    DrawBorder(spriteBatch, columnRects[dest], Color.Cyan, 3);
-                }
-                else if (dest == GameDefines.ColHouseP1)
-                {
-                    DrawBorder(spriteBatch, houseBottom, Color.Cyan, 3);
-                }
-                else if (dest == GameDefines.ColHouseP2)
-                {
-                    DrawBorder(spriteBatch, houseTop, Color.Cyan, 3);
-                }
-            }
         }
 
         // ------------------------------------------------------------------ //
@@ -282,6 +283,18 @@ namespace BackgammonByHoratiu.Gui.Controls
             {
                 img.Draw(spriteBatch);
             }
+        }
+
+        void DrawTargetColumn(SpriteBatch spriteBatch, int colIndex)
+        {
+            Rectangle rect = columnRects[colIndex];
+            bool isTopHalf = colIndex < 12;
+
+            targetColumnImage.Location = new Point2D(rect.X, rect.Y);
+            targetColumnImage.Size = new Size2D(rect.Width, rect.Height);
+            targetColumnImage.Rotation = isTopHalf ? MathHelper.Pi : 0f;
+            targetColumnImage.Update(lastGameTime);
+            targetColumnImage.Draw(spriteBatch);
         }
 
         void DrawPieces(SpriteBatch spriteBatch)
