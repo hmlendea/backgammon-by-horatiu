@@ -42,8 +42,7 @@ namespace BackgammonByHoratiu.Gui.Controls
         Texture2D pixelTexture;
         Texture2D triangleDownTexture;
         Texture2D triangleUpTexture;
-        Texture2D brownPieceTexture;
-        Texture2D whitePieceTexture;
+        Texture2D piecesTexture;
         Texture2D diceTexture;
         SpriteFont boardFont;
 
@@ -77,23 +76,26 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             triangleDownTexture = CreateTriangleTexture(gd, GameDefines.PieceSize, GameDefines.ColumnHeight, pointsDown: true);
             triangleUpTexture = CreateTriangleTexture(gd, GameDefines.PieceSize, GameDefines.ColumnHeight, pointsDown: false);
-            brownPieceTexture = NuciContentManager.Instance.LoadTexture2D("Table/BrownPiece");
-            whitePieceTexture = NuciContentManager.Instance.LoadTexture2D("Table/WhitePiece");
+            piecesTexture = NuciContentManager.Instance.LoadTexture2D("Table/pieces");
             diceTexture = NuciContentManager.Instance.LoadTexture2D("Table/dice");
 
             boardFont = NuciContentManager.Instance.LoadSpriteFont("Fonts/InfoBarFont");
 
             BuildLayoutRectangles();
 
+            int pieceFrameSize = piecesTexture.Height;
+
             animSpriteWhite = new()
             {
-                ContentFile = "Table/WhitePiece",
+                ContentFile = "Table/pieces",
+                SourceRectangle = new Rectangle2D(0, 0, pieceFrameSize, pieceFrameSize),
                 MovementEffect = new MovementEffect { Speed = AnimationSpeed },
                 IsActive = true
             };
             animSpriteBrown = new()
             {
-                ContentFile = "Table/BrownPiece",
+                ContentFile = "Table/pieces",
+                SourceRectangle = new Rectangle2D(pieceFrameSize, 0, pieceFrameSize, pieceFrameSize),
                 MovementEffect = new MovementEffect { Speed = AnimationSpeed },
                 IsActive = true
             };
@@ -356,8 +358,12 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         void DrawCircle(SpriteBatch spriteBatch, Rectangle dest, Color fill)
         {
-            Texture2D tex = fill == ColorPlayer2 ? brownPieceTexture : whitePieceTexture;
-            spriteBatch.Draw(tex, dest, Color.White);
+            int frameSize = piecesTexture.Height;
+            Rectangle source = fill == ColorPlayer2
+                ? new Rectangle(frameSize, 0, frameSize, frameSize)
+                : new Rectangle(0, 0, frameSize, frameSize);
+
+            spriteBatch.Draw(piecesTexture, dest, source, Color.White);
         }
 
         void DrawBorder(SpriteBatch spriteBatch, Rectangle rect, Color color, int thickness)
