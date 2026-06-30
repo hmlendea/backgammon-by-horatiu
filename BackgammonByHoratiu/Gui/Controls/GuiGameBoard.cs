@@ -19,9 +19,8 @@ namespace BackgammonByHoratiu.Gui.Controls
 {
     public class GuiGameBoard(IGameManager game) : GuiControl
     {
-        static readonly Color ColorHouseColumn = new(63, 63, 63);
-        static readonly Color ColorOutColumn = Color.Black;
         static readonly Color ColorPlayer1 = Color.White;
+        static readonly Color ColorHouseColumn = new(63, 63, 63);
         static readonly Color ColorPlayer2 = new(139, 69, 19);
         TextureSprite animSpriteWhite;
         TextureSprite animSpriteBrown;
@@ -166,9 +165,11 @@ namespace BackgammonByHoratiu.Gui.Controls
                     Size = new Size2D(pieceFrameSize, pieceFrameSize)
                 }
             ];
-            pieces[0].Hide();
-            pieces[1].Hide();
-            pieces[2].Hide();
+
+            foreach (var p in pieces)
+            {
+                p.Hide();
+            }
 
             ghostPiece = new GuiImage
             {
@@ -218,7 +219,10 @@ namespace BackgammonByHoratiu.Gui.Controls
         {
             boardImage.Draw(spriteBatch);
 
-            DrawColumns(spriteBatch);
+            foreach (GuiImage img in columnImages)
+            {
+                img.Draw(spriteBatch);
+            }
 
             foreach (int dest in ValidDestinations)
             {
@@ -236,8 +240,6 @@ namespace BackgammonByHoratiu.Gui.Controls
                 }
             }
 
-            spriteBatch.Draw(pixelTexture, outColumnTop, ColorOutColumn);
-            spriteBatch.Draw(pixelTexture, outColumnBottom, ColorOutColumn);
             spriteBatch.Draw(pixelTexture, houseTop, ColorHouseColumn);
             spriteBatch.Draw(pixelTexture, houseBottom, ColorHouseColumn);
 
@@ -269,14 +271,6 @@ namespace BackgammonByHoratiu.Gui.Controls
                     int ps = GameDefines.PieceSize;
                     DrawCircle(spriteBatch, new Rectangle(pos.X, pos.Y, ps, ps), animColor);
                 }
-            }
-        }
-
-        void DrawColumns(SpriteBatch spriteBatch)
-        {
-            foreach (GuiImage img in columnImages)
-            {
-                img.Draw(spriteBatch);
             }
         }
 
@@ -598,6 +592,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             if (fromCol >= 0 && fromCol < 24)
             {
                 int count = Math.Min(Math.Abs(game.TableValues[fromCol]), piecesPerCol);
+
                 if (fromCol < 12)
                 {
                     return new Point2D(columnRects[fromCol].Left, columnRects[fromCol].Top + (count - 1) * ps);
@@ -612,11 +607,13 @@ namespace BackgammonByHoratiu.Gui.Controls
             {
                 int cx = outColumnTop.Left + (outColumnTop.Width - ps) / 2;
                 int count = Math.Min(game.Player1.OutedPieces, piecesPerCol);
+
                 return new Point2D(cx, outColumnTop.Top + (count - 1) * ps);
             }
 
             int cxBrown = outColumnBottom.Left + (outColumnBottom.Width - ps) / 2;
             int countBrown = Math.Min(game.Player2.OutedPieces, piecesPerCol);
+
             return new Point2D(cxBrown, outColumnBottom.Bottom - countBrown * ps);
         }
 
@@ -645,6 +642,7 @@ namespace BackgammonByHoratiu.Gui.Controls
                 int cx = houseBottom.Left + (houseBottom.Width - ps) / 2;
                 int existing = game.Player1.CompletedPieces;
                 int slot = existing >= piecesPerCol ? 0 : existing;
+                
                 return new Point2D(cx, houseBottom.Bottom - (slot + 1) * ps);
             }
 
