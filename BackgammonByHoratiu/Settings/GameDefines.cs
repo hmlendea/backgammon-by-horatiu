@@ -18,14 +18,10 @@ namespace BackgammonByHoratiu.Settings
 
         public const int FrameWidth = 390;
         public const int FrameHeight = 816;
+        public const int FrameBorder = 108 * FrameWidth / FrameHeight;
 
-        // Frame bezel = 108px in the source spritesheet, uniform on all sides.
-        // Rendered: 108 * 388 / 853 = 49  (same for vertical: 108 * 839 / 1844 = 49)
-        public const int FrameBorder = 108 * FrameWidth / FrameHeight;    // 49
-
-        // Board half content dimensions (inside the frame border)
-        public const int BoardHalfWidth = FrameWidth - FrameBorder * 2;    // 290
-        public const int BoardHalfHeight = FrameHeight - FrameBorder * 2;  // 741
+        public const int BoardHalfWidth = FrameWidth - FrameBorder * 2;
+        public const int BoardHalfHeight = FrameHeight - FrameBorder * 2;
 
         public const int BarX = FrameWidth;
 
@@ -39,7 +35,7 @@ namespace BackgammonByHoratiu.Settings
         public static Size2D DieFrameSize => new(200, 200);
         public const int DieSize = 48;
 
-        public const float AnimationSpeed = 12f;
+        public const float AnimationSpeed = 10f;
         public const int OverflowLayerSourceOffset = 19;
         public const int TotalPiecesPerPlayer = 15;
         public const int TotalColumns = 24;
