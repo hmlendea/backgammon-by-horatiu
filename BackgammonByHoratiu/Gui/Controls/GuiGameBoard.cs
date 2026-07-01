@@ -22,87 +22,92 @@ namespace BackgammonByHoratiu.Gui.Controls
             player1Pieces is not null && player1Pieces.Any(p => p.MovementEffect.IsActive) ||
             player2Pieces is not null && player2Pieces.Any(p => p.MovementEffect.IsActive);
 
-        GuiImage leftBoardBackground;
-        GuiImage rightBoardBackground;
-        GuiImage leftFrame;
-        GuiImage rightFrame;
+        GuiImage[] boardBackgrounds;
+        GuiImage[] frames;
         GuiImage[] columnImages;
         GuiImage targetColumn;
         GuiImage ghostPiece;
         GuiImage[] player1Pieces;
         GuiImage[] player2Pieces;
-        GuiImage die1;
-        GuiImage die2;
+        GuiImage[] dice;
         GuiImage moveDiceIndicator;
         GameTime lastGameTime = new();
 
         Rectangle2D[] columnRectangles;
-        Rectangle2D outColumnTop, outColumnBottom;
-        Rectangle2D houseTop, houseBottom;
+        Rectangle2D[] outColumns;
+        Rectangle2D[] houses;
 
         public int SelectedColumn { get; set; } = -1;
         public int HoveredColumn { get; set; } = -1;
 
         public IReadOnlyList<int> ValidDestinations { get; set; } = [];
 
-        public bool IsOnDice(int x, int y) => die1.ClientRectangle.Contains(x, y) || die2.ClientRectangle.Contains(x, y);
+        public bool IsOnDice(int x, int y) => dice.Any(d => d.ClientRectangle.Contains(x, y));
 
-
-        public bool IsOnHouse(int x, int y) => houseTop.Contains(x, y) || houseBottom.Contains(x, y);
+        public bool IsOnHouse(int x, int y) => houses.Any(h => h.Contains(x, y));
 
         protected override void DoLoadContent()
         {
             BuildLayoutRectangles();
 
-            leftFrame = new GuiImage
+            frames = new GuiImage[2];
+            boardBackgrounds = new GuiImage[2];
+            dice = new GuiImage[2];
+
+            frames[0] = new GuiImage
             {
                 ContentFile = "Table/frame",
                 Location = new Point2D(0, 0),
                 Size = new Size2D(GameDefines.FrameWidth, GameDefines.FrameHeight)
             };
-            rightFrame = new GuiImage
+            frames[1] = new GuiImage
             {
                 ContentFile = "Table/frame",
                 Location = new Point2D(GameDefines.BarX, 0),
                 Size = new Size2D(GameDefines.FrameWidth, GameDefines.FrameHeight)
             };
 
-            leftBoardBackground = new GuiImage
+            boardBackgrounds[0] = new GuiImage
             {
                 ContentFile = "Table/board",
                 Location = new Point2D(GameDefines.FrameBorder, GameDefines.FrameBorder),
-                Size = leftFrame.Size - new Size2D(GameDefines.FrameBorder * 2)
+                Size = frames[0].Size - new Size2D(GameDefines.FrameBorder * 2)
             };
-            rightBoardBackground = new GuiImage
+            boardBackgrounds[1] = new GuiImage
             {
                 ContentFile = "Table/board",
                 Location = new Point2D(
-                    leftBoardBackground.Location.X + leftBoardBackground.Size.Width + GameDefines.FrameBorder * 2,
-                    leftBoardBackground.Location.Y),
-                Size = rightFrame.Size - new Size2D(GameDefines.FrameBorder * 2)
+                    boardBackgrounds[0].Location.X + boardBackgrounds[0].Size.Width + GameDefines.FrameBorder * 2,
+                    boardBackgrounds[0].Location.Y),
+                Size = frames[1].Size - new Size2D(GameDefines.FrameBorder * 2)
             };
 
-            die1 = new()
+            dice[0] = new GuiImage
             {
                 ContentFile = "Table/dice",
                 Location = new Point2D(
-                    leftBoardBackground.Location.X + leftBoardBackground.Size.Width * 3 / 4 - GameDefines.DieSize / 2,
-                    leftBoardBackground.Location.Y + leftBoardBackground.Size.Height / 2 - GameDefines.DieSize / 2),
+                    boardBackgrounds[0].Location.X + boardBackgrounds[0].Size.Width * 3 / 4 - GameDefines.DieSize / 2,
+                    boardBackgrounds[0].Location.Y + boardBackgrounds[0].Size.Height / 2 - GameDefines.DieSize / 2),
                 Size = new Size2D(GameDefines.DieSize)
             };
-            die2 = new()
+            dice[1] = new GuiImage
             {
                 ContentFile = "Table/dice",
                 Location = new Point2D(
-                    rightBoardBackground.Location.X + rightBoardBackground.Size.Width * 1 / 4 - GameDefines.DieSize / 2,
-                    rightBoardBackground.Location.Y + rightBoardBackground.Size.Height / 2 - GameDefines.DieSize / 2),
+                    boardBackgrounds[1].Location.X + boardBackgrounds[1].Size.Width * 1 / 4 - GameDefines.DieSize / 2,
+                    boardBackgrounds[1].Location.Y + boardBackgrounds[1].Size.Height / 2 - GameDefines.DieSize / 2),
                 Size = new Size2D(GameDefines.DieSize)
             };
 
-            leftBoardBackground.Hide();
-            rightBoardBackground.Hide();
-            leftFrame.Hide();
-            rightFrame.Hide();
+            foreach (GuiImage frame in frames)
+            {
+                frame.Hide();
+            }
+
+            foreach (GuiImage bg in boardBackgrounds)
+            {
+                bg.Hide();
+            }
 
             columnImages = new GuiImage[GameDefines.TotalColumns];
 
@@ -170,8 +175,10 @@ namespace BackgammonByHoratiu.Gui.Controls
             };
             ghostPiece.Hide();
 
-            RegisterChildren(leftFrame, rightFrame, leftBoardBackground, rightBoardBackground);
-            RegisterChildren(die1, die2, ghostPiece, targetColumn);
+            RegisterChildren(frames);
+            RegisterChildren(boardBackgrounds);
+            RegisterChildren(dice);
+            RegisterChildren(ghostPiece, targetColumn);
             RegisterChildren(player1Pieces);
             RegisterChildren(player2Pieces);
             RegisterChildren(columnImages);
@@ -193,12 +200,12 @@ namespace BackgammonByHoratiu.Gui.Controls
                 diceRowY = 0;
             }
 
-            die1.SourceRectangle = new Rectangle2D(
+            dice[0].SourceRectangle = new Rectangle2D(
                 (game.Dice1 - 1) * GameDefines.DieFrameSize.Width,
                 diceRowY,
                 GameDefines.DieFrameSize);
 
-            die2.SourceRectangle = new Rectangle2D(
+            dice[1].SourceRectangle = new Rectangle2D(
                 (game.Dice2 - 1) * GameDefines.DieFrameSize.Width,
                 diceRowY,
                 GameDefines.DieFrameSize);
@@ -206,8 +213,10 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         protected override void DoDraw(SpriteBatch spriteBatch)
         {
-            leftBoardBackground.Draw(spriteBatch);
-            rightBoardBackground.Draw(spriteBatch);
+            foreach (GuiImage bg in boardBackgrounds)
+            {
+                bg.Draw(spriteBatch);
+            }
 
             foreach (GuiImage columnImage in columnImages)
             {
@@ -222,8 +231,10 @@ namespace BackgammonByHoratiu.Gui.Controls
                 }
             }
 
-            leftFrame.Draw(spriteBatch);
-            rightFrame.Draw(spriteBatch);
+            foreach (GuiImage frame in frames)
+            {
+                frame.Draw(spriteBatch);
+            }
 
             DrawAllBoardPieces(spriteBatch);
             DrawGhostPiece(spriteBatch);
@@ -264,15 +275,15 @@ namespace BackgammonByHoratiu.Gui.Controls
             }
             else if (HoveredColumn == GameDefines.ColHouseP1)
             {
-                int centerX = houseBottom.Left + (houseBottom.Width - GameDefines.PieceSize) / 2;
-                int ghostPiecePixelY = GetBottomHalfSlotPixelY(game.Player1.CompletedPieces, houseBottom.Bottom);
+                int centerX = houses[0].Left + (houses[0].Width - GameDefines.PieceSize) / 2;
+                int ghostPiecePixelY = GetBottomHalfSlotPixelY(game.Player1.CompletedPieces, houses[0].Bottom);
 
                 destination = new Rectangle2D(centerX, ghostPiecePixelY, GameDefines.PieceSize, GameDefines.PieceSize);
             }
             else if (HoveredColumn == GameDefines.ColHouseP2)
             {
-                int centerX = houseTop.Left + (houseTop.Width - GameDefines.PieceSize) / 2;
-                int ghostPiecePixelY = GetTopHalfSlotPixelY(game.Player2.CompletedPieces, houseTop.Top);
+                int centerX = houses[1].Left + (houses[1].Width - GameDefines.PieceSize) / 2;
+                int ghostPiecePixelY = GetTopHalfSlotPixelY(game.Player2.CompletedPieces, houses[1].Top);
 
                 destination = new Rectangle2D(centerX, ghostPiecePixelY, GameDefines.PieceSize, GameDefines.PieceSize);
             }
@@ -361,7 +372,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             int[] tableValues = game.TableValues;
             int player1Index = 0;
             int player2Index = 0;
-            var animatingPieces = new List<GuiImage>();
+            List<GuiImage> animatingPieces = [];
 
             for (int columnIndex = 0; columnIndex < GameDefines.TotalColumns; columnIndex++)
             {
@@ -411,7 +422,7 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             int player1OutedPieces = game.Player1.OutedPieces;
             int player2OutedPieces = game.Player2.OutedPieces;
-            int centerTopX = outColumnTop.Left + (outColumnTop.Width - GameDefines.PieceSize) / 2;
+            int centerTopX = outColumns[0].Left + (outColumns[0].Width - GameDefines.PieceSize) / 2;
 
             for (int barIndex = 0; barIndex < player1OutedPieces; barIndex++)
             {
@@ -420,7 +431,7 @@ namespace BackgammonByHoratiu.Gui.Controls
                 int layerOffset = layer * GameDefines.OverflowLayerSourceOffset * GameDefines.PieceSize / GameDefines.PieceFrameSize;
                 bool isSelected = barIndex == player1OutedPieces - 1 && SelectedColumn == GameDefines.ColBarP1;
                 int sourceX = isSelected ? GameDefines.PieceFrameSize * 2 : 0;
-                int pixelY = outColumnTop.Top - layerOffset + indexInLayer * GameDefines.PieceSize;
+                int pixelY = outColumns[0].Top - layerOffset + indexInLayer * GameDefines.PieceSize;
                 GuiImage piece = player1Pieces[player1Index++];
 
                 piece.SourceRectangle = new Rectangle2D(sourceX, 0, GameDefines.PieceFrameSize, GameDefines.PieceFrameSize);
@@ -437,7 +448,7 @@ namespace BackgammonByHoratiu.Gui.Controls
                 piece.Draw(spriteBatch);
             }
 
-            int centerBottomX = outColumnBottom.Left + (outColumnBottom.Width - GameDefines.PieceSize) / 2;
+            int centerBottomX = outColumns[1].Left + (outColumns[1].Width - GameDefines.PieceSize) / 2;
 
             for (int barIndex = 0; barIndex < player2OutedPieces; barIndex++)
             {
@@ -446,7 +457,7 @@ namespace BackgammonByHoratiu.Gui.Controls
                 int layerOffset = layer * GameDefines.OverflowLayerSourceOffset * GameDefines.PieceSize / GameDefines.PieceFrameSize;
                 bool isSelected = barIndex == player2OutedPieces - 1 && SelectedColumn == GameDefines.ColBarP2;
                 int sourceX = isSelected ? GameDefines.PieceFrameSize * 2 : GameDefines.PieceFrameSize;
-                int pixelY = outColumnBottom.Bottom - GameDefines.PieceSize - layerOffset - indexInLayer * GameDefines.PieceSize;
+                int pixelY = outColumns[1].Bottom - GameDefines.PieceSize - layerOffset - indexInLayer * GameDefines.PieceSize;
                 GuiImage piece = player2Pieces[player2Index++];
 
                 piece.SourceRectangle = new Rectangle2D(sourceX, 0, GameDefines.PieceFrameSize, GameDefines.PieceFrameSize);
@@ -465,14 +476,14 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             int completedPiecesPlayer2 = game.Player2.CompletedPieces;
             int completedPiecesPlayer1 = game.Player1.CompletedPieces;
-            int houseP2CenterX = houseTop.Left + (houseTop.Width - GameDefines.PieceSize) / 2;
+            int houseP2CenterX = houses[1].Left + (houses[1].Width - GameDefines.PieceSize) / 2;
 
             for (int stackIndex = 0; stackIndex < completedPiecesPlayer2; stackIndex++)
             {
                 int layer = stackIndex / GameDefines.PiecesPerColumnLayer;
                 int indexInLayer = stackIndex % GameDefines.PiecesPerColumnLayer;
                 int layerOffset = layer * GameDefines.OverflowLayerSourceOffset * GameDefines.PieceSize / GameDefines.PieceFrameSize;
-                int pixelY = houseTop.Top - layerOffset + indexInLayer * GameDefines.PieceSize;
+                int pixelY = houses[1].Top - layerOffset + indexInLayer * GameDefines.PieceSize;
                 GuiImage piece = player2Pieces[player2Index++];
 
                 piece.SourceRectangle = new Rectangle2D(GameDefines.PieceFrameSize, 0, GameDefines.PieceFrameSize, GameDefines.PieceFrameSize);
@@ -482,14 +493,14 @@ namespace BackgammonByHoratiu.Gui.Controls
                 piece.Draw(spriteBatch);
             }
 
-            int houseP1CenterX = houseBottom.Left + (houseBottom.Width - GameDefines.PieceSize) / 2;
+            int houseP1CenterX = houses[0].Left + (houses[0].Width - GameDefines.PieceSize) / 2;
 
             for (int stackIndex = 0; stackIndex < completedPiecesPlayer1; stackIndex++)
             {
                 int layer = stackIndex / GameDefines.PiecesPerColumnLayer;
                 int indexInLayer = stackIndex % GameDefines.PiecesPerColumnLayer;
                 int layerOffset = layer * GameDefines.OverflowLayerSourceOffset * GameDefines.PieceSize / GameDefines.PieceFrameSize;
-                int pixelY = houseBottom.Bottom - GameDefines.PieceSize - layerOffset - indexInLayer * GameDefines.PieceSize;
+                int pixelY = houses[0].Bottom - GameDefines.PieceSize - layerOffset - indexInLayer * GameDefines.PieceSize;
                 GuiImage piece = player1Pieces[player1Index++];
 
                 piece.SourceRectangle = new Rectangle2D(0, 0, GameDefines.PieceFrameSize, GameDefines.PieceFrameSize);
@@ -518,8 +529,8 @@ namespace BackgammonByHoratiu.Gui.Controls
             return -1;
         }
 
-        public bool IsInHumanBar(int x, int y) => outColumnTop.Contains(x, y);
-        public bool IsInAiBar(int x, int y) => outColumnBottom.Contains(x, y);
+        public bool IsInHumanBar(int x, int y) => outColumns[0].Contains(x, y);
+        public bool IsInAiBar(int x, int y) => outColumns[1].Contains(x, y);
 
         public bool IsHoveringOverWhitePiece(int x, int y)
         {
@@ -561,8 +572,8 @@ namespace BackgammonByHoratiu.Gui.Controls
             for (int stackIndex = 0; stackIndex < Math.Min(game.Player1.OutedPieces, GameDefines.PiecesPerColumnLayer); stackIndex++)
             {
                 Rectangle2D destination = new(
-                    outColumnTop.Left + (outColumnTop.Width - GameDefines.PieceSize) / 2,
-                    outColumnTop.Top + stackIndex * GameDefines.PieceSize,
+                    outColumns[0].Left + (outColumns[0].Width - GameDefines.PieceSize) / 2,
+                    outColumns[0].Top + stackIndex * GameDefines.PieceSize,
                     GameDefines.PieceSize,
                     GameDefines.PieceSize);
 
@@ -669,16 +680,16 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             if (fromColumn == GameDefines.ColBarP1)
             {
-                int centerX = outColumnTop.Left + (outColumnTop.Width - GameDefines.PieceSize) / 2;
+                int centerX = outColumns[0].Left + (outColumns[0].Width - GameDefines.PieceSize) / 2;
                 int sourceSlotIndex = game.Player1.OutedPieces - 1;
 
-                return new Point2D(centerX, GetTopHalfSlotPixelY(sourceSlotIndex, outColumnTop.Top));
+                return new Point2D(centerX, GetTopHalfSlotPixelY(sourceSlotIndex, outColumns[0].Top));
             }
 
-            int player2BarCenterX = outColumnBottom.Left + (outColumnBottom.Width - GameDefines.PieceSize) / 2;
+            int player2BarCenterX = outColumns[1].Left + (outColumns[1].Width - GameDefines.PieceSize) / 2;
             int player2SourceSlotIndex = game.Player2.OutedPieces - 1;
 
-            return new Point2D(player2BarCenterX, GetBottomHalfSlotPixelY(player2SourceSlotIndex, outColumnBottom.Bottom));
+            return new Point2D(player2BarCenterX, GetBottomHalfSlotPixelY(player2SourceSlotIndex, outColumns[1].Bottom));
         }
 
         Point2D GetAnimDestPixel(int toColumn, int activePlayer)
@@ -712,14 +723,14 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             if (toColumn == GameDefines.ColHouseP1)
             {
-                int centerX = houseBottom.Left + (houseBottom.Width - GameDefines.PieceSize) / 2;
+                int centerX = houses[0].Left + (houses[0].Width - GameDefines.PieceSize) / 2;
 
-                return new Point2D(centerX, GetBottomHalfSlotPixelY(game.Player1.CompletedPieces, houseBottom.Bottom));
+                return new Point2D(centerX, GetBottomHalfSlotPixelY(game.Player1.CompletedPieces, houses[0].Bottom));
             }
 
-            int houseCenterX = houseTop.Left + (houseTop.Width - GameDefines.PieceSize) / 2;
+            int houseCenterX = houses[1].Left + (houses[1].Width - GameDefines.PieceSize) / 2;
 
-            return new Point2D(houseCenterX, GetTopHalfSlotPixelY(game.Player2.CompletedPieces, houseTop.Top));
+            return new Point2D(houseCenterX, GetTopHalfSlotPixelY(game.Player2.CompletedPieces, houses[1].Top));
         }
 
         void BeginOutingAnimation(int hitColumn, int hitPlayer)
@@ -739,17 +750,17 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             if (hitPlayer == 1)
             {
-                int centerX = outColumnTop.Left + (outColumnTop.Width - GameDefines.PieceSize) / 2;
+                int centerX = outColumns[0].Left + (outColumns[0].Width - GameDefines.PieceSize) / 2;
                 int destinationSlotIndex = game.Player1.OutedPieces - 1;
 
-                destinationPixel = new Point2D(centerX, GetTopHalfSlotPixelY(destinationSlotIndex, outColumnTop.Top));
+                destinationPixel = new Point2D(centerX, GetTopHalfSlotPixelY(destinationSlotIndex, outColumns[0].Top));
             }
             else
             {
-                int centerX = outColumnBottom.Left + (outColumnBottom.Width - GameDefines.PieceSize) / 2;
+                int centerX = outColumns[1].Left + (outColumns[1].Width - GameDefines.PieceSize) / 2;
                 int destinationSlotIndex = game.Player2.OutedPieces - 1;
 
-                destinationPixel = new Point2D(centerX, GetBottomHalfSlotPixelY(destinationSlotIndex, outColumnBottom.Bottom));
+                destinationPixel = new Point2D(centerX, GetBottomHalfSlotPixelY(destinationSlotIndex, outColumns[1].Bottom));
             }
 
             int barColumn = GameDefines.ColBarP2;
@@ -779,33 +790,6 @@ namespace BackgammonByHoratiu.Gui.Controls
             piece.MovementEffect.Deactivated += handler;
             piece.MovementEffect.TargetLocation = destination + ScreenLocation;
             piece.MovementEffect.Activate();
-        }
-
-        GuiImage FindAnimatingPiece()
-        {
-            if (player1Pieces is not null)
-            {
-                foreach (var p in player1Pieces)
-                {
-                    if (p.MovementEffect.IsActive)
-                    {
-                        return p;
-                    }
-                }
-            }
-
-            if (player2Pieces is not null)
-            {
-                foreach (var p in player2Pieces)
-                {
-                    if (p.MovementEffect.IsActive)
-                    {
-                        return p;
-                    }
-                }
-            }
-
-            return null;
         }
 
         GuiImage FindTopPieceImageAt(int fromColumn)
@@ -922,25 +906,27 @@ namespace BackgammonByHoratiu.Gui.Controls
             int outColumnWidth = columnRectangles[5].X - outColumnX;
             int boardMidY = GameDefines.RightFrameTopY + GameDefines.BoardHalfHeight / 2;
 
-            outColumnTop = new Rectangle2D(
+            outColumns = new Rectangle2D[2];
+            outColumns[0] = new Rectangle2D(
                 outColumnX,
                 GameDefines.RightFrameTopY,
                 outColumnWidth,
                 boardMidY - GameDefines.RightFrameTopY);
 
-            outColumnBottom = new Rectangle2D(
+            outColumns[1] = new Rectangle2D(
                 outColumnX,
                 boardMidY,
                 outColumnWidth,
                 GameDefines.RightFrameTopY + GameDefines.BoardHalfHeight - boardMidY);
 
-            houseTop = new Rectangle2D(
+            houses = new Rectangle2D[2];
+            houses[1] = new Rectangle2D(
                 GameDefines.HouseX,
                 GameDefines.FrameBorder,
                 GameDefines.HouseWidth,
                 GameDefines.BoardHalfHeight / 2);
 
-            houseBottom = new Rectangle2D(
+            houses[0] = new Rectangle2D(
                 GameDefines.HouseX,
                 GameDefines.FrameBorder + GameDefines.BoardHalfHeight / 2,
                 GameDefines.HouseWidth,
