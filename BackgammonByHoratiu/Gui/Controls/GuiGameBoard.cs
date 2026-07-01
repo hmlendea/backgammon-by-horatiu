@@ -236,9 +236,21 @@ namespace BackgammonByHoratiu.Gui.Controls
                 frame.Draw(spriteBatch);
             }
 
-            DrawAllBoardPieces(spriteBatch);
+            List<GuiImage> animatingPieces = CollectBoardPieces(spriteBatch);
+
+            foreach (GuiImage die in dice)
+            {
+                die.Update(lastGameTime);
+                die.Draw(spriteBatch);
+            }
+
             DrawGhostPiece(spriteBatch);
             DrawMoveDiceIndicators(spriteBatch);
+
+            foreach (GuiImage piece in animatingPieces)
+            {
+                piece.Draw(spriteBatch);
+            }
         }
 
         void DrawGhostPiece(SpriteBatch spriteBatch)
@@ -367,7 +379,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             targetColumn.Draw(spriteBatch);
         }
 
-        void DrawAllBoardPieces(SpriteBatch spriteBatch)
+        List<GuiImage> CollectBoardPieces(SpriteBatch spriteBatch)
         {
             int[] tableValues = game.TableValues;
             int player1Index = 0;
@@ -510,10 +522,7 @@ namespace BackgammonByHoratiu.Gui.Controls
                 piece.Draw(spriteBatch);
             }
 
-            foreach (GuiImage piece in animatingPieces)
-            {
-                piece.Draw(spriteBatch);
-            }
+            return animatingPieces;
         }
 
         public int ColumnAt(int x, int y)
@@ -622,7 +631,12 @@ namespace BackgammonByHoratiu.Gui.Controls
             int outingColumn = toColumn >= 0 && toColumn < GameDefines.TotalColumns &&
                                game.TableValues[toColumn] * playerSign < 0 &&
                                Math.Abs(game.TableValues[toColumn]) == 1 ? toColumn : -1;
-            int outingPlayer = outingColumn >= 0 ? (activePlayer == 1 ? 2 : 1) : -1;
+            int outingPlayer = -1;
+
+            if (outingColumn >= 0)
+            {
+                outingPlayer = activePlayer == 1 ? 2 : 1;
+            }
 
             piece.SourceRectangle = new Rectangle2D(
                 activePlayer == 2 ? GameDefines.PieceFrameSize : 0,
