@@ -17,7 +17,6 @@ namespace BackgammonByHoratiu.Gui.Controls
     {
         static readonly Color ColorPlayer1 = Color.White;
         static readonly Color ColorPlayer2 = new(139, 69, 19);
-        bool animationCancelled;
 
         public bool IsAnimating =>
             player1Pieces is not null && player1Pieces.Any(p => p.MovementEffect.IsActive) ||
@@ -575,8 +574,6 @@ namespace BackgammonByHoratiu.Gui.Controls
                 return;
             }
 
-            animationCancelled = false;
-
             int playerSign = activePlayer == 1 ? 1 : -1;
             int outingColumn = toColumn >= 0 && toColumn < GameDefines.TotalColumns &&
                                game.TableValues[toColumn] * playerSign < 0 &&
@@ -596,35 +593,6 @@ namespace BackgammonByHoratiu.Gui.Controls
                     BeginOutingAnimation(outingColumn, outingPlayer);
                 }
             });
-        }
-
-        public void CancelAnimation()
-        {
-            animationCancelled = true;
-
-            if (player1Pieces is not null)
-            {
-                foreach (var p in player1Pieces)
-                {
-                    if (p.MovementEffect.IsActive)
-                    {
-                        p.MovementEffect.Deactivate();
-                        break;
-                    }
-                }
-            }
-
-            if (player2Pieces is not null)
-            {
-                foreach (var p in player2Pieces)
-                {
-                    if (p.MovementEffect.IsActive)
-                    {
-                        p.MovementEffect.Deactivate();
-                        break;
-                    }
-                }
-            }
         }
 
         public void ContinuePieceMoveAnimation(int toColumn, int activePlayer, Action onComplete)
@@ -796,11 +764,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             {
                 piece.MovementEffect.Deactivated -= handler;
                 piece.Location = destination;
-
-                if (!animationCancelled)
-                {
-                    onComplete();
-                }
+                onComplete();
             };
 
             piece.MovementEffect.Deactivated += handler;

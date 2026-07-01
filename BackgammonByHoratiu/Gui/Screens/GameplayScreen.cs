@@ -161,7 +161,6 @@ namespace BackgammonByHoratiu.Gui.Screens
         {
             if (e.Key == Keys.N || e.Key == Keys.F2)
             {
-                gameBoard.CancelAnimation();
                 game.NewGame();
                 dragBeginCol = -1;
             }
