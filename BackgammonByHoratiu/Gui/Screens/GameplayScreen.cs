@@ -47,7 +47,7 @@ namespace BackgammonByHoratiu.Gui.Screens
             };
 
             aiManager.AnimateMoveRequested += (fromCol, toCol, player, onComplete) =>
-                gameBoard.BeginPieceMoveAnimation(fromCol, toCol, player, onComplete);
+                gameBoard.BeginPieceMoveAnimation(fromCol, toCol, player, _ => onComplete?.Invoke());
 
             aiManager.IsExternallyAnimating = () => gameBoard.IsAnimating;
 
@@ -218,7 +218,7 @@ namespace BackgammonByHoratiu.Gui.Screens
 
                 dragBeginCol = -1;
 
-                gameBoard.BeginPieceMoveAnimation(savedFrom, toHouse, game.ActivePlayer, () =>
+                gameBoard.BeginPieceMoveAnimation(savedFrom, toHouse, game.ActivePlayer, _ =>
                 {
                     try
                     {
@@ -277,9 +277,9 @@ namespace BackgammonByHoratiu.Gui.Screens
 
                 if (barIntermediate >= 0)
                 {
-                    gameBoard.BeginPieceMoveAnimation(fromBar, barIntermediate, game.ActivePlayer, () =>
+                    gameBoard.BeginPieceMoveAnimation(fromBar, barIntermediate, game.ActivePlayer, p =>
                     {
-                        gameBoard.ContinuePieceMoveAnimation(col, game.ActivePlayer, () =>
+                        gameBoard.ContinuePieceMoveAnimation(p, col, game.ActivePlayer, () =>
                         {
                             try
                             {
@@ -294,7 +294,7 @@ namespace BackgammonByHoratiu.Gui.Screens
                 }
                 else
                 {
-                    gameBoard.BeginPieceMoveAnimation(fromBar, col, game.ActivePlayer, () =>
+                    gameBoard.BeginPieceMoveAnimation(fromBar, col, game.ActivePlayer, _ =>
                     {
                         try
                         {
@@ -337,9 +337,9 @@ namespace BackgammonByHoratiu.Gui.Screens
 
                 if (directIntermediate >= 0)
                 {
-                    gameBoard.BeginPieceMoveAnimation(savedFrom, directIntermediate, game.ActivePlayer, () =>
+                    gameBoard.BeginPieceMoveAnimation(savedFrom, directIntermediate, game.ActivePlayer, p =>
                     {
-                        gameBoard.ContinuePieceMoveAnimation(col, game.ActivePlayer, () =>
+                        gameBoard.ContinuePieceMoveAnimation(p, col, game.ActivePlayer, () =>
                         {
                             try
                             {
@@ -354,7 +354,7 @@ namespace BackgammonByHoratiu.Gui.Screens
                 }
                 else
                 {
-                    gameBoard.BeginPieceMoveAnimation(savedFrom, col, game.ActivePlayer, () =>
+                    gameBoard.BeginPieceMoveAnimation(savedFrom, col, game.ActivePlayer, _ =>
                     {
                         try
                         {

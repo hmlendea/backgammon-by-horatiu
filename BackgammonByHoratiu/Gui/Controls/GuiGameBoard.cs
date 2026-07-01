@@ -311,16 +311,26 @@ namespace BackgammonByHoratiu.Gui.Controls
                 }
 
                 bool isTopHalf = destination < GameDefines.TotalColumns / 2;
-                int totalDiceWidth = diceUsed.Count * GameDefines.DiceIndicatorSize + (diceUsed.Count - 1) * GameDefines.DiceIndicatorSpacing;
+                int dicePerRow = Math.Min(diceUsed.Count, 2);
+                int rowCount = (diceUsed.Count + 1) / 2;
+                int rowStep = GameDefines.DiceIndicatorSize + GameDefines.DiceIndicatorSpacing;
+                int totalHeight = rowCount * GameDefines.DiceIndicatorSize + (rowCount - 1) * GameDefines.DiceIndicatorSpacing;
+                int totalDiceWidth = dicePerRow * GameDefines.DiceIndicatorSize + (dicePerRow - 1) * GameDefines.DiceIndicatorSpacing;
                 int startX = columnRectangles[destination].Left + (GameDefines.PieceSize - totalDiceWidth) / 2;
-                int indicatorY = isTopHalf
-                    ? columnRectangles[destination].Top - GameDefines.DiceIndicatorSize - GameDefines.DiceIndicatorSpacing
-                    : columnRectangles[destination].Bottom + GameDefines.DiceIndicatorSpacing;
+                int firstRowY = columnRectangles[destination].Bottom + GameDefines.DiceIndicatorSpacing;
+
+                if (isTopHalf)
+                {
+                    firstRowY = columnRectangles[destination].Top - totalHeight - GameDefines.DiceIndicatorSpacing;
+                }
 
                 for (int diceIndex = 0; diceIndex < diceUsed.Count; diceIndex++)
                 {
                     int dieValue = diceUsed[diceIndex];
-                    int indicatorX = startX + diceIndex * (GameDefines.DiceIndicatorSize + GameDefines.DiceIndicatorSpacing);
+                    int col = diceIndex % 2;
+                    int row = diceIndex / 2;
+                    int indicatorX = startX + col * (GameDefines.DiceIndicatorSize + GameDefines.DiceIndicatorSpacing);
+                    int indicatorY = firstRowY + row * rowStep;
 
                     moveDiceIndicator.SourceRectangle = new Rectangle2D(
                         (dieValue - 1) * GameDefines.DieFrameSize.Width,
@@ -565,11 +575,11 @@ namespace BackgammonByHoratiu.Gui.Controls
             return false;
         }
 
-        public void BeginPieceMoveAnimation(int fromColumn, int toColumn, int activePlayer, Action onComplete)
+        public void BeginPieceMoveAnimation(int fromColumn, int toColumn, int activePlayer, Action<GuiImage> onComplete)
         {
             if (IsAnimating)
             {
-                onComplete?.Invoke();
+                onComplete?.Invoke(null);
 
                 return;
             }
@@ -586,7 +596,7 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             StartMovementAnimation(piece, GetAnimDestPixel(toColumn, activePlayer), () =>
             {
-                onComplete?.Invoke();
+                onComplete?.Invoke(piece);
 
                 if (outingColumn >= 0 && !IsAnimating)
                 {
@@ -595,7 +605,7 @@ namespace BackgammonByHoratiu.Gui.Controls
             });
         }
 
-        public void ContinuePieceMoveAnimation(int toColumn, int activePlayer, Action onComplete)
+        public void ContinuePieceMoveAnimation(GuiImage piece, int toColumn, int activePlayer, Action onComplete)
         {
             int playerSign = activePlayer == 1 ? 1 : -1;
             int outingColumn = toColumn >= 0 && toColumn < GameDefines.TotalColumns &&
@@ -603,7 +613,6 @@ namespace BackgammonByHoratiu.Gui.Controls
                                Math.Abs(game.TableValues[toColumn]) == 1 ? toColumn : -1;
             int outingPlayer = outingColumn >= 0 ? (activePlayer == 1 ? 2 : 1) : -1;
 
-            GuiImage piece = FindAnimatingPiece();
             piece.SourceRectangle = new Rectangle2D(
                 activePlayer == 2 ? GameDefines.PieceFrameSize : 0,
                 0,
