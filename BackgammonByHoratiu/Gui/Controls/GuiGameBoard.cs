@@ -17,7 +17,6 @@ namespace BackgammonByHoratiu.Gui.Controls
     {
         static readonly Color ColorPlayer1 = Color.White;
         static readonly Color ColorPlayer2 = new(139, 69, 19);
-        int animationFromColumn;
         bool animationCancelled;
 
         public bool IsAnimating =>
@@ -577,7 +576,6 @@ namespace BackgammonByHoratiu.Gui.Controls
             }
 
             animationCancelled = false;
-            animationFromColumn = fromColumn;
 
             int playerSign = activePlayer == 1 ? 1 : -1;
             int outingColumn = toColumn >= 0 && toColumn < GameDefines.TotalColumns &&
@@ -637,7 +635,7 @@ namespace BackgammonByHoratiu.Gui.Controls
                                Math.Abs(game.TableValues[toColumn]) == 1 ? toColumn : -1;
             int outingPlayer = outingColumn >= 0 ? (activePlayer == 1 ? 2 : 1) : -1;
 
-            GuiImage piece = FindTopPieceImageAt(animationFromColumn);
+            GuiImage piece = FindAnimatingPiece();
             piece.SourceRectangle = new Rectangle2D(
                 activePlayer == 2 ? GameDefines.PieceFrameSize : 0,
                 0,
@@ -654,9 +652,6 @@ namespace BackgammonByHoratiu.Gui.Controls
                 }
             });
         }
-
-        // Returns the pixel Y for a given slot index in a top-half column/bar/house
-        // (pieces grow downward from the column's top edge).
         static int GetTopHalfSlotPixelY(int slotIndex, int columnTop)
         {
             int layer = slotIndex / GameDefines.PiecesPerColumnLayer;
@@ -771,7 +766,6 @@ namespace BackgammonByHoratiu.Gui.Controls
                 int destinationSlotIndex = game.Player1.OutedPieces - 1;
 
                 destinationPixel = new Point2D(centerX, GetTopHalfSlotPixelY(destinationSlotIndex, outColumnTop.Top));
-                animationFromColumn = GameDefines.ColBarP1;
             }
             else
             {
@@ -779,10 +773,16 @@ namespace BackgammonByHoratiu.Gui.Controls
                 int destinationSlotIndex = game.Player2.OutedPieces - 1;
 
                 destinationPixel = new Point2D(centerX, GetBottomHalfSlotPixelY(destinationSlotIndex, outColumnBottom.Bottom));
-                animationFromColumn = GameDefines.ColBarP2;
             }
 
-            GuiImage piece = FindTopPieceImageAt(animationFromColumn);
+            int barColumn = GameDefines.ColBarP2;
+
+            if (hitPlayer == 1)
+            {
+                barColumn = GameDefines.ColBarP1;
+            }
+
+            GuiImage piece = FindTopPieceImageAt(barColumn);
             piece.SourceRectangle = new Rectangle2D(hitPlayer == 1 ? 0 : GameDefines.PieceFrameSize, 0, GameDefines.PieceFrameSize, GameDefines.PieceFrameSize);
             piece.Location = sourcePixel;
 
@@ -806,6 +806,33 @@ namespace BackgammonByHoratiu.Gui.Controls
             piece.MovementEffect.Deactivated += handler;
             piece.MovementEffect.TargetLocation = destination + ScreenLocation;
             piece.MovementEffect.Activate();
+        }
+
+        GuiImage FindAnimatingPiece()
+        {
+            if (player1Pieces is not null)
+            {
+                foreach (var p in player1Pieces)
+                {
+                    if (p.MovementEffect.IsActive)
+                    {
+                        return p;
+                    }
+                }
+            }
+
+            if (player2Pieces is not null)
+            {
+                foreach (var p in player2Pieces)
+                {
+                    if (p.MovementEffect.IsActive)
+                    {
+                        return p;
+                    }
+                }
+            }
+
+            return null;
         }
 
         GuiImage FindTopPieceImageAt(int fromColumn)
