@@ -10,7 +10,6 @@ using NuciXNA.Gui.Screens;
 using NuciXNA.Input;
 using NuciXNA.Primitives;
 
-using BackgammonByHoratiu.Gui;
 using BackgammonByHoratiu.Gui.Screens;
 using BackgammonByHoratiu.Settings;
 
@@ -33,8 +32,6 @@ namespace BackgammonByHoratiu
         };
 
         readonly Dictionary<CursorType, Scale2D> cursorScales = [];
-
-        readonly FpsIndicator fpsIndicator;
         readonly Cursor cursor;
 
         public static CursorType ActiveCursor { get; set; }
@@ -50,7 +47,6 @@ namespace BackgammonByHoratiu
             Content.RootDirectory = "Content";
             IsMouseVisible = false;
 
-            fpsIndicator = new FpsIndicator();
             cursor = new Cursor
             {
                 ContentFile = CursorContentFiles[CursorType.Pointer]
@@ -65,13 +61,10 @@ namespace BackgammonByHoratiu
             GraphicsManager.Instance.Graphics = graphics;
 
             NuciContentManager.Instance.LoadContent(Content, GraphicsDevice);
-            SettingsManager.Instance.LoadContent();
 
             ScreenManager.Instance.SpriteBatch = spriteBatch;
             ScreenManager.Instance.StartingScreenType = typeof(SplashScreen);
             ScreenManager.Instance.LoadContent();
-
-            fpsIndicator.LoadContent();
 
             foreach (KeyValuePair<CursorType, string> entry in CursorContentFiles)
             {
@@ -87,13 +80,11 @@ namespace BackgammonByHoratiu
         protected override void UnloadContent()
         {
             ScreenManager.Instance.UnloadContent();
-            FpsIndicator.UnloadContent();
             cursor.UnloadContent();
         }
 
         protected override void Update(GameTime gameTime)
         {
-            SettingsManager.Instance.Update();
             ScreenManager.Instance.Update(gameTime);
 
             if (IsActive)
@@ -117,7 +108,6 @@ namespace BackgammonByHoratiu
                 cursor.LocationOffset = new Point2D(0, 0);
             }
 
-            fpsIndicator.Update(gameTime);
             cursor.Update(gameTime);
 
             base.Update(gameTime);
@@ -130,8 +120,6 @@ namespace BackgammonByHoratiu
             spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.AnisotropicClamp);
 
             ScreenManager.Instance.Draw(spriteBatch);
-
-            fpsIndicator.Draw(spriteBatch);
 
             cursor.Draw(spriteBatch);
 
