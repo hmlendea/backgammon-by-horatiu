@@ -35,12 +35,6 @@ namespace BackgammonByHoratiu.Gui.Screens
         const int BarBrown = -2;
         const int BarWhite = -3;
 
-        public GameplayScreen()
-        {
-            BackgroundColour = Colour.Black;
-            ForegroundColour = Colour.White;
-        }
-
         protected override void DoLoadContent()
         {
             AiGameManager aiManager = new();
@@ -50,7 +44,7 @@ namespace BackgammonByHoratiu.Gui.Screens
             tableBackground = new GuiImage
             {
                 ContentFile = "Table/table",
-                Location = new Point2D(0, 0),
+                Location = Point2D.Empty,
                 Size = new Size2D(GameDefines.WindowWidth, GameDefines.WindowHeight)
             };
 
