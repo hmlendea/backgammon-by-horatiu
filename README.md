@@ -5,14 +5,14 @@
 
 # Backgammon, by Horațiu!
 
-Open-source cross-platform reimplementation of one of the oldest backgammon games for Windows, built with MonoGame and .NET 10.
+Open-source cross-platform reimagination of one of the oldest backgammon games for Windows, built with MonoGame and .NET 10.
 
 ![Preview screenshot](preview.png)
 
 ## Features
 
 - **Standard backgammon rules** — 24-point board, 15 pieces per player, bar and bearing-off areas
-- **Single-player vs AI** — play as white (Player 1) against a computer-controlled brown opponent
+- **Single-player vs AI** — play against a computer-controlled opponent
 - **Animated piece movement** — smooth sprite-based animation for every move
 - **Drag-and-drop interaction** — click to pick up a piece, then click a valid destination to place it
 - **Legal-move highlighting** — valid target columns are highlighted after selecting a piece
@@ -20,8 +20,6 @@ Open-source cross-platform reimplementation of one of the oldest backgammon game
 - **Undo** — revert the last move at any time
 - **Reset** — start a fresh game from the opening position
 - **Context-sensitive cursor** — cursor changes to reflect the current interaction state (pointer, pick up, grab, open hand, dice)
-- **Splash screen** — animated logo on launch, dismissible by any input
-- **Fullscreen and windowed modes** — configurable at start-up
 
 ## Gameplay
 
@@ -110,7 +108,7 @@ bash ./release.sh 1.0.0
 
 This script downloads and executes an external release helper from `https://raw.githubusercontent.com/hmlendea/deployment-scripts/master/release/dotnet/10.0.sh`.
 
-**Note:** Always review any external script before piping it into `bash`.
+**Note:** Piping into `bash` is an intensely controversial topic. Please review any external scripts before running them in your environment!
 
 ## Project Structure
 
@@ -155,13 +153,12 @@ Contributions are welcome.
 
 Please:
 
-- Keep changes cross-platform (Windows, Linux, macOS via MonoGame DesktopGL)
-- Keep pull requests focused and consistent with the existing code style
-- Update documentation when behaviour changes
-- Add or update unit tests for any new or modified logic
+- keep changes cross-platform
+- keep pull requests focused and consistent with existing style
+- update documentation when behaviour changes
+- add or update tests for new behaviour
 
-## Links
-
+# Links
 - [Latest release](https://github.com/hmlendea/backgammon-by-horatiu/releases/latest)
 - [FlatHub release](https://flathub.org/apps/details/io.github.hmlendea.BackgammonByHoratiu)
 - [FlatHub repository](https://github.com/flathub/io.github.hmlendea.BackgammonByHoratiu)
