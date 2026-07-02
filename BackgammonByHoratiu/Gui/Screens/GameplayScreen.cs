@@ -23,6 +23,7 @@ namespace BackgammonByHoratiu.Gui.Screens
         IGameManager game;
         GuiGameBoard gameBoard;
         GuiImage tableBackground;
+        GuiButton resetButton;
 
         Point2D mousePosition;
 
@@ -61,7 +62,17 @@ namespace BackgammonByHoratiu.Gui.Screens
 
             aiManager.IsExternallyAnimating = () => gameBoard.IsAnimating;
 
-            GuiManager.Instance.RegisterControls(tableBackground, gameBoard);
+            resetButton = new GuiButton
+            {
+                ContentFile = "interface/buttons_ingame",
+                ButtonRow = 1,
+                Location = new Point2D(
+                    (GameDefines.HouseWidth - GameDefines.InGameButtonSize.Width) / 2,
+                    (GameDefines.HouseWidth - GameDefines.InGameButtonSize.Width) / 2),
+                Size = GameDefines.InGameButtonSize
+            };
+
+            GuiManager.Instance.RegisterControls(tableBackground, gameBoard, resetButton);
             RegisterEvents();
         }
 
@@ -210,6 +221,7 @@ namespace BackgammonByHoratiu.Gui.Screens
             InputManager.Instance.MouseButtonPressed += OnMouseButtonPressed;
             InputManager.Instance.MouseButtonReleased += OnMouseButtonReleased;
             InputManager.Instance.MouseMoved += OnMouseMoved;
+            resetButton.Clicked += OnResetButtonClicked;
         }
 
         void UnregisterEvents()
@@ -218,6 +230,7 @@ namespace BackgammonByHoratiu.Gui.Screens
             InputManager.Instance.MouseButtonPressed -= OnMouseButtonPressed;
             InputManager.Instance.MouseButtonReleased -= OnMouseButtonReleased;
             InputManager.Instance.MouseMoved -= OnMouseMoved;
+            resetButton.Clicked -= OnResetButtonClicked;
         }
 
         bool HasAnyValidMoveForPlayer1()
@@ -242,6 +255,12 @@ namespace BackgammonByHoratiu.Gui.Screens
             }
 
             return false;
+        }
+
+        void OnResetButtonClicked(object sender, MouseButtonEventArgs e)
+        {
+            game.NewGame();
+            dragBeginCol = -1;
         }
 
         void OnKeyboardKeyPressed(object sender, KeyboardKeyEventArgs e)
