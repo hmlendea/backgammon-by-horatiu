@@ -221,6 +221,7 @@ namespace BackgammonByHoratiu.Gui.Screens
             InputManager.Instance.MouseButtonPressed += OnMouseButtonPressed;
             InputManager.Instance.MouseButtonReleased += OnMouseButtonReleased;
             InputManager.Instance.MouseMoved += OnMouseMoved;
+            resetButton.Clicked += OnResetButtonClicked;
         }
 
         void UnregisterEvents()
@@ -229,6 +230,7 @@ namespace BackgammonByHoratiu.Gui.Screens
             InputManager.Instance.MouseButtonPressed -= OnMouseButtonPressed;
             InputManager.Instance.MouseButtonReleased -= OnMouseButtonReleased;
             InputManager.Instance.MouseMoved -= OnMouseMoved;
+            resetButton.Clicked -= OnResetButtonClicked;
         }
 
         bool HasAnyValidMoveForPlayer1()
@@ -253,6 +255,12 @@ namespace BackgammonByHoratiu.Gui.Screens
             }
 
             return false;
+        }
+
+        void OnResetButtonClicked(object sender, MouseButtonEventArgs e)
+        {
+            game.NewGame();
+            dragBeginCol = -1;
         }
 
         void OnKeyboardKeyPressed(object sender, KeyboardKeyEventArgs e)
