@@ -26,6 +26,14 @@ namespace BackgammonByHoratiu.Entities
             Player1 = new();
             Player2 = new();
 
+            Dice1 = 2;
+            Dice2 = 4;
+
+            InitialiseBoard();
+        }
+
+        void InitialiseBoard()
+        {
             TableValues[0] = 2;
             TableValues[5] = -5;
             TableValues[7] = -3;
@@ -34,9 +42,6 @@ namespace BackgammonByHoratiu.Entities
             TableValues[16] = 3;
             TableValues[18] = 5;
             TableValues[23] = -2;
-
-            Dice1 = 2;
-            Dice2 = 4;
 
             ActivePlayer = 1;
             ThrowDice();
@@ -406,69 +411,42 @@ namespace BackgammonByHoratiu.Entities
                 throw new PieceMoveException("Cannot move the other player s pieces");
             }
 
-            if (ActivePlayer == 1)
+            int sign = ActivePlayer == 1 ? 1 : -1;
+            Player movingPlayer = sign > 0 ? Player1 : Player2;
+            Player opponentPlayer = sign > 0 ? Player2 : Player1;
+
+            if (movingPlayer.OutedPieces != 0)
             {
-                if (Player1.OutedPieces != 0)
-                {
-                    throw new PieceMoveException("Player 1 has outed pieces");
-                }
-
-                if (move > 0 && pos + move < 24 && TableValues[pos + move] >= -1)
-                {
-                    if (TableValues[pos + move] == -1)
-                    {
-                        TableValues[pos + move] = 1;
-                        Player2.OutedPieces += 1;
-                    }
-                    else
-                    {
-                        TableValues[pos + move] += 1;
-                    }
-
-                    TableValues[pos] -= 1;
-                    Player1.MovesLeft.Remove(move);
-
-                    if (Player1.MovesLeft.Count == 0)
-                    {
-                        NextTurn();
-                    }
-                }
-                else
-                {
-                    throw new PieceMoveException("Invalid destination");
-                }
+                throw new PieceMoveException($"Player {ActivePlayer} has outed pieces");
             }
-            else if (ActivePlayer == 2)
+
+            int dest = pos + sign * move;
+            bool destInBounds = dest >= 0 && dest < 24;
+            bool destNotBlocked = sign > 0 ? TableValues[dest] >= -1 : TableValues[dest] <= 1;
+
+            if (!destInBounds || !destNotBlocked)
             {
-                if (Player2.OutedPieces != 0)
-                {
-                    throw new PieceMoveException("Player 2 has outed pieces");
-                }
+                throw new PieceMoveException("Invalid destination");
+            }
 
-                if (move > 0 && pos - move >= 0 && TableValues[pos - move] <= 1)
-                {
-                    if (TableValues[pos - move] == 1)
-                    {
-                        TableValues[pos - move] = -1;
-                        Player1.OutedPieces += 1;
-                    }
-                    else
-                    {
-                        TableValues[pos - move] -= 1;
-                    }
+            bool hitOpponent = sign > 0 ? TableValues[dest] == -1 : TableValues[dest] == 1;
 
-                    TableValues[pos] += 1;
-                    Player2.MovesLeft.Remove(move);
+            if (hitOpponent)
+            {
+                TableValues[dest] = sign;
+                opponentPlayer.OutedPieces += 1;
+            }
+            else
+            {
+                TableValues[dest] += sign;
+            }
 
-                    if (Player2.MovesLeft.Count == 0)
-                    {
-                        NextTurn();
-                    }
-                }
-                else
-                {
-                    throw new PieceMoveException("Invalid destination");
-                }
+            TableValues[pos] -= sign;
+            movingPlayer.MovesLeft.Remove(move);
+
+            if (movingPlayer.MovesLeft.Count == 0)
+            {
+                NextTurn();
             }
         }
 
@@ -1121,24 +1099,17 @@ namespace BackgammonByHoratiu.Entities
                 movingPlayer.MovesLeft.Remove(bearOffDicePair.SecondDie);
             }
             TableValues[from] -= sign;
+            IncrementCompletedPieces(sign);
+        }
 
-            if (sign > 0)
+        void IncrementCompletedPieces(int sign)
+        {
+            Player player = sign > 0 ? Player1 : Player2;
+            player.CompletedPieces++;
+
+            if (player.CompletedPieces >= 15)
             {
-                Player1.CompletedPieces++;
-
-                if (Player1.CompletedPieces >= 15)
-                {
-                    GameOver();
-                }
-            }
-            else
-            {
-                Player2.CompletedPieces++;
-
-                if (Player2.CompletedPieces >= 15)
-                {
-                    GameOver();
-                }
+                GameOver();
             }
         }
 
@@ -1154,17 +1125,7 @@ namespace BackgammonByHoratiu.Entities
             Player2.CompletedPieces = 0;
             Player2.MovesLeft.Clear();
 
-            TableValues[0] = 2;
-            TableValues[5] = -5;
-            TableValues[7] = -3;
-            TableValues[11] = 5;
-            TableValues[12] = -5;
-            TableValues[16] = 3;
-            TableValues[18] = 5;
-            TableValues[23] = -2;
-
-            ActivePlayer = 1;
-            ThrowDice();
+            InitialiseBoard();
         }
 
         bool IsFarthestPiece(int col, int sign)
@@ -1339,83 +1300,14 @@ namespace BackgammonByHoratiu.Entities
 
         public int FindMovePieceDirectIntermediate(int from, int to)
         {
-            if (TableValues[from] == 0)
-            {
-                return -1;
-            }
-
-            int sign = TableValues[from] > 0 ? 1 : -1;
-            int distance = sign > 0 ? to - from : from - to;
-            Player movingPlayer = sign > 0 ? Player1 : Player2;
-
-            if (movingPlayer.MovesLeft.Contains(distance))
-            {
-                return -1;
-            }
-
-            DicePair twoDiceCombo = FindTwoDiceCombo(from, distance, sign, movingPlayer);
-
-            if (twoDiceCombo.IsValid)
-            {
-                return from + sign * twoDiceCombo.FirstDie;
-            }
-
-            DiceTriple threeDiceCombo = FindThreeDiceCombo(from, distance, sign, movingPlayer);
-
-            if (threeDiceCombo.IsValid)
-            {
-                return from + sign * threeDiceCombo.FirstDie;
-            }
-
-            DiceQuadruple fourDiceCombo = FindFourDiceCombo(from, distance, sign, movingPlayer);
-
-            if (fourDiceCombo.IsValid)
-            {
-                return from + sign * fourDiceCombo.FirstDie;
-            }
-
-            return -1;
+            List<int> intermediates = FindMovePieceDirectIntermediates(from, to);
+            return intermediates.Count > 0 ? intermediates[0] : -1;
         }
 
         public int FindMoveOutedPieceIntermediate(int distance)
         {
-            int sign = ActivePlayer == 1 ? 1 : -1;
-            Player movingPlayer = ActivePlayer == 1 ? Player1 : Player2;
-
-            if (movingPlayer.MovesLeft.Contains(distance))
-            {
-                return -1;
-            }
-
-            DicePair barEntryDicePair = FindBarEntryCombo(distance, sign);
-
-            if (barEntryDicePair.IsValid)
-            {
-                if (ActivePlayer == 1)
-                {
-                    return barEntryDicePair.FirstDie - 1;
-                }
-                else
-                {
-                    return 24 - barEntryDicePair.FirstDie;
-                }
-            }
-
-            DiceTriple barEntryDiceTriple = FindBarEntryThreeDiceCombo(distance, sign);
-
-            if (barEntryDiceTriple.IsValid)
-            {
-                return ActivePlayer == 1 ? barEntryDiceTriple.FirstDie - 1 : 24 - barEntryDiceTriple.FirstDie;
-            }
-
-            DiceQuadruple barEntryDiceQuadruple = FindBarEntryFourDiceCombo(distance, sign);
-
-            if (barEntryDiceQuadruple.IsValid)
-            {
-                return ActivePlayer == 1 ? barEntryDiceQuadruple.FirstDie - 1 : 24 - barEntryDiceQuadruple.FirstDie;
-            }
-
-            return -1;
+            List<int> intermediates = FindMoveOutedPieceIntermediates(distance);
+            return intermediates.Count > 0 ? intermediates[0] : -1;
         }
 
         public List<int> FindMovePieceDirectIntermediates(int from, int to)
@@ -1425,26 +1317,9 @@ namespace BackgammonByHoratiu.Entities
                 return [];
             }
 
-            int sign = -1;
-
-            if (TableValues[from] > 0)
-            {
-                sign = 1;
-            }
-
-            int distance = from - to;
-
-            if (sign > 0)
-            {
-                distance = to - from;
-            }
-
-            Player movingPlayer = Player2;
-
-            if (sign > 0)
-            {
-                movingPlayer = Player1;
-            }
+            int sign = TableValues[from] > 0 ? 1 : -1;
+            int distance = sign > 0 ? to - from : from - to;
+            Player movingPlayer = sign > 0 ? Player1 : Player2;
 
             if (movingPlayer.MovesLeft.Contains(distance))
             {
