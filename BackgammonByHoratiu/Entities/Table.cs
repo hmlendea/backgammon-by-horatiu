@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 
 using BackgammonByHoratiu.Settings;
-using Microsoft.Xna.Framework;
 
 namespace BackgammonByHoratiu.Entities
 {
@@ -71,8 +70,19 @@ namespace BackgammonByHoratiu.Entities
 
         public void MoveOutedPiece(int distance)
         {
-            int sign = ActivePlayer == 1 ? 1 : -1;
-            Player player = sign > 0 ? Player1 : Player2;
+            int sign = -1;
+
+            if (ActivePlayer == 1)
+            {
+                sign = 1;
+            }
+
+            Player player = Player2;
+
+            if (sign > 0)
+            {
+                player = Player1;
+            }
 
             if (player.OutedPieces == 0)
             {
@@ -229,8 +239,13 @@ namespace BackgammonByHoratiu.Entities
 
         DicePair FindBarEntryCombo(int distance, int sign)
         {
-            Player movingPlayer = sign > 0 ? Player1 : Player2;
-            var moves = movingPlayer.MovesLeft;
+            Player movingPlayer = Player2;
+            if (sign > 0)
+            {
+                movingPlayer = Player1;
+            }
+
+            List<int> moves = movingPlayer.MovesLeft;
 
             for (int i = 0; i < moves.Count; i++)
             {
@@ -287,7 +302,7 @@ namespace BackgammonByHoratiu.Entities
         DiceTriple FindBarEntryThreeDiceCombo(int distance, int sign)
         {
             Player movingPlayer = sign > 0 ? Player1 : Player2;
-            var moves = movingPlayer.MovesLeft;
+            List<int> moves = movingPlayer.MovesLeft;
 
             for (int i = 0; i < moves.Count; i++)
             {
@@ -358,7 +373,7 @@ namespace BackgammonByHoratiu.Entities
         DiceQuadruple FindBarEntryFourDiceCombo(int distance, int sign)
         {
             Player movingPlayer = sign > 0 ? Player1 : Player2;
-            var moves = movingPlayer.MovesLeft;
+            List<int> moves = movingPlayer.MovesLeft;
 
             for (int i = 0; i < moves.Count; i++)
             {
@@ -699,7 +714,7 @@ namespace BackgammonByHoratiu.Entities
 
         DicePair FindTwoDiceCombo(int from, int distance, int sign, Player movingPlayer)
         {
-            var moves = movingPlayer.MovesLeft;
+            List<int> moves = movingPlayer.MovesLeft;
 
             for (int i = 0; i < moves.Count; i++)
             {
@@ -740,7 +755,7 @@ namespace BackgammonByHoratiu.Entities
 
         DiceTriple FindThreeDiceCombo(int from, int distance, int sign, Player movingPlayer)
         {
-            var moves = movingPlayer.MovesLeft;
+            List<int> moves = movingPlayer.MovesLeft;
 
             for (int i = 0; i < moves.Count; i++)
             {
@@ -803,7 +818,7 @@ namespace BackgammonByHoratiu.Entities
 
         DiceQuadruple FindFourDiceCombo(int from, int distance, int sign, Player movingPlayer)
         {
-            var moves = movingPlayer.MovesLeft;
+            List<int> moves = movingPlayer.MovesLeft;
 
             for (int i = 0; i < moves.Count; i++)
             {
@@ -887,7 +902,7 @@ namespace BackgammonByHoratiu.Entities
 
         DiceTriple FindThreeDiceComboForBearOff(int from, int distance, int sign, Player movingPlayer)
         {
-            var moves = movingPlayer.MovesLeft;
+            List<int> moves = movingPlayer.MovesLeft;
 
             for (int i = 0; i < moves.Count; i++)
             {
@@ -959,7 +974,7 @@ namespace BackgammonByHoratiu.Entities
 
         DiceQuadruple FindFourDiceComboForBearOff(int from, int distance, int sign, Player movingPlayer)
         {
-            var moves = movingPlayer.MovesLeft;
+            List<int> moves = movingPlayer.MovesLeft;
 
             for (int i = 0; i < moves.Count; i++)
             {
@@ -1057,7 +1072,7 @@ namespace BackgammonByHoratiu.Entities
 
         DicePair FindTwoDiceComboForBearOff(int from, int distance, int sign, Player movingPlayer)
         {
-            var moves = movingPlayer.MovesLeft;
+            List<int> moves = movingPlayer.MovesLeft;
 
             for (int i = 0; i < moves.Count; i++)
             {

@@ -23,7 +23,6 @@ namespace BackgammonByHoratiu.Gui.Screens
         public SplashScreen()
         {
             Delay = 2;
-            BackgroundColour = Colour.Black;
         }
 
         protected override void DoLoadContent()

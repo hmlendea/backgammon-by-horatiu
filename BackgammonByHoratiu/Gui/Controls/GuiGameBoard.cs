@@ -15,9 +15,6 @@ namespace BackgammonByHoratiu.Gui.Controls
 {
     public class GuiGameBoard(IGameManager game) : GuiControl
     {
-        static readonly Color ColorPlayer1 = Color.White;
-        static readonly Color ColorPlayer2 = new(139, 69, 19);
-
         public bool IsAnimating =>
             player1Pieces is not null && player1Pieces.Any(p => p.MovementEffect.IsActive) ||
             player2Pieces is not null && player2Pieces.Any(p => p.MovementEffect.IsActive);
@@ -261,8 +258,14 @@ namespace BackgammonByHoratiu.Gui.Controls
                 return;
             }
 
-            Color pieceColor = game.ActivePlayer == 1 ? ColorPlayer1 : ColorPlayer2;
-            ghostPiece.SourceRectangle = new Rectangle2D(pieceColor == ColorPlayer2 ? GameDefines.PieceFrameSize : 0, 0, GameDefines.PieceFrameSize, GameDefines.PieceFrameSize);
+            if (game.ActivePlayer == 1)
+            {
+                ghostPiece.SourceRectangle = new Rectangle2D(0, 0, GameDefines.PieceFrameSize, GameDefines.PieceFrameSize);
+            }
+            else
+            {
+                ghostPiece.SourceRectangle = new Rectangle2D(GameDefines.PieceFrameSize, 0, GameDefines.PieceFrameSize, GameDefines.PieceFrameSize);
+            }
 
             Rectangle2D destination;
 
@@ -288,16 +291,28 @@ namespace BackgammonByHoratiu.Gui.Controls
             else if (HoveredColumn == GameDefines.ColHouseP1)
             {
                 int centerX = houses[0].Left + (houses[0].Width - GameDefines.PieceSize) / 2;
-                int ghostPiecePixelY = GetBottomHalfSlotPixelY(game.Player1.CompletedPieces, houses[0].Bottom);
+                int ghostPiecePixelY = GetBottomHalfSlotPixelY(
+                    game.Player1.CompletedPieces,
+                    houses[0].Bottom);
 
-                destination = new Rectangle2D(centerX, ghostPiecePixelY, GameDefines.PieceSize, GameDefines.PieceSize);
+                destination = new Rectangle2D(
+                    centerX,
+                    ghostPiecePixelY,
+                    GameDefines.PieceSize,
+                    GameDefines.PieceSize);
             }
             else if (HoveredColumn == GameDefines.ColHouseP2)
             {
                 int centerX = houses[1].Left + (houses[1].Width - GameDefines.PieceSize) / 2;
-                int ghostPiecePixelY = GetTopHalfSlotPixelY(game.Player2.CompletedPieces, houses[1].Top);
+                int ghostPiecePixelY = GetTopHalfSlotPixelY(
+                    game.Player2.CompletedPieces,
+                    houses[1].Top);
 
-                destination = new Rectangle2D(centerX, ghostPiecePixelY, GameDefines.PieceSize, GameDefines.PieceSize);
+                destination = new Rectangle2D(
+                    centerX,
+                    ghostPiecePixelY,
+                    GameDefines.PieceSize,
+                    GameDefines.PieceSize);
             }
             else
             {
