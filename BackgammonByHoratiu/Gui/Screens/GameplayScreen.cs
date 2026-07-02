@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -179,6 +180,30 @@ namespace BackgammonByHoratiu.Gui.Screens
 
         protected override void DoDraw(SpriteBatch spriteBatch) { }
 
+        void ChainMoveAnimation(
+            int fromColumn,
+            IReadOnlyList<int> intermediates,
+            int finalColumn,
+            int activePlayer,
+            Action onComplete)
+        {
+            List<int> stops = [.. intermediates];
+            stops.Add(finalColumn);
+
+            void Continue(GuiImage piece, int index)
+            {
+                if (index >= stops.Count)
+                {
+                    onComplete?.Invoke();
+                    return;
+                }
+
+                gameBoard.ContinuePieceMoveAnimation(piece, stops[index], activePlayer, () => Continue(piece, index + 1));
+            }
+
+            gameBoard.BeginPieceMoveAnimation(fromColumn, stops[0], activePlayer, piece => Continue(piece, 1));
+        }
+
         void RegisterEvents()
         {
             InputManager.Instance.KeyboardKeyPressed += OnKeyboardKeyPressed;
@@ -335,39 +360,17 @@ namespace BackgammonByHoratiu.Gui.Screens
                 int savedDist = distance;
                 dragBeginCol = -1;
 
-                int barIntermediate = game.FindMoveOutedPieceIntermediate(savedDist);
-
-                if (barIntermediate >= 0)
+                ChainMoveAnimation(fromBar, game.FindMoveOutedPieceIntermediates(savedDist), col, game.ActivePlayer, () =>
                 {
-                    gameBoard.BeginPieceMoveAnimation(fromBar, barIntermediate, game.ActivePlayer, p =>
+                    try
                     {
-                        gameBoard.ContinuePieceMoveAnimation(p, col, game.ActivePlayer, () =>
-                        {
-                            try
-                            {
-                                game.MoveOutedPiece(savedDist);
-                            }
-                            catch (PieceMoveException ex)
-                            {
-                                Console.Error.WriteLine($"[Backgammon] {ex.Message}");
-                            }
-                        });
-                    });
-                }
-                else
-                {
-                    gameBoard.BeginPieceMoveAnimation(fromBar, col, game.ActivePlayer, _ =>
+                        game.MoveOutedPiece(savedDist);
+                    }
+                    catch (PieceMoveException ex)
                     {
-                        try
-                        {
-                            game.MoveOutedPiece(savedDist);
-                        }
-                        catch (PieceMoveException ex)
-                        {
-                            Console.Error.WriteLine($"[Backgammon] {ex.Message}");
-                        }
-                    });
-                }
+                        Console.Error.WriteLine($"[Backgammon] {ex.Message}");
+                    }
+                });
 
                 return;
             }
@@ -395,39 +398,17 @@ namespace BackgammonByHoratiu.Gui.Screens
 
                 dragBeginCol = -1;
 
-                int directIntermediate = game.FindMovePieceDirectIntermediate(savedFrom, col);
-
-                if (directIntermediate >= 0)
+                ChainMoveAnimation(savedFrom, game.FindMovePieceDirectIntermediates(savedFrom, col), col, game.ActivePlayer, () =>
                 {
-                    gameBoard.BeginPieceMoveAnimation(savedFrom, directIntermediate, game.ActivePlayer, p =>
+                    try
                     {
-                        gameBoard.ContinuePieceMoveAnimation(p, col, game.ActivePlayer, () =>
-                        {
-                            try
-                            {
-                                game.MovePieceDirect(savedFrom, col);
-                            }
-                            catch (PieceMoveException ex)
-                            {
-                                Console.Error.WriteLine($"[Backgammon] {ex.Message}");
-                            }
-                        });
-                    });
-                }
-                else
-                {
-                    gameBoard.BeginPieceMoveAnimation(savedFrom, col, game.ActivePlayer, _ =>
+                        game.MovePieceDirect(savedFrom, col);
+                    }
+                    catch (PieceMoveException ex)
                     {
-                        try
-                        {
-                            game.MovePieceDirect(savedFrom, col);
-                        }
-                        catch (PieceMoveException ex)
-                        {
-                            Console.Error.WriteLine($"[Backgammon] {ex.Message}");
-                        }
-                    });
-                }
+                        Console.Error.WriteLine($"[Backgammon] {ex.Message}");
+                    }
+                });
             }
         }
     }

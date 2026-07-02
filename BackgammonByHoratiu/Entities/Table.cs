@@ -71,18 +71,18 @@ namespace BackgammonByHoratiu.Entities
                 }
                 else
                 {
-                    (int die1, int die2) = FindBarEntryCombo(distance, 1);
+                    DicePair barEntryDicePair = FindBarEntryCombo(distance, 1);
 
-                    if (die1 != -1)
+                    if (barEntryDicePair.IsValid)
                     {
-                        int intermediate = die1 - 1;
+                        int intermediate = barEntryDicePair.FirstDie - 1;
                         int target = distance - 1;
 
                         ApplyBarEntry(intermediate, 1);
                         Player1.OutedPieces -= 1;
                         ApplyMoveStep(intermediate, target, 1);
-                        Player1.MovesLeft.Remove(die1);
-                        Player1.MovesLeft.Remove(die2);
+                        Player1.MovesLeft.Remove(barEntryDicePair.FirstDie);
+                        Player1.MovesLeft.Remove(barEntryDicePair.SecondDie);
 
                         if (Player1.MovesLeft.Count == 0)
                         {
@@ -91,21 +91,21 @@ namespace BackgammonByHoratiu.Entities
                     }
                     else
                     {
-                        (int d1, int d2, int d3) = FindBarEntryThreeDiceCombo(distance, 1);
+                        DiceTriple barEntryDiceTriple = FindBarEntryThreeDiceCombo(distance, 1);
 
-                        if (d1 != -1)
+                        if (barEntryDiceTriple.IsValid)
                         {
-                            int int1 = d1 - 1;
-                            int int2 = int1 + d2;
+                            int int1 = barEntryDiceTriple.FirstDie - 1;
+                            int int2 = int1 + barEntryDiceTriple.SecondDie;
                             int target = distance - 1;
 
                             ApplyBarEntry(int1, 1);
                             Player1.OutedPieces -= 1;
                             ApplyMoveStep(int1, int2, 1);
                             ApplyMoveStep(int2, target, 1);
-                            Player1.MovesLeft.Remove(d1);
-                            Player1.MovesLeft.Remove(d2);
-                            Player1.MovesLeft.Remove(d3);
+                            Player1.MovesLeft.Remove(barEntryDiceTriple.FirstDie);
+                            Player1.MovesLeft.Remove(barEntryDiceTriple.SecondDie);
+                            Player1.MovesLeft.Remove(barEntryDiceTriple.ThirdDie);
 
                             if (Player1.MovesLeft.Count == 0)
                             {
@@ -114,16 +114,16 @@ namespace BackgammonByHoratiu.Entities
                         }
                         else
                         {
-                            (int da, int db, int dc, int dd) = FindBarEntryFourDiceCombo(distance, 1);
+                            DiceQuadruple barEntryDiceQuadruple = FindBarEntryFourDiceCombo(distance, 1);
 
-                            if (da == -1)
+                            if (!barEntryDiceQuadruple.IsValid)
                             {
                                 throw new PieceMoveException("Invalid destination");
                             }
 
-                            int int1 = da - 1;
-                            int int2 = int1 + db;
-                            int int3 = int2 + dc;
+                            int int1 = barEntryDiceQuadruple.FirstDie - 1;
+                            int int2 = int1 + barEntryDiceQuadruple.SecondDie;
+                            int int3 = int2 + barEntryDiceQuadruple.ThirdDie;
                             int target = distance - 1;
 
                             ApplyBarEntry(int1, 1);
@@ -131,10 +131,10 @@ namespace BackgammonByHoratiu.Entities
                             ApplyMoveStep(int1, int2, 1);
                             ApplyMoveStep(int2, int3, 1);
                             ApplyMoveStep(int3, target, 1);
-                            Player1.MovesLeft.Remove(da);
-                            Player1.MovesLeft.Remove(db);
-                            Player1.MovesLeft.Remove(dc);
-                            Player1.MovesLeft.Remove(dd);
+                            Player1.MovesLeft.Remove(barEntryDiceQuadruple.FirstDie);
+                            Player1.MovesLeft.Remove(barEntryDiceQuadruple.SecondDie);
+                            Player1.MovesLeft.Remove(barEntryDiceQuadruple.ThirdDie);
+                            Player1.MovesLeft.Remove(barEntryDiceQuadruple.FourthDie);
 
                             if (Player1.MovesLeft.Count == 0)
                             {
@@ -171,18 +171,18 @@ namespace BackgammonByHoratiu.Entities
                 }
                 else
                 {
-                    (int die1, int die2) = FindBarEntryCombo(distance, -1);
+                    DicePair barEntryDicePair = FindBarEntryCombo(distance, -1);
 
-                    if (die1 != -1)
+                    if (barEntryDicePair.IsValid)
                     {
-                        int intermediate = 24 - die1;
+                        int intermediate = 24 - barEntryDicePair.FirstDie;
                         int target = 24 - distance;
 
                         ApplyBarEntry(intermediate, -1);
                         Player2.OutedPieces -= 1;
                         ApplyMoveStep(intermediate, target, -1);
-                        Player2.MovesLeft.Remove(die1);
-                        Player2.MovesLeft.Remove(die2);
+                        Player2.MovesLeft.Remove(barEntryDicePair.FirstDie);
+                        Player2.MovesLeft.Remove(barEntryDicePair.SecondDie);
 
                         if (Player2.MovesLeft.Count == 0)
                         {
@@ -191,21 +191,21 @@ namespace BackgammonByHoratiu.Entities
                     }
                     else
                     {
-                        (int d1, int d2, int d3) = FindBarEntryThreeDiceCombo(distance, -1);
+                        DiceTriple barEntryDiceTriple = FindBarEntryThreeDiceCombo(distance, -1);
 
-                        if (d1 != -1)
+                        if (barEntryDiceTriple.IsValid)
                         {
-                            int int1 = 24 - d1;
-                            int int2 = int1 - d2;
+                            int int1 = 24 - barEntryDiceTriple.FirstDie;
+                            int int2 = int1 - barEntryDiceTriple.SecondDie;
                             int target = 24 - distance;
 
                             ApplyBarEntry(int1, -1);
                             Player2.OutedPieces -= 1;
                             ApplyMoveStep(int1, int2, -1);
                             ApplyMoveStep(int2, target, -1);
-                            Player2.MovesLeft.Remove(d1);
-                            Player2.MovesLeft.Remove(d2);
-                            Player2.MovesLeft.Remove(d3);
+                            Player2.MovesLeft.Remove(barEntryDiceTriple.FirstDie);
+                            Player2.MovesLeft.Remove(barEntryDiceTriple.SecondDie);
+                            Player2.MovesLeft.Remove(barEntryDiceTriple.ThirdDie);
 
                             if (Player2.MovesLeft.Count == 0)
                             {
@@ -214,16 +214,16 @@ namespace BackgammonByHoratiu.Entities
                         }
                         else
                         {
-                            (int da, int db, int dc, int dd) = FindBarEntryFourDiceCombo(distance, -1);
+                            DiceQuadruple barEntryDiceQuadruple = FindBarEntryFourDiceCombo(distance, -1);
 
-                            if (da == -1)
+                            if (!barEntryDiceQuadruple.IsValid)
                             {
                                 throw new PieceMoveException("Invalid destination");
                             }
 
-                            int int1 = 24 - da;
-                            int int2 = int1 - db;
-                            int int3 = int2 - dc;
+                            int int1 = 24 - barEntryDiceQuadruple.FirstDie;
+                            int int2 = int1 - barEntryDiceQuadruple.SecondDie;
+                            int int3 = int2 - barEntryDiceQuadruple.ThirdDie;
                             int target = 24 - distance;
 
                             ApplyBarEntry(int1, -1);
@@ -231,10 +231,10 @@ namespace BackgammonByHoratiu.Entities
                             ApplyMoveStep(int1, int2, -1);
                             ApplyMoveStep(int2, int3, -1);
                             ApplyMoveStep(int3, target, -1);
-                            Player2.MovesLeft.Remove(da);
-                            Player2.MovesLeft.Remove(db);
-                            Player2.MovesLeft.Remove(dc);
-                            Player2.MovesLeft.Remove(dd);
+                            Player2.MovesLeft.Remove(barEntryDiceQuadruple.FirstDie);
+                            Player2.MovesLeft.Remove(barEntryDiceQuadruple.SecondDie);
+                            Player2.MovesLeft.Remove(barEntryDiceQuadruple.ThirdDie);
+                            Player2.MovesLeft.Remove(barEntryDiceQuadruple.FourthDie);
 
                             if (Player2.MovesLeft.Count == 0)
                             {
@@ -262,7 +262,7 @@ namespace BackgammonByHoratiu.Entities
             TableValues[col] += sign;
         }
 
-        (int, int) FindBarEntryCombo(int distance, int sign)
+        DicePair FindBarEntryCombo(int distance, int sign)
         {
             Player movingPlayer = sign > 0 ? Player1 : Player2;
             var moves = movingPlayer.MovesLeft;
@@ -307,14 +307,14 @@ namespace BackgammonByHoratiu.Entities
 
                 if (IsStepValid(intermediate, die2, sign))
                 {
-                    return (die1, die2);
+                    return new DicePair(die1, die2);
                 }
             }
 
-            return (-1, -1);
+            return DicePair.None;
         }
 
-        (int, int, int) FindBarEntryThreeDiceCombo(int distance, int sign)
+        DiceTriple FindBarEntryThreeDiceCombo(int distance, int sign)
         {
             Player movingPlayer = sign > 0 ? Player1 : Player2;
             var moves = movingPlayer.MovesLeft;
@@ -323,74 +323,144 @@ namespace BackgammonByHoratiu.Entities
             {
                 int die1 = moves[i];
                 int int1 = sign > 0 ? die1 - 1 : 24 - die1;
-                if (int1 < 0 || int1 >= 24) continue;
+                if (int1 < 0 || int1 >= 24)
+                {
+                    continue;
+                }
+
                 bool blocked1 = sign > 0 ? TableValues[int1] < -1 : TableValues[int1] > 1;
-                if (blocked1) continue;
+                if (blocked1)
+                {
+                    continue;
+                }
 
                 for (int j = 0; j < moves.Count; j++)
                 {
-                    if (j == i) continue;
+                    if (j == i)
+                    {
+                        continue;
+                    }
+
                     int die2 = moves[j];
                     int die3 = distance - die1 - die2;
-                    if (die3 < 1) continue;
-                    if (!IsStepValid(int1, die2, sign)) continue;
-                    int int2 = int1 + sign * die2;
-
-                    for (int k = 0; k < moves.Count; k++)
+                    if (die3 < 1)
                     {
-                        if (k == i || k == j) continue;
-                        if (moves[k] != die3) continue;
-                        if (IsStepValid(int2, die3, sign))
-                            return (die1, die2, die3);
+                        continue;
                     }
-                }
-            }
 
-            return (-1, -1, -1);
-        }
+                    if (!IsStepValid(int1, die2, sign))
+                    {
+                        continue;
+                    }
 
-        (int, int, int, int) FindBarEntryFourDiceCombo(int distance, int sign)
-        {
-            Player movingPlayer = sign > 0 ? Player1 : Player2;
-            var moves = movingPlayer.MovesLeft;
-
-            for (int i = 0; i < moves.Count; i++)
-            {
-                int die1 = moves[i];
-                int int1 = sign > 0 ? die1 - 1 : 24 - die1;
-                if (int1 < 0 || int1 >= 24) continue;
-                bool blocked1 = sign > 0 ? TableValues[int1] < -1 : TableValues[int1] > 1;
-                if (blocked1) continue;
-
-                for (int j = 0; j < moves.Count; j++)
-                {
-                    if (j == i) continue;
-                    int die2 = moves[j];
-                    if (die1 + die2 >= distance) continue;
-                    if (!IsStepValid(int1, die2, sign)) continue;
                     int int2 = int1 + sign * die2;
 
                     for (int k = 0; k < moves.Count; k++)
                     {
-                        if (k == i || k == j) continue;
-                        int die3 = moves[k];
-                        int die4 = distance - die1 - die2 - die3;
-                        if (die4 < 1) continue;
-                        if (!IsStepValid(int2, die3, sign)) continue;
-                        int int3 = int2 + sign * die3;
-
-                        for (int l = 0; l < moves.Count; l++)
+                        if (k == i || k == j)
                         {
-                            if (l == i || l == j || l == k) continue;
-                            if (moves[l] != die4) continue;
-                            if (IsStepValid(int3, die4, sign))
-                                return (die1, die2, die3, die4);
+                            continue;
+                        }
+
+                        if (moves[k] != die3)
+                        {
+                            continue;
+                        }
+
+                        if (IsStepValid(int2, die3, sign))
+                        {
+                            return new DiceTriple(die1, die2, die3);
                         }
                     }
                 }
             }
 
-            return (-1, -1, -1, -1);
+            return DiceTriple.None;
+        }
+
+        DiceQuadruple FindBarEntryFourDiceCombo(int distance, int sign)
+        {
+            Player movingPlayer = sign > 0 ? Player1 : Player2;
+            var moves = movingPlayer.MovesLeft;
+
+            for (int i = 0; i < moves.Count; i++)
+            {
+                int die1 = moves[i];
+                int int1 = sign > 0 ? die1 - 1 : 24 - die1;
+                if (int1 < 0 || int1 >= 24)
+                {
+                    continue;
+                }
+
+                bool blocked1 = sign > 0 ? TableValues[int1] < -1 : TableValues[int1] > 1;
+                if (blocked1)
+                {
+                    continue;
+                }
+
+                for (int j = 0; j < moves.Count; j++)
+                {
+                    if (j == i)
+                    {
+                        continue;
+                    }
+
+                    int die2 = moves[j];
+                    if (die1 + die2 >= distance)
+                    {
+                        continue;
+                    }
+
+                    if (!IsStepValid(int1, die2, sign))
+                    {
+                        continue;
+                    }
+
+                    int int2 = int1 + sign * die2;
+
+                    for (int k = 0; k < moves.Count; k++)
+                    {
+                        if (k == i || k == j)
+                        {
+                            continue;
+                        }
+
+                        int die3 = moves[k];
+                        int die4 = distance - die1 - die2 - die3;
+                        if (die4 < 1)
+                        {
+                            continue;
+                        }
+
+                        if (!IsStepValid(int2, die3, sign))
+                        {
+                            continue;
+                        }
+
+                        int int3 = int2 + sign * die3;
+
+                        for (int l = 0; l < moves.Count; l++)
+                        {
+                            if (l == i || l == j || l == k)
+                            {
+                                continue;
+                            }
+
+                            if (moves[l] != die4)
+                            {
+                                continue;
+                            }
+
+                            if (IsStepValid(int3, die4, sign))
+                            {
+                                return new DiceQuadruple(die1, die2, die3, die4);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return DiceQuadruple.None;
         }
 
         public void MovePiece(int pos, int move)
@@ -534,50 +604,50 @@ namespace BackgammonByHoratiu.Entities
             }
             else
             {
-                (int die1, int die2) = FindTwoDiceCombo(from, distance, sign, movingPlayer);
+                DicePair twoDiceCombo = FindTwoDiceCombo(from, distance, sign, movingPlayer);
 
-                if (die1 != -1)
+                if (twoDiceCombo.IsValid)
                 {
-                    int intermediate = from + sign * die1;
-                    movingPlayer.MovesLeft.Remove(die1);
+                    int intermediate = from + sign * twoDiceCombo.FirstDie;
+                    movingPlayer.MovesLeft.Remove(twoDiceCombo.FirstDie);
                     ApplyMoveStep(from, intermediate, sign);
-                    movingPlayer.MovesLeft.Remove(die2);
+                    movingPlayer.MovesLeft.Remove(twoDiceCombo.SecondDie);
                     ApplyMoveStep(intermediate, to, sign);
                 }
                 else
                 {
-                    (int d1, int d2, int d3) = FindThreeDiceCombo(from, distance, sign, movingPlayer);
+                    DiceTriple threeDiceCombo = FindThreeDiceCombo(from, distance, sign, movingPlayer);
 
-                    if (d1 != -1)
+                    if (threeDiceCombo.IsValid)
                     {
-                        int int1 = from + sign * d1;
-                        int int2 = int1 + sign * d2;
-                        movingPlayer.MovesLeft.Remove(d1);
+                        int int1 = from + sign * threeDiceCombo.FirstDie;
+                        int int2 = int1 + sign * threeDiceCombo.SecondDie;
+                        movingPlayer.MovesLeft.Remove(threeDiceCombo.FirstDie);
                         ApplyMoveStep(from, int1, sign);
-                        movingPlayer.MovesLeft.Remove(d2);
+                        movingPlayer.MovesLeft.Remove(threeDiceCombo.SecondDie);
                         ApplyMoveStep(int1, int2, sign);
-                        movingPlayer.MovesLeft.Remove(d3);
+                        movingPlayer.MovesLeft.Remove(threeDiceCombo.ThirdDie);
                         ApplyMoveStep(int2, to, sign);
                     }
                     else
                     {
-                        (int da, int db, int dc, int dd) = FindFourDiceCombo(from, distance, sign, movingPlayer);
+                        DiceQuadruple fourDiceCombo = FindFourDiceCombo(from, distance, sign, movingPlayer);
 
-                        if (da == -1)
+                        if (!fourDiceCombo.IsValid)
                         {
                             throw new PieceMoveException("No valid move to that column");
                         }
 
-                        int int1 = from + sign * da;
-                        int int2 = int1 + sign * db;
-                        int int3 = int2 + sign * dc;
-                        movingPlayer.MovesLeft.Remove(da);
+                        int int1 = from + sign * fourDiceCombo.FirstDie;
+                        int int2 = int1 + sign * fourDiceCombo.SecondDie;
+                        int int3 = int2 + sign * fourDiceCombo.ThirdDie;
+                        movingPlayer.MovesLeft.Remove(fourDiceCombo.FirstDie);
                         ApplyMoveStep(from, int1, sign);
-                        movingPlayer.MovesLeft.Remove(db);
+                        movingPlayer.MovesLeft.Remove(fourDiceCombo.SecondDie);
                         ApplyMoveStep(int1, int2, sign);
-                        movingPlayer.MovesLeft.Remove(dc);
+                        movingPlayer.MovesLeft.Remove(fourDiceCombo.ThirdDie);
                         ApplyMoveStep(int2, int3, sign);
-                        movingPlayer.MovesLeft.Remove(dd);
+                        movingPlayer.MovesLeft.Remove(fourDiceCombo.FourthDie);
                         ApplyMoveStep(int3, to, sign);
                     }
                 }
@@ -650,7 +720,7 @@ namespace BackgammonByHoratiu.Entities
             return true;
         }
 
-        (int, int) FindTwoDiceCombo(int from, int distance, int sign, Player movingPlayer)
+        DicePair FindTwoDiceCombo(int from, int distance, int sign, Player movingPlayer)
         {
             var moves = movingPlayer.MovesLeft;
 
@@ -684,167 +754,322 @@ namespace BackgammonByHoratiu.Entities
 
                 if (IsStepValid(from, die1, sign) && IsStepValid(intermediate, die2, sign))
                 {
-                    return (die1, die2);
+                    return new DicePair(die1, die2);
                 }
             }
 
-            return (-1, -1);
+            return DicePair.None;
         }
 
-        (int, int, int) FindThreeDiceCombo(int from, int distance, int sign, Player movingPlayer)
+        DiceTriple FindThreeDiceCombo(int from, int distance, int sign, Player movingPlayer)
         {
             var moves = movingPlayer.MovesLeft;
 
             for (int i = 0; i < moves.Count; i++)
             {
                 int die1 = moves[i];
-                if (die1 >= distance) continue;
-                if (!IsStepValid(from, die1, sign)) continue;
+                if (die1 >= distance)
+                {
+                    continue;
+                }
+
+                if (!IsStepValid(from, die1, sign))
+                {
+                    continue;
+                }
+
                 int int1 = from + sign * die1;
 
                 for (int j = 0; j < moves.Count; j++)
                 {
-                    if (j == i) continue;
+                    if (j == i)
+                    {
+                        continue;
+                    }
+
                     int die2 = moves[j];
                     int die3 = distance - die1 - die2;
-                    if (die3 < 1) continue;
-                    if (!IsStepValid(int1, die2, sign)) continue;
+                    if (die3 < 1)
+                    {
+                        continue;
+                    }
+
+                    if (!IsStepValid(int1, die2, sign))
+                    {
+                        continue;
+                    }
+
                     int int2 = int1 + sign * die2;
 
                     for (int k = 0; k < moves.Count; k++)
                     {
-                        if (k == i || k == j) continue;
-                        if (moves[k] != die3) continue;
+                        if (k == i || k == j)
+                        {
+                            continue;
+                        }
+
+                        if (moves[k] != die3)
+                        {
+                            continue;
+                        }
+
                         if (IsStepValid(int2, die3, sign))
-                            return (die1, die2, die3);
-                    }
-                }
-            }
-
-            return (-1, -1, -1);
-        }
-
-        (int, int, int, int) FindFourDiceCombo(int from, int distance, int sign, Player movingPlayer)
-        {
-            var moves = movingPlayer.MovesLeft;
-
-            for (int i = 0; i < moves.Count; i++)
-            {
-                int die1 = moves[i];
-                if (die1 >= distance) continue;
-                if (!IsStepValid(from, die1, sign)) continue;
-                int int1 = from + sign * die1;
-
-                for (int j = 0; j < moves.Count; j++)
-                {
-                    if (j == i) continue;
-                    int die2 = moves[j];
-                    if (die1 + die2 >= distance) continue;
-                    if (!IsStepValid(int1, die2, sign)) continue;
-                    int int2 = int1 + sign * die2;
-
-                    for (int k = 0; k < moves.Count; k++)
-                    {
-                        if (k == i || k == j) continue;
-                        int die3 = moves[k];
-                        int die4 = distance - die1 - die2 - die3;
-                        if (die4 < 1) continue;
-                        if (!IsStepValid(int2, die3, sign)) continue;
-                        int int3 = int2 + sign * die3;
-
-                        for (int l = 0; l < moves.Count; l++)
                         {
-                            if (l == i || l == j || l == k) continue;
-                            if (moves[l] != die4) continue;
-                            if (IsStepValid(int3, die4, sign))
-                                return (die1, die2, die3, die4);
+                            return new DiceTriple(die1, die2, die3);
                         }
                     }
                 }
             }
 
-            return (-1, -1, -1, -1);
+            return DiceTriple.None;
         }
 
-        (int, int, int) FindThreeDiceComboForBearOff(int from, int distance, int sign, Player movingPlayer)
+        DiceQuadruple FindFourDiceCombo(int from, int distance, int sign, Player movingPlayer)
         {
             var moves = movingPlayer.MovesLeft;
 
             for (int i = 0; i < moves.Count; i++)
             {
                 int die1 = moves[i];
-                if (die1 >= distance) continue;
+                if (die1 >= distance)
+                {
+                    continue;
+                }
+
+                if (!IsStepValid(from, die1, sign))
+                {
+                    continue;
+                }
+
                 int int1 = from + sign * die1;
-                if (int1 < 0 || int1 >= 24) continue;
-                if (!IsStepValid(from, die1, sign)) continue;
 
                 for (int j = 0; j < moves.Count; j++)
                 {
-                    if (j == i) continue;
+                    if (j == i)
+                    {
+                        continue;
+                    }
+
+                    int die2 = moves[j];
+                    if (die1 + die2 >= distance)
+                    {
+                        continue;
+                    }
+
+                    if (!IsStepValid(int1, die2, sign))
+                    {
+                        continue;
+                    }
+
+                    int int2 = int1 + sign * die2;
+
+                    for (int k = 0; k < moves.Count; k++)
+                    {
+                        if (k == i || k == j)
+                        {
+                            continue;
+                        }
+
+                        int die3 = moves[k];
+                        int die4 = distance - die1 - die2 - die3;
+                        if (die4 < 1)
+                        {
+                            continue;
+                        }
+
+                        if (!IsStepValid(int2, die3, sign))
+                        {
+                            continue;
+                        }
+
+                        int int3 = int2 + sign * die3;
+
+                        for (int l = 0; l < moves.Count; l++)
+                        {
+                            if (l == i || l == j || l == k)
+                            {
+                                continue;
+                            }
+
+                            if (moves[l] != die4)
+                            {
+                                continue;
+                            }
+
+                            if (IsStepValid(int3, die4, sign))
+                            {
+                                return new DiceQuadruple(die1, die2, die3, die4);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return DiceQuadruple.None;
+        }
+
+        DiceTriple FindThreeDiceComboForBearOff(int from, int distance, int sign, Player movingPlayer)
+        {
+            var moves = movingPlayer.MovesLeft;
+
+            for (int i = 0; i < moves.Count; i++)
+            {
+                int die1 = moves[i];
+                if (die1 >= distance)
+                {
+                    continue;
+                }
+
+                int int1 = from + sign * die1;
+                if (int1 < 0 || int1 >= 24)
+                {
+                    continue;
+                }
+
+                if (!IsStepValid(from, die1, sign))
+                {
+                    continue;
+                }
+
+                for (int j = 0; j < moves.Count; j++)
+                {
+                    if (j == i)
+                    {
+                        continue;
+                    }
+
                     int die2 = moves[j];
                     int die3 = distance - die1 - die2;
-                    if (die3 < 1) continue;
+                    if (die3 < 1)
+                    {
+                        continue;
+                    }
+
                     int int2 = int1 + sign * die2;
-                    if (int2 < 0 || int2 >= 24) continue;
-                    if (!IsStepValid(int1, die2, sign)) continue;
+                    if (int2 < 0 || int2 >= 24)
+                    {
+                        continue;
+                    }
+
+                    if (!IsStepValid(int1, die2, sign))
+                    {
+                        continue;
+                    }
 
                     for (int k = 0; k < moves.Count; k++)
                     {
-                        if (k == i || k == j) continue;
-                        if (moves[k] != die3) continue;
-                        return (die1, die2, die3);
+                        if (k == i || k == j)
+                        {
+                            continue;
+                        }
+
+                        if (moves[k] != die3)
+                        {
+                            continue;
+                        }
+
+                        return new DiceTriple(die1, die2, die3);
                     }
                 }
             }
 
-            return (-1, -1, -1);
+            return DiceTriple.None;
         }
 
-        (int, int, int, int) FindFourDiceComboForBearOff(int from, int distance, int sign, Player movingPlayer)
+        DiceQuadruple FindFourDiceComboForBearOff(int from, int distance, int sign, Player movingPlayer)
         {
             var moves = movingPlayer.MovesLeft;
 
             for (int i = 0; i < moves.Count; i++)
             {
                 int die1 = moves[i];
-                if (die1 >= distance) continue;
+                if (die1 >= distance)
+                {
+                    continue;
+                }
+
                 int int1 = from + sign * die1;
-                if (int1 < 0 || int1 >= 24) continue;
-                if (!IsStepValid(from, die1, sign)) continue;
+                if (int1 < 0 || int1 >= 24)
+                {
+                    continue;
+                }
+
+                if (!IsStepValid(from, die1, sign))
+                {
+                    continue;
+                }
 
                 for (int j = 0; j < moves.Count; j++)
                 {
-                    if (j == i) continue;
+                    if (j == i)
+                    {
+                        continue;
+                    }
+
                     int die2 = moves[j];
-                    if (die1 + die2 >= distance) continue;
+                    if (die1 + die2 >= distance)
+                    {
+                        continue;
+                    }
+
                     int int2 = int1 + sign * die2;
-                    if (int2 < 0 || int2 >= 24) continue;
-                    if (!IsStepValid(int1, die2, sign)) continue;
+                    if (int2 < 0 || int2 >= 24)
+                    {
+                        continue;
+                    }
+
+                    if (!IsStepValid(int1, die2, sign))
+                    {
+                        continue;
+                    }
 
                     for (int k = 0; k < moves.Count; k++)
                     {
-                        if (k == i || k == j) continue;
+                        if (k == i || k == j)
+                        {
+                            continue;
+                        }
+
                         int die3 = moves[k];
                         int die4 = distance - die1 - die2 - die3;
-                        if (die4 < 1) continue;
+                        if (die4 < 1)
+                        {
+                            continue;
+                        }
+
                         int int3 = int2 + sign * die3;
-                        if (int3 < 0 || int3 >= 24) continue;
-                        if (!IsStepValid(int2, die3, sign)) continue;
+                        if (int3 < 0 || int3 >= 24)
+                        {
+                            continue;
+                        }
+
+                        if (!IsStepValid(int2, die3, sign))
+                        {
+                            continue;
+                        }
 
                         for (int l = 0; l < moves.Count; l++)
                         {
-                            if (l == i || l == j || l == k) continue;
-                            if (moves[l] != die4) continue;
-                            return (die1, die2, die3, die4);
+                            if (l == i || l == j || l == k)
+                            {
+                                continue;
+                            }
+
+                            if (moves[l] != die4)
+                            {
+                                continue;
+                            }
+
+                            return new DiceQuadruple(die1, die2, die3, die4);
                         }
                     }
                 }
             }
 
-            return (-1, -1, -1, -1);
+            return DiceQuadruple.None;
         }
 
-        (int, int) FindTwoDiceComboForBearOff(int from, int distance, int sign, Player movingPlayer)
+        DicePair FindTwoDiceComboForBearOff(int from, int distance, int sign, Player movingPlayer)
         {
             var moves = movingPlayer.MovesLeft;
 
@@ -883,11 +1108,11 @@ namespace BackgammonByHoratiu.Entities
 
                 if (IsStepValid(from, die1, sign) && IsStepValid(intermediate, die2, sign))
                 {
-                    return (die1, die2);
+                    return new DicePair(die1, die2);
                 }
             }
 
-            return (-1, -1);
+            return DicePair.None;
         }
 
         public void BearOffPiece(int from)
@@ -951,15 +1176,15 @@ namespace BackgammonByHoratiu.Entities
             }
             else
             {
-                (int die1, int die2) = FindTwoDiceComboForBearOff(from, distance, sign, movingPlayer);
+                DicePair bearOffDicePair = FindTwoDiceComboForBearOff(from, distance, sign, movingPlayer);
 
-                if (die1 == -1)
+                if (!bearOffDicePair.IsValid)
                 {
                     throw new PieceMoveException("No valid die for this move");
                 }
 
-                movingPlayer.MovesLeft.Remove(die1);
-                movingPlayer.MovesLeft.Remove(die2);
+                movingPlayer.MovesLeft.Remove(bearOffDicePair.FirstDie);
+                movingPlayer.MovesLeft.Remove(bearOffDicePair.SecondDie);
             }
             TableValues[from] -= sign;
 
@@ -1194,25 +1419,25 @@ namespace BackgammonByHoratiu.Entities
                 return -1;
             }
 
-            (int die1, int _) = FindTwoDiceCombo(from, distance, sign, movingPlayer);
+            DicePair twoDiceCombo = FindTwoDiceCombo(from, distance, sign, movingPlayer);
 
-            if (die1 != -1)
+            if (twoDiceCombo.IsValid)
             {
-                return from + sign * die1;
+                return from + sign * twoDiceCombo.FirstDie;
             }
 
-            (int d1, int _, int _) = FindThreeDiceCombo(from, distance, sign, movingPlayer);
+            DiceTriple threeDiceCombo = FindThreeDiceCombo(from, distance, sign, movingPlayer);
 
-            if (d1 != -1)
+            if (threeDiceCombo.IsValid)
             {
-                return from + sign * d1;
+                return from + sign * threeDiceCombo.FirstDie;
             }
 
-            (int da, int _, int _, int _) = FindFourDiceCombo(from, distance, sign, movingPlayer);
+            DiceQuadruple fourDiceCombo = FindFourDiceCombo(from, distance, sign, movingPlayer);
 
-            if (da != -1)
+            if (fourDiceCombo.IsValid)
             {
-                return from + sign * da;
+                return from + sign * fourDiceCombo.FirstDie;
             }
 
             return -1;
@@ -1228,28 +1453,138 @@ namespace BackgammonByHoratiu.Entities
                 return -1;
             }
 
-            (int die1, int _) = FindBarEntryCombo(distance, sign);
+            DicePair barEntryDicePair = FindBarEntryCombo(distance, sign);
 
-            if (die1 != -1)
+            if (barEntryDicePair.IsValid)
             {
-                return ActivePlayer == 1 ? die1 - 1 : 24 - die1;
+                if (ActivePlayer == 1)
+                {
+                    return barEntryDicePair.FirstDie - 1;
+                }
+                else
+                {
+                    return 24 - barEntryDicePair.FirstDie;
+                }
             }
 
-            (int d1, int _, int _) = FindBarEntryThreeDiceCombo(distance, sign);
+            DiceTriple barEntryDiceTriple = FindBarEntryThreeDiceCombo(distance, sign);
 
-            if (d1 != -1)
+            if (barEntryDiceTriple.IsValid)
             {
-                return ActivePlayer == 1 ? d1 - 1 : 24 - d1;
+                return ActivePlayer == 1 ? barEntryDiceTriple.FirstDie - 1 : 24 - barEntryDiceTriple.FirstDie;
             }
 
-            (int da, int _, int _, int _) = FindBarEntryFourDiceCombo(distance, sign);
+            DiceQuadruple barEntryDiceQuadruple = FindBarEntryFourDiceCombo(distance, sign);
 
-            if (da != -1)
+            if (barEntryDiceQuadruple.IsValid)
             {
-                return ActivePlayer == 1 ? da - 1 : 24 - da;
+                return ActivePlayer == 1 ? barEntryDiceQuadruple.FirstDie - 1 : 24 - barEntryDiceQuadruple.FirstDie;
             }
 
             return -1;
+        }
+
+        public List<int> FindMovePieceDirectIntermediates(int from, int to)
+        {
+            if (TableValues[from] == 0)
+            {
+                return [];
+            }
+
+            int sign = -1;
+
+            if (TableValues[from] > 0)
+            {
+                sign = 1;
+            }
+
+            int distance = from - to;
+
+            if (sign > 0)
+            {
+                distance = to - from;
+            }
+
+            Player movingPlayer = Player2;
+
+            if (sign > 0)
+            {
+                movingPlayer = Player1;
+            }
+
+            if (movingPlayer.MovesLeft.Contains(distance))
+            {
+                return [];
+            }
+
+            DicePair twoDiceCombo = FindTwoDiceCombo(from, distance, sign, movingPlayer);
+
+            if (twoDiceCombo.IsValid)
+            {
+                return [from + sign * twoDiceCombo.FirstDie];
+            }
+
+            DiceTriple threeDiceCombo = FindThreeDiceCombo(from, distance, sign, movingPlayer);
+
+            if (threeDiceCombo.IsValid)
+            {
+                int int1 = from + sign * threeDiceCombo.FirstDie;
+
+                return [int1, int1 + sign * threeDiceCombo.SecondDie];
+            }
+
+            DiceQuadruple fourDiceCombo = FindFourDiceCombo(from, distance, sign, movingPlayer);
+
+            if (fourDiceCombo.IsValid)
+            {
+                int int1 = from + sign * fourDiceCombo.FirstDie;
+                int int2 = int1 + sign * fourDiceCombo.SecondDie;
+
+                return [int1, int2, int2 + sign * fourDiceCombo.ThirdDie];
+            }
+
+            return [];
+        }
+
+        public List<int> FindMoveOutedPieceIntermediates(int distance)
+        {
+            int sign = ActivePlayer == 1 ? 1 : -1;
+            Player movingPlayer = ActivePlayer == 1 ? Player1 : Player2;
+
+            if (movingPlayer.MovesLeft.Contains(distance))
+            {
+                return [];
+            }
+
+            DicePair barEntryDicePair = FindBarEntryCombo(distance, sign);
+
+            if (barEntryDicePair.IsValid)
+            {
+                int int1 = ActivePlayer == 1 ? barEntryDicePair.FirstDie - 1 : 24 - barEntryDicePair.FirstDie;
+
+                return [int1];
+            }
+
+            DiceTriple barEntryDiceTriple = FindBarEntryThreeDiceCombo(distance, sign);
+
+            if (barEntryDiceTriple.IsValid)
+            {
+                int int1 = ActivePlayer == 1 ? barEntryDiceTriple.FirstDie - 1 : 24 - barEntryDiceTriple.FirstDie;
+
+                return [int1, int1 + sign * barEntryDiceTriple.SecondDie];
+            }
+
+            DiceQuadruple barEntryDiceQuadruple = FindBarEntryFourDiceCombo(distance, sign);
+
+            if (barEntryDiceQuadruple.IsValid)
+            {
+                int int1 = ActivePlayer == 1 ? barEntryDiceQuadruple.FirstDie - 1 : 24 - barEntryDiceQuadruple.FirstDie;
+                int int2 = int1 + sign * barEntryDiceQuadruple.SecondDie;
+
+                return [int1, int2, int2 + sign * barEntryDiceQuadruple.ThirdDie];
+            }
+
+            return [];
         }
 
         /// <summary>
@@ -1266,16 +1601,37 @@ namespace BackgammonByHoratiu.Entities
             // --- Bar re-entry ---
             if (fromCol == GameDefines.ColBarP1 || fromCol == GameDefines.ColBarP2)
             {
-                if (fromCol == GameDefines.ColBarP1 && sign < 0) return result;
-                if (fromCol == GameDefines.ColBarP2 && sign > 0) return result;
+                if (fromCol == GameDefines.ColBarP1 && sign < 0)
+                {
+                    return result;
+                }
+
+                if (fromCol == GameDefines.ColBarP2 && sign > 0)
+                {
+                    return result;
+                }
 
                 foreach (int die in movingPlayer.MovesLeft)
                 {
                     int entryCol = sign > 0 ? die - 1 : 24 - die;
-                    if (entryCol < 0 || entryCol >= 24) continue;
-                    if (result.Contains(entryCol)) continue;
-                    if (sign > 0 && TableValues[entryCol] >= -1) result.Add(entryCol);
-                    else if (sign < 0 && TableValues[entryCol] <= 1) result.Add(entryCol);
+                    if (entryCol < 0 || entryCol >= 24)
+                    {
+                        continue;
+                    }
+
+                    if (result.Contains(entryCol))
+                    {
+                        continue;
+                    }
+
+                    if (sign > 0 && TableValues[entryCol] >= -1)
+                    {
+                        result.Add(entryCol);
+                    }
+                    else if (sign < 0 && TableValues[entryCol] <= 1)
+                    {
+                        result.Add(entryCol);
+                    }
                 }
 
                 // Two-die combos from bar
@@ -1283,18 +1639,40 @@ namespace BackgammonByHoratiu.Entities
                 {
                     int die1 = movingPlayer.MovesLeft[i];
                     int intermediate = sign > 0 ? die1 - 1 : 24 - die1;
-                    if (intermediate < 0 || intermediate >= 24) continue;
+                    if (intermediate < 0 || intermediate >= 24)
+                    {
+                        continue;
+                    }
+
                     bool blocked = sign > 0 ? TableValues[intermediate] < -1 : TableValues[intermediate] > 1;
-                    if (blocked) continue;
+                    if (blocked)
+                    {
+                        continue;
+                    }
 
                     for (int j = 0; j < movingPlayer.MovesLeft.Count; j++)
                     {
-                        if (i == j) continue;
+                        if (i == j)
+                        {
+                            continue;
+                        }
+
                         int die2 = movingPlayer.MovesLeft[j];
                         int finalCol = intermediate + sign * die2;
-                        if (finalCol < 0 || finalCol >= 24) continue;
-                        if (result.Contains(finalCol)) continue;
-                        if (IsStepValid(intermediate, die2, sign)) result.Add(finalCol);
+                        if (finalCol < 0 || finalCol >= 24)
+                        {
+                            continue;
+                        }
+
+                        if (result.Contains(finalCol))
+                        {
+                            continue;
+                        }
+
+                        if (IsStepValid(intermediate, die2, sign))
+                        {
+                            result.Add(finalCol);
+                        }
                     }
                 }
 
@@ -1303,23 +1681,53 @@ namespace BackgammonByHoratiu.Entities
                 {
                     int die1 = movingPlayer.MovesLeft[i];
                     int int1 = sign > 0 ? die1 - 1 : 24 - die1;
-                    if (int1 < 0 || int1 >= 24) continue;
+                    if (int1 < 0 || int1 >= 24)
+                    {
+                        continue;
+                    }
+
                     bool blocked1 = sign > 0 ? TableValues[int1] < -1 : TableValues[int1] > 1;
-                    if (blocked1) continue;
+                    if (blocked1)
+                    {
+                        continue;
+                    }
 
                     for (int j = 0; j < movingPlayer.MovesLeft.Count; j++)
                     {
-                        if (j == i) continue;
-                        if (!IsStepValid(int1, movingPlayer.MovesLeft[j], sign)) continue;
+                        if (j == i)
+                        {
+                            continue;
+                        }
+
+                        if (!IsStepValid(int1, movingPlayer.MovesLeft[j], sign))
+                        {
+                            continue;
+                        }
+
                         int int2 = int1 + sign * movingPlayer.MovesLeft[j];
 
                         for (int k = 0; k < movingPlayer.MovesLeft.Count; k++)
                         {
-                            if (k == i || k == j) continue;
+                            if (k == i || k == j)
+                            {
+                                continue;
+                            }
+
                             int finalCol = int2 + sign * movingPlayer.MovesLeft[k];
-                            if (finalCol < 0 || finalCol >= 24) continue;
-                            if (result.Contains(finalCol)) continue;
-                            if (IsStepValid(int2, movingPlayer.MovesLeft[k], sign)) result.Add(finalCol);
+                            if (finalCol < 0 || finalCol >= 24)
+                            {
+                                continue;
+                            }
+
+                            if (result.Contains(finalCol))
+                            {
+                                continue;
+                            }
+
+                            if (IsStepValid(int2, movingPlayer.MovesLeft[k], sign))
+                            {
+                                result.Add(finalCol);
+                            }
                         }
                     }
                 }
@@ -1329,29 +1737,67 @@ namespace BackgammonByHoratiu.Entities
                 {
                     int die1 = movingPlayer.MovesLeft[i];
                     int int1 = sign > 0 ? die1 - 1 : 24 - die1;
-                    if (int1 < 0 || int1 >= 24) continue;
+                    if (int1 < 0 || int1 >= 24)
+                    {
+                        continue;
+                    }
+
                     bool blocked1 = sign > 0 ? TableValues[int1] < -1 : TableValues[int1] > 1;
-                    if (blocked1) continue;
+                    if (blocked1)
+                    {
+                        continue;
+                    }
 
                     for (int j = 0; j < movingPlayer.MovesLeft.Count; j++)
                     {
-                        if (j == i) continue;
-                        if (!IsStepValid(int1, movingPlayer.MovesLeft[j], sign)) continue;
+                        if (j == i)
+                        {
+                            continue;
+                        }
+
+                        if (!IsStepValid(int1, movingPlayer.MovesLeft[j], sign))
+                        {
+                            continue;
+                        }
+
                         int int2 = int1 + sign * movingPlayer.MovesLeft[j];
 
                         for (int k = 0; k < movingPlayer.MovesLeft.Count; k++)
                         {
-                            if (k == i || k == j) continue;
-                            if (!IsStepValid(int2, movingPlayer.MovesLeft[k], sign)) continue;
+                            if (k == i || k == j)
+                            {
+                                continue;
+                            }
+
+                            if (!IsStepValid(int2, movingPlayer.MovesLeft[k], sign))
+                            {
+                                continue;
+                            }
+
                             int int3 = int2 + sign * movingPlayer.MovesLeft[k];
 
                             for (int l = 0; l < movingPlayer.MovesLeft.Count; l++)
                             {
-                                if (l == i || l == j || l == k) continue;
+                                if (l == i || l == j || l == k)
+                                {
+                                    continue;
+                                }
+
                                 int finalCol = int3 + sign * movingPlayer.MovesLeft[l];
-                                if (finalCol < 0 || finalCol >= 24) continue;
-                                if (result.Contains(finalCol)) continue;
-                                if (IsStepValid(int3, movingPlayer.MovesLeft[l], sign)) result.Add(finalCol);
+                                if (finalCol < 0 || finalCol >= 24)
+                                {
+                                    continue;
+                                }
+
+                                if (result.Contains(finalCol))
+                                {
+                                    continue;
+                                }
+
+                                if (IsStepValid(int3, movingPlayer.MovesLeft[l], sign))
+                                {
+                                    result.Add(finalCol);
+                                }
                             }
                         }
                     }
@@ -1361,17 +1807,38 @@ namespace BackgammonByHoratiu.Entities
             }
 
             // --- Regular column ---
-            if (fromCol < 0 || fromCol >= 24) return result;
-            if (sign > 0 && TableValues[fromCol] <= 0) return result;
-            if (sign < 0 && TableValues[fromCol] >= 0) return result;
-            if (movingPlayer.OutedPieces > 0) return result;
+            if (fromCol < 0 || fromCol >= 24)
+            {
+                return result;
+            }
+
+            if (sign > 0 && TableValues[fromCol] <= 0)
+            {
+                return result;
+            }
+
+            if (sign < 0 && TableValues[fromCol] >= 0)
+            {
+                return result;
+            }
+
+            if (movingPlayer.OutedPieces > 0)
+            {
+                return result;
+            }
 
             // Single-die and two-die board moves
             for (int to = 0; to < 24; to++)
             {
-                if (to == fromCol) continue;
+                if (to == fromCol)
+                {
+                    continue;
+                }
+
                 if (CanMovePieceDirect(fromCol, to, sign, movingPlayer))
+                {
                     result.Add(to);
+                }
             }
 
             // Bear off
@@ -1398,12 +1865,14 @@ namespace BackgammonByHoratiu.Entities
 
                     if (!canBearOffHere)
                     {
-                        (int d1, _) = FindTwoDiceComboForBearOff(fromCol, distance, sign, movingPlayer);
-                        canBearOffHere = d1 != -1;
+                        DicePair bearOffDicePair = FindTwoDiceComboForBearOff(fromCol, distance, sign, movingPlayer);
+                        canBearOffHere = bearOffDicePair.IsValid;
                     }
 
                     if (canBearOffHere)
+                    {
                         result.Add(sign > 0 ? GameDefines.ColHouseP1 : GameDefines.ColHouseP2);
+                    }
                 }
             }
 
@@ -1430,25 +1899,25 @@ namespace BackgammonByHoratiu.Entities
                 }
 
                 int totalBarDistance = singleDieValue;
-                (int barDie1, int barDie2) = FindBarEntryCombo(totalBarDistance, sign);
+                DicePair barEntryDicePair = FindBarEntryCombo(totalBarDistance, sign);
 
-                if (barDie1 != -1)
+                if (barEntryDicePair.IsValid)
                 {
-                    return [barDie1, barDie2];
+                    return [barEntryDicePair.FirstDie, barEntryDicePair.SecondDie];
                 }
 
-                (int bd1, int bd2, int bd3) = FindBarEntryThreeDiceCombo(totalBarDistance, sign);
+                DiceTriple barEntryDiceTriple = FindBarEntryThreeDiceCombo(totalBarDistance, sign);
 
-                if (bd1 != -1)
+                if (barEntryDiceTriple.IsValid)
                 {
-                    return [bd1, bd2, bd3];
+                    return [barEntryDiceTriple.FirstDie, barEntryDiceTriple.SecondDie, barEntryDiceTriple.ThirdDie];
                 }
 
-                (int be1, int be2, int be3, int be4) = FindBarEntryFourDiceCombo(totalBarDistance, sign);
+                DiceQuadruple barEntryDiceQuadruple = FindBarEntryFourDiceCombo(totalBarDistance, sign);
 
-                if (be1 != -1)
+                if (barEntryDiceQuadruple.IsValid)
                 {
-                    return [be1, be2, be3, be4];
+                    return [barEntryDiceQuadruple.FirstDie, barEntryDiceQuadruple.SecondDie, barEntryDiceQuadruple.ThirdDie, barEntryDiceQuadruple.FourthDie];
                 }
 
                 return [];
@@ -1472,11 +1941,11 @@ namespace BackgammonByHoratiu.Entities
                     }
                 }
 
-                (int bearDie1, int bearDie2) = FindTwoDiceComboForBearOff(fromCol, bearOffDistance, sign, movingPlayer);
+                DicePair bearOffDicePair = FindTwoDiceComboForBearOff(fromCol, bearOffDistance, sign, movingPlayer);
 
-                if (bearDie1 != -1)
+                if (bearOffDicePair.IsValid)
                 {
-                    return [bearDie1, bearDie2];
+                    return [bearOffDicePair.FirstDie, bearOffDicePair.SecondDie];
                 }
 
                 return [];
@@ -1490,55 +1959,88 @@ namespace BackgammonByHoratiu.Entities
                 return [distance];
             }
 
-            (int die1, int die2) = FindTwoDiceCombo(fromCol, distance, sign, movingPlayer);
+            DicePair twoDiceCombo = FindTwoDiceCombo(fromCol, distance, sign, movingPlayer);
 
-            if (die1 != -1)
+            if (twoDiceCombo.IsValid)
             {
-                return [die1, die2];
+                return [twoDiceCombo.FirstDie, twoDiceCombo.SecondDie];
             }
 
-            (int d1, int d2, int d3) = FindThreeDiceCombo(fromCol, distance, sign, movingPlayer);
+            DiceTriple threeDiceCombo = FindThreeDiceCombo(fromCol, distance, sign, movingPlayer);
 
-            if (d1 != -1)
+            if (threeDiceCombo.IsValid)
             {
-                return [d1, d2, d3];
+                return [threeDiceCombo.FirstDie, threeDiceCombo.SecondDie, threeDiceCombo.ThirdDie];
             }
 
-            (int da, int db, int dc, int dd) = FindFourDiceCombo(fromCol, distance, sign, movingPlayer);
+            DiceQuadruple fourDiceCombo = FindFourDiceCombo(fromCol, distance, sign, movingPlayer);
 
-            if (da != -1)
+            if (fourDiceCombo.IsValid)
             {
-                return [da, db, dc, dd];
+                return [fourDiceCombo.FirstDie, fourDiceCombo.SecondDie, fourDiceCombo.ThirdDie, fourDiceCombo.FourthDie];
             }
 
             return [];
         }
 
         bool CanMovePieceDirect(int from, int to, int sign, Player movingPlayer)        {
-            if (sign < 0 && from < 12 && to >= 12) return false;
-            if (sign > 0 && from >= 12 && to < 12) return false;
+            if (sign < 0 && from < 12 && to >= 12)
+            {
+                return false;
+            }
+
+            if (sign > 0 && from >= 12 && to < 12)
+            {
+                return false;
+            }
 
             bool sameHalf = (from < 12 && to < 12) || (from >= 12 && to >= 12);
             if (sameHalf)
             {
-                if (sign < 0 && to > from) return false;
-                if (sign > 0 && to < from) return false;
+                if (sign < 0 && to > from)
+                {
+                    return false;
+                }
+
+                if (sign > 0 && to < from)
+                {
+                    return false;
+                }
             }
 
-            if (sign > 0 && TableValues[to] <= -2) return false;
-            if (sign < 0 && TableValues[to] >= 2) return false;
+            if (sign > 0 && TableValues[to] <= -2)
+            {
+                return false;
+            }
+
+            if (sign < 0 && TableValues[to] >= 2)
+            {
+                return false;
+            }
 
             int distance = sign > 0 ? to - from : from - to;
-            if (movingPlayer.MovesLeft.Contains(distance)) return true;
+            if (movingPlayer.MovesLeft.Contains(distance))
+            {
+                return true;
+            }
 
-            (int die1, _) = FindTwoDiceCombo(from, distance, sign, movingPlayer);
-            if (die1 != -1) return true;
+            DicePair twoDiceCombo = FindTwoDiceCombo(from, distance, sign, movingPlayer);
 
-            (int d1, _, _) = FindThreeDiceCombo(from, distance, sign, movingPlayer);
-            if (d1 != -1) return true;
+            if (twoDiceCombo.IsValid)
+            {
+                return true;
+            }
 
-            (int da, _, _, _) = FindFourDiceCombo(from, distance, sign, movingPlayer);
-            return da != -1;
+            DiceTriple threeDiceCombo = FindThreeDiceCombo(from, distance, sign, movingPlayer);
+
+            if (threeDiceCombo.IsValid)
+            {
+                return true;
+            }
+
+            DiceQuadruple fourDiceCombo = FindFourDiceCombo(from, distance, sign, movingPlayer);
+
+            return fourDiceCombo.IsValid;
         }
 
         public void ThrowDice()

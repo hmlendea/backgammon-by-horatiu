@@ -44,11 +44,20 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
 
         public void NextTurn() => table.NextTurn();
 
-        public int FindMovePieceDirectIntermediate(int from, int to) => table.FindMovePieceDirectIntermediate(from, to);
+        public int FindMovePieceDirectIntermediate(int from, int to)
+            => table.FindMovePieceDirectIntermediate(from, to);
 
-        public int FindMoveOutedPieceIntermediate(int distance) => table.FindMoveOutedPieceIntermediate(distance);
+        public int FindMoveOutedPieceIntermediate(int distance)
+            => table.FindMoveOutedPieceIntermediate(distance);
 
-        public IReadOnlyList<int> GetValidDestinations(int fromCol) => table.GetValidDestinations(fromCol);
+        public IReadOnlyList<int> FindMovePieceDirectIntermediates(int from, int to)
+            => table.FindMovePieceDirectIntermediates(from, to);
+
+        public IReadOnlyList<int> FindMoveOutedPieceIntermediates(int distance)
+            => table.FindMoveOutedPieceIntermediates(distance);
+
+        public IReadOnlyList<int> GetValidDestinations(int fromCol)
+            => table.GetValidDestinations(fromCol);
 
         public IReadOnlyList<int> GetDiceForDestination(int fromCol, int toCol) => table.GetDiceForDestination(fromCol, toCol);
 
