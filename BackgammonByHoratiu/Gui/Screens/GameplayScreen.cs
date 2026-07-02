@@ -377,7 +377,10 @@ namespace BackgammonByHoratiu.Gui.Screens
 
             if (dragBeginCol == -1)
             {
-                if (game.TableValues[col] != 0)
+                bool isPlayer1Piece = game.ActivePlayer == 1 && game.TableValues[col] > 0;
+                bool isPlayer2Piece = game.ActivePlayer == 2 && game.TableValues[col] < 0;
+
+                if (isPlayer1Piece || isPlayer2Piece)
                 {
                     dragBeginCol = col;
                 }
