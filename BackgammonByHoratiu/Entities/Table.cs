@@ -42,6 +42,27 @@ namespace BackgammonByHoratiu.Entities
             ThrowDice();
         }
 
+        public GameSnapshot CreateSnapshot()
+            => new(
+                TableValues,
+                Player1.OutedPieces, Player1.CompletedPieces, Player1.MovesLeft,
+                Player2.OutedPieces, Player2.CompletedPieces, Player2.MovesLeft,
+                Dice1, Dice2, ActivePlayer);
+
+        public void RestoreState(GameSnapshot snapshot)
+        {
+            Array.Copy(snapshot.TableValues, TableValues, TableValues.Length);
+            Player1.OutedPieces = snapshot.Player1OutedPieces;
+            Player1.CompletedPieces = snapshot.Player1CompletedPieces;
+            Player1.MovesLeft = [.. snapshot.Player1MovesLeft];
+            Player2.OutedPieces = snapshot.Player2OutedPieces;
+            Player2.CompletedPieces = snapshot.Player2CompletedPieces;
+            Player2.MovesLeft = [.. snapshot.Player2MovesLeft];
+            Dice1 = snapshot.Dice1;
+            Dice2 = snapshot.Dice2;
+            ActivePlayer = snapshot.ActivePlayer;
+        }
+
         public void MoveOutedPiece(int distance)
         {
             if (ActivePlayer == 1)

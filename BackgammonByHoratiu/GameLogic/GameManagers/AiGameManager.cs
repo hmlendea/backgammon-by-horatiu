@@ -155,6 +155,10 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
 
         public IReadOnlyList<int> GetDiceForDestination(int fromCol, int toCol) => inner.GetDiceForDestination(fromCol, toCol);
 
+        public GameSnapshot CreateSnapshot() => inner.CreateSnapshot();
+
+        public void RestoreState(GameSnapshot snapshot) => inner.RestoreState(snapshot);
+
         public void ThrowDice() => inner.ThrowDice();
         public void NextTurn() => inner.NextTurn();
 

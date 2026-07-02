@@ -45,5 +45,9 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
         IReadOnlyList<int> GetValidDestinations(int fromCol);
 
         IReadOnlyList<int> GetDiceForDestination(int fromCol, int toCol);
+
+        GameSnapshot CreateSnapshot();
+
+        void RestoreState(GameSnapshot snapshot);
     }
 }
