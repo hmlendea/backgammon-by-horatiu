@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 using BackgammonByHoratiu.Settings;
+using Microsoft.Xna.Framework;
 
 namespace BackgammonByHoratiu.Entities
 {
@@ -21,7 +22,7 @@ namespace BackgammonByHoratiu.Entities
 
         public Table()
         {
-            TableValues = new int[24];
+            TableValues = new int[GameDefines.TotalColumns];
 
             Player1 = new();
             Player2 = new();
@@ -83,12 +84,23 @@ namespace BackgammonByHoratiu.Entities
 
         void ApplyOutedPieceMoveBySign(int distance, int sign)
         {
-            Player player = sign > 0 ? Player1 : Player2;
-            int target = sign > 0 ? distance - 1 : 24 - distance;
+            Player player = Player2;
+            int target = GameDefines.TotalColumns - distance;
+
+            if (sign > 0)
+            {
+                player = Player1;
+                target = distance - 1;
+            }
 
             if (player.MovesLeft.Contains(distance))
             {
-                bool isBlocked = sign > 0 ? TableValues[target] < -1 : TableValues[target] > 1;
+                bool isBlocked = TableValues[target] > 1;
+
+                if (sign > 0)
+                {
+                    isBlocked = TableValues[target] < -1;
+                }
 
                 if (isBlocked)
                 {
@@ -116,7 +128,12 @@ namespace BackgammonByHoratiu.Entities
 
             if (barEntryDicePair.IsValid)
             {
-                int int1 = sign > 0 ? barEntryDicePair.FirstDie - 1 : 24 - barEntryDicePair.FirstDie;
+                int int1 = GameDefines.TotalColumns - barEntryDicePair.FirstDie;
+
+                if (sign > 0)
+                {
+                    int1 = barEntryDicePair.FirstDie - 1;
+                }
 
                 ApplyBarEntry(int1, sign);
                 player.OutedPieces -= 1;
@@ -136,7 +153,13 @@ namespace BackgammonByHoratiu.Entities
 
             if (barEntryDiceTriple.IsValid)
             {
-                int int1 = sign > 0 ? barEntryDiceTriple.FirstDie - 1 : 24 - barEntryDiceTriple.FirstDie;
+                int int1 = GameDefines.TotalColumns - barEntryDiceTriple.FirstDie;
+
+                if (sign > 0)
+                {
+                    int1 = barEntryDiceTriple.FirstDie - 1;
+                }
+
                 int int2 = int1 + sign * barEntryDiceTriple.SecondDie;
 
                 ApplyBarEntry(int1, sign);
@@ -162,7 +185,13 @@ namespace BackgammonByHoratiu.Entities
                 throw new PieceMoveException("Invalid destination");
             }
 
-            int q1 = sign > 0 ? barEntryDiceQuadruple.FirstDie - 1 : 24 - barEntryDiceQuadruple.FirstDie;
+            int q1 = GameDefines.TotalColumns - barEntryDiceQuadruple.FirstDie;
+
+            if (sign > 0)
+            {
+                q1 = barEntryDiceQuadruple.FirstDie - 1;
+            }
+
             int q2 = q1 + sign * barEntryDiceQuadruple.SecondDie;
             int q3 = q2 + sign * barEntryDiceQuadruple.ThirdDie;
 
@@ -229,7 +258,12 @@ namespace BackgammonByHoratiu.Entities
                     continue;
                 }
 
-                int intermediate = sign > 0 ? die1 - 1 : 24 - die1;
+                int intermediate = GameDefines.TotalColumns - die1;
+
+                if (sign > 0)
+                {
+                    intermediate = die1 - 1;
+                }
 
                 if (sign > 0 && TableValues[intermediate] < -1)
                 {
@@ -258,13 +292,20 @@ namespace BackgammonByHoratiu.Entities
             for (int i = 0; i < moves.Count; i++)
             {
                 int die1 = moves[i];
-                int int1 = sign > 0 ? die1 - 1 : 24 - die1;
-                if (int1 < 0 || int1 >= 24)
+                int int1 = sign > 0 ? die1 - 1 : GameDefines.TotalColumns - die1;
+
+                if (int1 < 0 || int1 >= GameDefines.TotalColumns)
                 {
                     continue;
                 }
 
-                bool blocked1 = sign > 0 ? TableValues[int1] < -1 : TableValues[int1] > 1;
+                bool blocked1 = TableValues[int1] > 1;
+
+                if (sign > 0)
+                {
+                    blocked1 = TableValues[int1] < -1;
+                }
+
                 if (blocked1)
                 {
                     continue;
@@ -322,13 +363,25 @@ namespace BackgammonByHoratiu.Entities
             for (int i = 0; i < moves.Count; i++)
             {
                 int die1 = moves[i];
-                int int1 = sign > 0 ? die1 - 1 : 24 - die1;
-                if (int1 < 0 || int1 >= 24)
+                int int1 = GameDefines.TotalColumns - die1;
+
+                if (sign > 0)
+                {
+                    int1 = die1 - 1;
+                }
+
+                if (int1 < 0 || int1 >= GameDefines.TotalColumns)
                 {
                     continue;
                 }
 
-                bool blocked1 = sign > 0 ? TableValues[int1] < -1 : TableValues[int1] > 1;
+                bool blocked1 = TableValues[int1] > 1;
+
+                if (sign > 0)
+                {
+                    blocked1 = TableValues[int1] < -1;
+                }
+
                 if (blocked1)
                 {
                     continue;
@@ -342,6 +395,7 @@ namespace BackgammonByHoratiu.Entities
                     }
 
                     int die2 = moves[j];
+
                     if (die1 + die2 >= distance)
                     {
                         continue;
@@ -363,6 +417,7 @@ namespace BackgammonByHoratiu.Entities
 
                         int die3 = moves[k];
                         int die4 = distance - die1 - die2 - die3;
+
                         if (die4 < 1)
                         {
                             continue;
@@ -421,7 +476,7 @@ namespace BackgammonByHoratiu.Entities
             }
 
             int dest = pos + sign * move;
-            bool destInBounds = dest >= 0 && dest < 24;
+            bool destInBounds = dest >= 0 && dest < GameDefines.TotalColumns;
             bool destNotBlocked = sign > 0 ? TableValues[dest] >= -1 : TableValues[dest] <= 1;
 
             if (!destInBounds || !destNotBlocked)
@@ -429,7 +484,12 @@ namespace BackgammonByHoratiu.Entities
                 throw new PieceMoveException("Invalid destination");
             }
 
-            bool hitOpponent = sign > 0 ? TableValues[dest] == -1 : TableValues[dest] == 1;
+            bool hitOpponent = TableValues[dest] == 1;
+
+            if (sign > 0)
+            {
+                hitOpponent = TableValues[dest] == -1;
+            }
 
             if (hitOpponent)
             {
@@ -457,7 +517,12 @@ namespace BackgammonByHoratiu.Entities
                 return;
             }
 
-            int sign = TableValues[from] > 0 ? 1 : -1;
+            int sign = -1;
+
+            if (TableValues[from] > 0)
+            {
+                sign = 1;
+            }
 
             if (sign > 0 && Player1.OutedPieces > 0)
             {
@@ -587,12 +652,12 @@ namespace BackgammonByHoratiu.Entities
         {
             int to = from + sign * die;
 
-            if (to < 0 || to >= 24)
+            if (to < 0 || to >= GameDefines.TotalColumns)
             {
                 return false;
             }
 
-            bool sameHalf = (from < 12) == (to < 12);
+            bool sameHalf = (from < GameDefines.TotalColumns / 2) == (to < GameDefines.TotalColumns / 2);
 
             if (sameHalf)
             {
@@ -827,13 +892,15 @@ namespace BackgammonByHoratiu.Entities
             for (int i = 0; i < moves.Count; i++)
             {
                 int die1 = moves[i];
+
                 if (die1 >= distance)
                 {
                     continue;
                 }
 
                 int int1 = from + sign * die1;
-                if (int1 < 0 || int1 >= 24)
+
+                if (int1 < 0 || int1 >= GameDefines.TotalColumns)
                 {
                     continue;
                 }
@@ -851,14 +918,9 @@ namespace BackgammonByHoratiu.Entities
                     }
 
                     int die2 = moves[j];
-                    int die3 = distance - die1 - die2;
-                    if (die3 < 1)
-                    {
-                        continue;
-                    }
-
                     int int2 = int1 + sign * die2;
-                    if (int2 < 0 || int2 >= 24)
+
+                    if (int2 < 0 || int2 >= GameDefines.TotalColumns)
                     {
                         continue;
                     }
@@ -868,6 +930,8 @@ namespace BackgammonByHoratiu.Entities
                         continue;
                     }
 
+                    int distFromInt2 = sign > 0 ? GameDefines.TotalColumns - int2 : int2 + 1;
+
                     for (int k = 0; k < moves.Count; k++)
                     {
                         if (k == i || k == j)
@@ -875,12 +939,17 @@ namespace BackgammonByHoratiu.Entities
                             continue;
                         }
 
-                        if (moves[k] != die3)
+                        int die3 = moves[k];
+
+                        if (die3 < distFromInt2)
                         {
                             continue;
                         }
 
-                        return new DiceTriple(die1, die2, die3);
+                        if (die3 == distFromInt2 || IsFarthestPieceAfterLeaving(from, int2, sign))
+                        {
+                            return new DiceTriple(die1, die2, die3);
+                        }
                     }
                 }
             }
@@ -895,13 +964,15 @@ namespace BackgammonByHoratiu.Entities
             for (int i = 0; i < moves.Count; i++)
             {
                 int die1 = moves[i];
+
                 if (die1 >= distance)
                 {
                     continue;
                 }
 
                 int int1 = from + sign * die1;
-                if (int1 < 0 || int1 >= 24)
+
+                if (int1 < 0 || int1 >= GameDefines.TotalColumns)
                 {
                     continue;
                 }
@@ -919,13 +990,9 @@ namespace BackgammonByHoratiu.Entities
                     }
 
                     int die2 = moves[j];
-                    if (die1 + die2 >= distance)
-                    {
-                        continue;
-                    }
-
                     int int2 = int1 + sign * die2;
-                    if (int2 < 0 || int2 >= 24)
+
+                    if (int2 < 0 || int2 >= GameDefines.TotalColumns)
                     {
                         continue;
                     }
@@ -943,14 +1010,9 @@ namespace BackgammonByHoratiu.Entities
                         }
 
                         int die3 = moves[k];
-                        int die4 = distance - die1 - die2 - die3;
-                        if (die4 < 1)
-                        {
-                            continue;
-                        }
-
                         int int3 = int2 + sign * die3;
-                        if (int3 < 0 || int3 >= 24)
+
+                        if (int3 < 0 || int3 >= GameDefines.TotalColumns)
                         {
                             continue;
                         }
@@ -960,6 +1022,13 @@ namespace BackgammonByHoratiu.Entities
                             continue;
                         }
 
+                        int distFromInt3 = int3 + 1;
+
+                        if (sign > 0)
+                        {
+                            distFromInt3 = GameDefines.TotalColumns - int3;
+                        }
+
                         for (int l = 0; l < moves.Count; l++)
                         {
                             if (l == i || l == j || l == k)
@@ -967,12 +1036,17 @@ namespace BackgammonByHoratiu.Entities
                                 continue;
                             }
 
-                            if (moves[l] != die4)
+                            int die4 = moves[l];
+
+                            if (die4 < distFromInt3)
                             {
                                 continue;
                             }
 
-                            return new DiceQuadruple(die1, die2, die3, die4);
+                            if (die4 == distFromInt3 || IsFarthestPieceAfterLeaving(from, int3, sign))
+                            {
+                                return new DiceQuadruple(die1, die2, die3, die4);
+                            }
                         }
                     }
                 }
@@ -988,39 +1062,49 @@ namespace BackgammonByHoratiu.Entities
             for (int i = 0; i < moves.Count; i++)
             {
                 int die1 = moves[i];
-                int die2 = distance - die1;
 
-                if (die2 < 1)
+                if (die1 >= distance)
                 {
                     continue;
                 }
 
-                bool die2Available = false;
+                int int1 = from + sign * die1;
+
+                if (int1 < 0 || int1 >= GameDefines.TotalColumns)
+                {
+                    continue;
+                }
+
+                if (!IsStepValid(from, die1, sign))
+                {
+                    continue;
+                }
+
+                int distFromInt1 = int1 + 1;
+
+                if (sign > 0)
+                {
+                    distFromInt1 = GameDefines.TotalColumns - int1;
+                }
 
                 for (int j = 0; j < moves.Count; j++)
                 {
-                    if (j != i && moves[j] == die2)
+                    if (j == i)
                     {
-                        die2Available = true;
-                        break;
+                        continue;
                     }
-                }
 
-                if (!die2Available)
-                {
-                    continue;
-                }
+                    int die2 = moves[j];
 
-                int intermediate = from + sign * die1;
+                    if (die2 < distFromInt1)
+                    {
+                        continue;
+                    }
 
-                if (intermediate < 0 || intermediate >= 24)
-                {
-                    continue;
-                }
-
-                if (IsStepValid(from, die1, sign) && IsStepValid(intermediate, die2, sign))
-                {
-                    return new DicePair(die1, die2);
+                    if (die2 == distFromInt1 || IsFarthestPieceAfterLeaving(from, int1, sign))
+                    {
+                        return new DicePair(die1, die2);
+                    }
                 }
             }
 
@@ -1061,8 +1145,14 @@ namespace BackgammonByHoratiu.Entities
                 throw new PieceMoveException("Piece is not in the home board");
             }
 
-            int distance = sign > 0 ? 24 - from : from + 1;
-            Player movingPlayer = sign > 0 ? Player1 : Player2;
+            Player movingPlayer = Player2;
+            int distance = from + 1;
+
+            if (sign > 0)
+            {
+                movingPlayer = Player1;
+                distance = GameDefines.TotalColumns - from;
+            }
 
             int usedDie = -1;
 
@@ -1090,13 +1180,36 @@ namespace BackgammonByHoratiu.Entities
             {
                 DicePair bearOffDicePair = FindTwoDiceComboForBearOff(from, distance, sign, movingPlayer);
 
-                if (!bearOffDicePair.IsValid)
+                if (bearOffDicePair.IsValid)
                 {
-                    throw new PieceMoveException("No valid die for this move");
+                    movingPlayer.MovesLeft.Remove(bearOffDicePair.FirstDie);
+                    movingPlayer.MovesLeft.Remove(bearOffDicePair.SecondDie);
                 }
+                else
+                {
+                    DiceTriple bearOffTriple = FindThreeDiceComboForBearOff(from, distance, sign, movingPlayer);
 
-                movingPlayer.MovesLeft.Remove(bearOffDicePair.FirstDie);
-                movingPlayer.MovesLeft.Remove(bearOffDicePair.SecondDie);
+                    if (bearOffTriple.IsValid)
+                    {
+                        movingPlayer.MovesLeft.Remove(bearOffTriple.FirstDie);
+                        movingPlayer.MovesLeft.Remove(bearOffTriple.SecondDie);
+                        movingPlayer.MovesLeft.Remove(bearOffTriple.ThirdDie);
+                    }
+                    else
+                    {
+                        DiceQuadruple bearOffQuad = FindFourDiceComboForBearOff(from, distance, sign, movingPlayer);
+
+                        if (!bearOffQuad.IsValid)
+                        {
+                            throw new PieceMoveException("No valid die for this move");
+                        }
+
+                        movingPlayer.MovesLeft.Remove(bearOffQuad.FirstDie);
+                        movingPlayer.MovesLeft.Remove(bearOffQuad.SecondDie);
+                        movingPlayer.MovesLeft.Remove(bearOffQuad.ThirdDie);
+                        movingPlayer.MovesLeft.Remove(bearOffQuad.FourthDie);
+                    }
+                }
             }
             TableValues[from] -= sign;
             IncrementCompletedPieces(sign);
@@ -1115,7 +1228,7 @@ namespace BackgammonByHoratiu.Entities
 
         void GameOver()
         {
-            TableValues = new int[24];
+            TableValues = new int[GameDefines.TotalColumns];
 
             Player1.OutedPieces = 0;
             Player1.CompletedPieces = 0;
@@ -1156,6 +1269,38 @@ namespace BackgammonByHoratiu.Entities
             }
         }
 
+        bool IsFarthestPieceAfterLeaving(int originalFrom, int lastIntermediate, int sign)
+        {
+            if (sign > 0)
+            {
+                for (int i = 18; i < lastIntermediate; i++)
+                {
+                    int count = TableValues[i] - (i == originalFrom ? 1 : 0);
+
+                    if (count > 0)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            else
+            {
+                for (int i = lastIntermediate + 1; i <= 5; i++)
+                {
+                    int value = TableValues[i] + (i == originalFrom ? 1 : 0);
+
+                    if (value < 0)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        }
+
         bool CanBearOff(int sign)
         {
             if (sign > 0)
@@ -1182,7 +1327,7 @@ namespace BackgammonByHoratiu.Entities
                     return false;
                 }
 
-                for (int i = 6; i < 24; i++)
+                for (int i = 6; i < GameDefines.TotalColumns; i++)
                 {
                     if (TableValues[i] < 0)
                     {
@@ -1250,14 +1395,25 @@ namespace BackgammonByHoratiu.Entities
 
         bool HasAnyValidMove()
         {
-            int sign = ActivePlayer == 1 ? 1 : -1;
-            Player currentPlayer = ActivePlayer == 1 ? Player1 : Player2;
+            Player currentPlayer = Player2;
+            int sign = -1;
+
+            if (ActivePlayer == 1)
+            {
+                currentPlayer = Player1;
+                sign = 1;
+            }
 
             foreach (int die in currentPlayer.MovesLeft)
             {
                 if (currentPlayer.OutedPieces > 0)
                 {
-                    int entryCol = sign > 0 ? die - 1 : 24 - die;
+                    int entryCol = GameDefines.TotalColumns - die;
+
+                    if (sign > 0)
+                    {
+                        entryCol = die - 1;
+                    }
 
                     if (sign > 0 && TableValues[entryCol] >= -1)
                     {
@@ -1271,11 +1427,11 @@ namespace BackgammonByHoratiu.Entities
                 }
                 else if (CanBearOff(sign))
                 {
-                    for (int i = 0; i < 24; i++)
+                    for (int i = 0; i < GameDefines.TotalColumns; i++)
                     {
                         if (sign > 0 && TableValues[i] > 0 && i >= 18)
                         {
-                            int distance = 24 - i;
+                            int distance = GameDefines.TotalColumns - i;
 
                             if (distance == die || (die > distance && IsFarthestPiece(i, sign)))
                             {
@@ -1296,7 +1452,7 @@ namespace BackgammonByHoratiu.Entities
                 }
                 else
                 {
-                    for (int i = 0; i < 24; i++)
+                    for (int i = 0; i < GameDefines.TotalColumns; i++)
                     {
                         if (sign > 0 && TableValues[i] <= 0)
                         {
@@ -1310,7 +1466,7 @@ namespace BackgammonByHoratiu.Entities
 
                         int target = sign > 0 ? i + die : i - die;
 
-                        if (target < 0 || target >= 24)
+                        if (target < 0 || target >= GameDefines.TotalColumns)
                         {
                             continue;
                         }
@@ -1402,7 +1558,12 @@ namespace BackgammonByHoratiu.Entities
 
             if (barEntryDicePair.IsValid)
             {
-                int int1 = ActivePlayer == 1 ? barEntryDicePair.FirstDie - 1 : 24 - barEntryDicePair.FirstDie;
+                int int1 = GameDefines.TotalColumns - barEntryDicePair.FirstDie;
+
+                if (ActivePlayer == 1)
+                {
+                    int1 = barEntryDicePair.FirstDie - 1;
+                }
 
                 return [int1];
             }
@@ -1411,7 +1572,12 @@ namespace BackgammonByHoratiu.Entities
 
             if (barEntryDiceTriple.IsValid)
             {
-                int int1 = ActivePlayer == 1 ? barEntryDiceTriple.FirstDie - 1 : 24 - barEntryDiceTriple.FirstDie;
+                int int1 = GameDefines.TotalColumns - barEntryDiceTriple.FirstDie;
+
+                if (ActivePlayer == 1)
+                {
+                    int1 = barEntryDiceTriple.FirstDie - 1;
+                }
 
                 return [int1, int1 + sign * barEntryDiceTriple.SecondDie];
             }
@@ -1420,7 +1586,13 @@ namespace BackgammonByHoratiu.Entities
 
             if (barEntryDiceQuadruple.IsValid)
             {
-                int int1 = ActivePlayer == 1 ? barEntryDiceQuadruple.FirstDie - 1 : 24 - barEntryDiceQuadruple.FirstDie;
+                int int1 = GameDefines.TotalColumns - barEntryDiceQuadruple.FirstDie;
+
+                if (ActivePlayer == 1)
+                {
+                    int1 = barEntryDiceQuadruple.FirstDie - 1;
+                }
+
                 int int2 = int1 + sign * barEntryDiceQuadruple.SecondDie;
 
                 return [int1, int2, int2 + sign * barEntryDiceQuadruple.ThirdDie];
@@ -1455,8 +1627,14 @@ namespace BackgammonByHoratiu.Entities
 
                 foreach (int die in movingPlayer.MovesLeft)
                 {
-                    int entryCol = sign > 0 ? die - 1 : 24 - die;
-                    if (entryCol < 0 || entryCol >= 24)
+                    int entryCol = GameDefines.TotalColumns - die;
+
+                    if (sign > 0)
+                    {
+                        entryCol = die - 1;
+                    }
+
+                    if (entryCol < 0 || entryCol >= GameDefines.TotalColumns)
                     {
                         continue;
                     }
@@ -1485,7 +1663,7 @@ namespace BackgammonByHoratiu.Entities
             }
 
             // --- Regular column ---
-            if (fromCol < 0 || fromCol >= 24)
+            if (fromCol < 0 || fromCol >= GameDefines.TotalColumns)
             {
                 return result;
             }
@@ -1506,7 +1684,7 @@ namespace BackgammonByHoratiu.Entities
             }
 
             // Single-die and two-die board moves
-            for (int to = 0; to < 24; to++)
+            for (int to = 0; to < GameDefines.TotalColumns; to++)
             {
                 if (to == fromCol)
                 {
@@ -1522,11 +1700,24 @@ namespace BackgammonByHoratiu.Entities
             // Bear off
             if (CanBearOff(sign))
             {
-                int homeStart = sign > 0 ? 18 : 0;
-                int homeEnd = sign > 0 ? 23 : 5;
+                int homeStart = 0;
+                int homeEnd = 5;
+
+                if (sign > 0)
+                {
+                    homeStart = 18;
+                    homeEnd = 23;
+                }
+
                 if (fromCol >= homeStart && fromCol <= homeEnd)
                 {
-                    int distance = sign > 0 ? 24 - fromCol : fromCol + 1;
+                    int distance = fromCol + 1;
+
+                    if (sign > 0)
+                    {
+                        distance = GameDefines.TotalColumns - fromCol;
+                    }
+
                     bool canBearOffHere = movingPlayer.MovesLeft.Contains(distance);
 
                     if (!canBearOffHere)
@@ -1547,6 +1738,18 @@ namespace BackgammonByHoratiu.Entities
                         canBearOffHere = bearOffDicePair.IsValid;
                     }
 
+                    if (!canBearOffHere)
+                    {
+                        DiceTriple bearOffTriple = FindThreeDiceComboForBearOff(fromCol, distance, sign, movingPlayer);
+                        canBearOffHere = bearOffTriple.IsValid;
+                    }
+
+                    if (!canBearOffHere)
+                    {
+                        DiceQuadruple bearOffQuad = FindFourDiceComboForBearOff(fromCol, distance, sign, movingPlayer);
+                        canBearOffHere = bearOffQuad.IsValid;
+                    }
+
                     if (canBearOffHere)
                     {
                         result.Add(sign > 0 ? GameDefines.ColHouseP1 : GameDefines.ColHouseP2);
@@ -1563,14 +1766,24 @@ namespace BackgammonByHoratiu.Entities
             for (int i = 0; i < movingPlayer.MovesLeft.Count; i++)
             {
                 int die1 = movingPlayer.MovesLeft[i];
-                int intermediate = sign > 0 ? die1 - 1 : 24 - die1;
+                int intermediate = GameDefines.TotalColumns - die1;
 
-                if (intermediate < 0 || intermediate >= 24)
+                if (sign > 0)
+                {
+                    intermediate = die1 - 1;
+                }
+
+                if (intermediate < 0 || intermediate >= GameDefines.TotalColumns)
                 {
                     continue;
                 }
 
-                bool blocked = sign > 0 ? TableValues[intermediate] < -1 : TableValues[intermediate] > 1;
+                bool blocked = TableValues[intermediate] > 1;
+
+                if (sign > 0)
+                {
+                    blocked = TableValues[intermediate] < -1;
+                }
 
                 if (blocked)
                 {
@@ -1587,7 +1800,7 @@ namespace BackgammonByHoratiu.Entities
                     int die2 = movingPlayer.MovesLeft[j];
                     int finalCol = intermediate + sign * die2;
 
-                    if (finalCol < 0 || finalCol >= 24)
+                    if (finalCol < 0 || finalCol >= GameDefines.TotalColumns)
                     {
                         continue;
                     }
@@ -1603,9 +1816,14 @@ namespace BackgammonByHoratiu.Entities
             for (int i = 0; i < movingPlayer.MovesLeft.Count; i++)
             {
                 int die1 = movingPlayer.MovesLeft[i];
-                int int1 = sign > 0 ? die1 - 1 : 24 - die1;
+                int int1 = GameDefines.TotalColumns - die1;
 
-                if (int1 < 0 || int1 >= 24)
+                if (sign > 0)
+                {
+                    int1 = die1 - 1;
+                }
+
+                if (int1 < 0 || int1 >= GameDefines.TotalColumns)
                 {
                     continue;
                 }
@@ -1635,7 +1853,7 @@ namespace BackgammonByHoratiu.Entities
 
                         int finalCol = int2 + sign * movingPlayer.MovesLeft[k];
 
-                        if (finalCol >= 0 && finalCol < 24 &&
+                        if (finalCol >= 0 && finalCol < GameDefines.TotalColumns &&
                             !result.Contains(finalCol) &&
                             IsStepValid(int2, movingPlayer.MovesLeft[k], sign))
                         {
@@ -1649,9 +1867,14 @@ namespace BackgammonByHoratiu.Entities
             for (int i = 0; i < movingPlayer.MovesLeft.Count; i++)
             {
                 int die1 = movingPlayer.MovesLeft[i];
-                int int1 = sign > 0 ? die1 - 1 : 24 - die1;
+                int int1 = GameDefines.TotalColumns - die1;
 
-                if (int1 < 0 || int1 >= 24)
+                if (sign > 0)
+                {
+                    int1 = die1 - 1;
+                }
+
+                if (int1 < 0 || int1 >= GameDefines.TotalColumns)
                 {
                     continue;
                 }
@@ -1690,7 +1913,7 @@ namespace BackgammonByHoratiu.Entities
 
                             int finalCol = int3 + sign * movingPlayer.MovesLeft[l];
 
-                            if (finalCol >= 0 && finalCol < 24 &&
+                            if (finalCol >= 0 && finalCol < GameDefines.TotalColumns &&
                                 !result.Contains(finalCol) &&
                                 IsStepValid(int3, movingPlayer.MovesLeft[l], sign))
                             {
@@ -1714,7 +1937,12 @@ namespace BackgammonByHoratiu.Entities
             // --- Bar re-entry ---
             if (fromCol == GameDefines.ColBarP1 || fromCol == GameDefines.ColBarP2)
             {
-                int singleDieValue = sign > 0 ? toCol + 1 : 24 - toCol;
+                int singleDieValue = GameDefines.TotalColumns - toCol;
+
+                if (sign > 0)
+                {
+                    singleDieValue = toCol + 1;
+                }
 
                 if (movingPlayer.MovesLeft.Contains(singleDieValue))
                 {
@@ -1749,7 +1977,12 @@ namespace BackgammonByHoratiu.Entities
             // --- Bear-off ---
             if (toCol == GameDefines.ColHouseP1 || toCol == GameDefines.ColHouseP2)
             {
-                int bearOffDistance = sign > 0 ? 24 - fromCol : fromCol + 1;
+                int bearOffDistance = fromCol + 1;
+
+                if (sign > 0)
+                {
+                    bearOffDistance = GameDefines.TotalColumns - fromCol;
+                }
 
                 if (movingPlayer.MovesLeft.Contains(bearOffDistance))
                 {
@@ -1769,6 +2002,20 @@ namespace BackgammonByHoratiu.Entities
                 if (bearOffDicePair.IsValid)
                 {
                     return [bearOffDicePair.FirstDie, bearOffDicePair.SecondDie];
+                }
+
+                DiceTriple bearOffTriple = FindThreeDiceComboForBearOff(fromCol, bearOffDistance, sign, movingPlayer);
+
+                if (bearOffTriple.IsValid)
+                {
+                    return [bearOffTriple.FirstDie, bearOffTriple.SecondDie, bearOffTriple.ThirdDie];
+                }
+
+                DiceQuadruple bearOffQuad = FindFourDiceComboForBearOff(fromCol, bearOffDistance, sign, movingPlayer);
+
+                if (bearOffQuad.IsValid)
+                {
+                    return [bearOffQuad.FirstDie, bearOffQuad.SecondDie, bearOffQuad.ThirdDie, bearOffQuad.FourthDie];
                 }
 
                 return [];
