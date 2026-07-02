@@ -1,10 +1,12 @@
+using NuciXNA.Primitives;
+
 namespace BackgammonByHoratiu.Settings
 {
     public static class GameDefines
     {
+        public const int PieceFrameSize = 128;
         public const int PieceSize = 48;
 
-        // Special column identifiers used by both the animation system and AI dispatch
         public const int ColBarP1 = 100;
         public const int ColBarP2 = 101;
         public const int ColHouseP1 = 200;
@@ -12,22 +14,36 @@ namespace BackgammonByHoratiu.Settings
 
         public const int Padding = 8;
 
-        // Column triangles are 5 pieces tall
         public const int ColumnHeight = PieceSize * 5;
 
-        // Total board height: 10 piece rows for columns + 3 piece rows for the middle strip
-        public const int BoardHeight = PieceSize * 13;   // 624
+        public static Size2D FrameSize => new(388, 812);
+        public const int FrameThickness = 49;
 
-        // The left and right halves each have 6 columns (6 * PieceSize = 288)
-        // The middle bar sits between them at x = 6 * PieceSize
-        public const int BarX = 6 * PieceSize;           // 288
-        public const int BarWidth = PieceSize + Padding * 2; // 64
+        public static int BoardHalfWidth => FrameSize.Width - FrameThickness * 2;
+        public static int BoardHalfHeight => FrameSize.Height - FrameThickness * 2;
 
-        // House column sits after the second half of the board
-        public const int HouseX = BarX + BarWidth + 6 * PieceSize; // 640
-        public const int HouseWidth = PieceSize + Padding * 3;     // 72
+        public static int BarX => FrameSize.Width;
 
-        public const int WindowWidth = HouseX + HouseWidth;        // 712
-        public const int WindowHeight = BoardHeight;                // 624
+        public static int HouseX => BarX + FrameSize.Width;
+        public const int HouseWidth = PieceSize + Padding * 3;
+
+        public static int WindowWidth => HouseX + HouseWidth * 2;
+        public static int WindowHeight => FrameSize.Height;
+
+        public static Size2D ColumnFrameSize => new(105, 512);
+        public static Size2D DieFrameSize => new(200, 200);
+        public const int DieSize = 48;
+
+        public const float AnimationSpeed = 10f;
+        public const int OverflowLayerSourceOffset = 19;
+        public const int TotalPiecesPerPlayer = 15;
+        public const int TotalColumns = 24;
+        public const int DiceIndicatorSpacing = 2;
+        public const int DiceIndicatorSize = (PieceSize - DiceIndicatorSpacing) / 2;
+        public const int PiecesPerColumnLayer = 5;
+        // Right frame has a slightly different measured top border (pixels)
+        public const int RightFrameTopY = 47;
+        // Gap between left-half last column right edge and right-half first column left edge
+        public const int HalfSeparatorWidth = 102;
     }
 }

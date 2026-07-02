@@ -38,6 +38,12 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
 
         int FindMoveOutedPieceIntermediate(int distance);
 
+        IReadOnlyList<int> FindMovePieceDirectIntermediates(int from, int to);
+
+        IReadOnlyList<int> FindMoveOutedPieceIntermediates(int distance);
+
         IReadOnlyList<int> GetValidDestinations(int fromCol);
+
+        IReadOnlyList<int> GetDiceForDestination(int fromCol, int toCol);
     }
 }

@@ -108,6 +108,15 @@ namespace BackgammonByHoratiu
             cursor.ContentFile = CursorContentFiles[ActiveCursor];
             cursor.Scale = cursorScales[ActiveCursor];
 
+            if (ActiveCursor is CursorType.HandPicking or CursorType.HandGrabbing or CursorType.HandOpen)
+            {
+                cursor.LocationOffset = new Point2D(-8, -12);
+            }
+            else
+            {
+                cursor.LocationOffset = new Point2D(0, 0);
+            }
+
             fpsIndicator.Update(gameTime);
             cursor.Update(gameTime);
 

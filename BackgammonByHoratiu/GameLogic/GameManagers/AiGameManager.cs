@@ -118,11 +118,20 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
             }
         }
 
-        public void MovePieceDirect(int from, int to) => inner.MovePieceDirect(from, to);
+        public void MovePieceDirect(int from, int to)
+            => inner.MovePieceDirect(from, to);
 
-        public int FindMovePieceDirectIntermediate(int from, int to) => inner.FindMovePieceDirectIntermediate(from, to);
+        public int FindMovePieceDirectIntermediate(int from, int to)
+            => inner.FindMovePieceDirectIntermediate(from, to);
 
-        public int FindMoveOutedPieceIntermediate(int distance) => inner.FindMoveOutedPieceIntermediate(distance);
+        public int FindMoveOutedPieceIntermediate(int distance)
+            => inner.FindMoveOutedPieceIntermediate(distance);
+
+        public IReadOnlyList<int> FindMovePieceDirectIntermediates(int from, int to)
+            => inner.FindMovePieceDirectIntermediates(from, to);
+
+        public IReadOnlyList<int> FindMoveOutedPieceIntermediates(int distance)
+            => inner.FindMoveOutedPieceIntermediates(distance);
 
         public void BearOffPiece(int from)
         {
@@ -143,6 +152,8 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
         }
 
         public IReadOnlyList<int> GetValidDestinations(int fromCol) => inner.GetValidDestinations(fromCol);
+
+        public IReadOnlyList<int> GetDiceForDestination(int fromCol, int toCol) => inner.GetDiceForDestination(fromCol, toCol);
 
         public void ThrowDice() => inner.ThrowDice();
         public void NextTurn() => inner.NextTurn();
