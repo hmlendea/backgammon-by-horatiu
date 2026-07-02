@@ -84,7 +84,7 @@ namespace BackgammonByHoratiu.GameLogic.GameManagers
         {
             if (isInsideAiDispatch && AnimateMoveRequested is not null)
             {
-                int toCol = 24 - distance;
+                int toCol = GameDefines.TotalColumns - distance;
                 isWaitingForAnimation = true;
                 isInsideAiDispatch = false;
                 AnimateMoveRequested.Invoke(GameDefines.ColBarP2, toCol, 2, () =>

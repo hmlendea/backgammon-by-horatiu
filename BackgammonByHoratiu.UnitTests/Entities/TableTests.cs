@@ -1,4 +1,6 @@
 using BackgammonByHoratiu.Entities;
+using BackgammonByHoratiu.GameLogic.AI;
+using BackgammonByHoratiu.Settings;
 using NUnit.Framework;
 
 namespace BackgammonByHoratiu.UnitTests.Entities
@@ -265,17 +267,6 @@ namespace BackgammonByHoratiu.UnitTests.Entities
         }
 
         [Test]
-        public void GivePlayer1LastMove_WhenMoveConsumesLastDie_ThenActivePlayerBecomesPlayer2()
-        {
-            Table table = CreateTableForPlayer1();
-            table.Player1.MovesLeft.Add(6);
-
-            table.MovePiece(11, 6); // last die consumed → NextTurn called automatically
-
-            Assert.That(table.ActivePlayer, Is.EqualTo(2));
-        }
-
-        [Test]
         public void GivePlayer1Piece_WhenMoveIsValid_ThenDieIsRemovedFromMovesLeft()
         {
             Table table = CreateTableForPlayer1();
@@ -352,8 +343,10 @@ namespace BackgammonByHoratiu.UnitTests.Entities
         [Test]
         public void GivePlayer1OutedPiece_WhenReEnteringToEmptyColumn_ThenOutedPiecesDecremented()
         {
-            Table table = new();
-            table.TableValues = new int[24];
+            Table table = new()
+            {
+                TableValues = new int[GameDefines.TotalColumns]
+            };
             table.Player1.MovesLeft.Clear();
             table.Player1.MovesLeft.Add(1);
             table.Player1.OutedPieces = 1;
@@ -366,8 +359,10 @@ namespace BackgammonByHoratiu.UnitTests.Entities
         [Test]
         public void GivePlayer1OutedPiece_WhenReEnteringToEmptyColumn_ThenPieceAppearsOnBoard()
         {
-            Table table = new();
-            table.TableValues = new int[24];
+            Table table = new()
+            {
+                TableValues = new int[GameDefines.TotalColumns]
+            };
             table.Player1.MovesLeft.Clear();
             table.Player1.MovesLeft.Add(1);
             table.Player1.OutedPieces = 1;
@@ -380,8 +375,10 @@ namespace BackgammonByHoratiu.UnitTests.Entities
         [Test]
         public void GivePlayer1OutedPiece_WhenReEnteringToOpponentBlot_ThenOpponentSentToBar()
         {
-            Table table = new();
-            table.TableValues = new int[24];
+            Table table = new()
+            {
+                TableValues = new int[GameDefines.TotalColumns]
+            };
             table.TableValues[0] = -1; // lone player 2 piece
             table.Player1.MovesLeft.Clear();
             table.Player1.MovesLeft.Add(1);
@@ -396,8 +393,10 @@ namespace BackgammonByHoratiu.UnitTests.Entities
         [Test]
         public void GivePlayer1OutedPiece_WhenReEnteringToBlockedColumn_ThenThrowsPieceMoveException()
         {
-            Table table = new();
-            table.TableValues = new int[24];
+            Table table = new()
+            {
+                TableValues = new int[GameDefines.TotalColumns]
+            };
             table.TableValues[0] = -2; // blocked by player 2
             table.Player1.MovesLeft.Clear();
             table.Player1.MovesLeft.Add(1);
@@ -423,8 +422,10 @@ namespace BackgammonByHoratiu.UnitTests.Entities
         [Test]
         public void GivePlayer2OutedPiece_WhenReEnteringToEmptyColumn_ThenOutedPiecesDecremented()
         {
-            Table table = new();
-            table.TableValues = new int[24];
+            Table table = new()
+            {
+                TableValues = new int[GameDefines.TotalColumns]
+            };
             table.Player1.MovesLeft.Clear();
             table.NextTurn();
             table.Player2.MovesLeft.Clear();
@@ -439,8 +440,10 @@ namespace BackgammonByHoratiu.UnitTests.Entities
         [Test]
         public void GivePlayer2OutedPiece_WhenReEnteringToEmptyColumn_ThenPieceAppearsOnBoard()
         {
-            Table table = new();
-            table.TableValues = new int[24];
+            Table table = new()
+            {
+                TableValues = new int[GameDefines.TotalColumns]
+            };
             table.Player1.MovesLeft.Clear();
             table.NextTurn();
             table.Player2.MovesLeft.Clear();
@@ -455,8 +458,10 @@ namespace BackgammonByHoratiu.UnitTests.Entities
         [Test]
         public void GivePlayer2OutedPiece_WhenReEnteringToOpponentBlot_ThenOpponentSentToBar()
         {
-            Table table = new();
-            table.TableValues = new int[24];
+            Table table = new()
+            {
+                TableValues = new int[GameDefines.TotalColumns]
+            };
             table.TableValues[23] = 1; // lone player 1 piece
             table.Player1.MovesLeft.Clear();
             table.NextTurn();
@@ -477,8 +482,10 @@ namespace BackgammonByHoratiu.UnitTests.Entities
         [Test]
         public void GivePlayer1InBearOffPosition_WhenBearingOffPiece_ThenCompletedPiecesIncremented()
         {
-            Table table = new();
-            table.TableValues = new int[24];
+            Table table = new()
+            {
+                TableValues = new int[GameDefines.TotalColumns]
+            };
             table.TableValues[23] = 1; // single piece in P1 home board
             table.Player1.MovesLeft.Clear();
             table.Player1.MovesLeft.Add(1); // distance 24-23 = 1
@@ -491,8 +498,10 @@ namespace BackgammonByHoratiu.UnitTests.Entities
         [Test]
         public void GivePlayer1InBearOffPosition_WhenBearingOffPiece_ThenColumnBecomesEmpty()
         {
-            Table table = new();
-            table.TableValues = new int[24];
+            Table table = new()
+            {
+                TableValues = new int[GameDefines.TotalColumns]
+            };
             table.TableValues[23] = 1;
             table.Player1.MovesLeft.Clear();
             table.Player1.MovesLeft.Add(1);
@@ -506,8 +515,10 @@ namespace BackgammonByHoratiu.UnitTests.Entities
         public void GivePlayer1InBearOffPosition_WhenBearingOffWithLargerDie_ThenBearOffSucceeds()
         {
             // Die is larger than exact distance but the piece is the farthest
-            Table table = new();
-            table.TableValues = new int[24];
+            Table table = new()
+            {
+                TableValues = new int[GameDefines.TotalColumns]
+            };
             table.TableValues[23] = 1; // distance = 1; use die = 3 (> 1)
             table.Player1.MovesLeft.Clear();
             table.Player1.MovesLeft.Add(3);
@@ -520,8 +531,10 @@ namespace BackgammonByHoratiu.UnitTests.Entities
         [Test]
         public void GivePlayer1_WhenBearOffButPieceOutsideHomeBoard_ThenThrowsPieceMoveException()
         {
-            Table table = new();
-            table.TableValues = new int[24];
+            Table table = new()
+            {
+                TableValues = new int[GameDefines.TotalColumns]
+            };
             table.TableValues[17] = 1; // col 17 is outside P1 home board (18-23)
             table.Player1.MovesLeft.Clear();
             table.Player1.MovesLeft.Add(1);
@@ -532,8 +545,10 @@ namespace BackgammonByHoratiu.UnitTests.Entities
         [Test]
         public void GivePlayer1_WhenBearOffFromEmptyColumn_ThenThrowsPieceMoveException()
         {
-            Table table = new();
-            table.TableValues = new int[24];
+            Table table = new()
+            {
+                TableValues = new int[GameDefines.TotalColumns]
+            };
             table.Player1.MovesLeft.Clear();
             table.Player1.MovesLeft.Add(1);
 
@@ -543,8 +558,10 @@ namespace BackgammonByHoratiu.UnitTests.Entities
         [Test]
         public void GivePlayer2InBearOffPosition_WhenBearingOffPiece_ThenCompletedPiecesIncremented()
         {
-            Table table = new();
-            table.TableValues = new int[24];
+            Table table = new()
+            {
+                TableValues = new int[GameDefines.TotalColumns]
+            };
             table.TableValues[0] = -1; // single piece in P2 home board (cols 0-5)
             table.Player1.MovesLeft.Clear();
             table.NextTurn();

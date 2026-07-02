@@ -33,8 +33,10 @@ namespace BackgammonByHoratiu.UnitTests.Entities
         [Test]
         public void GivePlayer_WhenOutedPiecesSet_ThenOutedPiecesReturnsNewValue()
         {
-            Player player = new();
-            player.OutedPieces = 3;
+            Player player = new()
+            {
+                OutedPieces = 3
+            };
 
             Assert.That(player.OutedPieces, Is.EqualTo(3));
         }
@@ -42,8 +44,10 @@ namespace BackgammonByHoratiu.UnitTests.Entities
         [Test]
         public void GivePlayer_WhenCompletedPiecesSet_ThenCompletedPiecesReturnsNewValue()
         {
-            Player player = new();
-            player.CompletedPieces = 7;
+            Player player = new()
+            {
+                CompletedPieces = 7
+            };
 
             Assert.That(player.CompletedPieces, Is.EqualTo(7));
         }

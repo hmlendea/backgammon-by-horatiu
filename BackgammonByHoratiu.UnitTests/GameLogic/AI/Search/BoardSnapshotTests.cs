@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using BackgammonByHoratiu.Entities;
 using BackgammonByHoratiu.GameLogic.AI.Search;
 using BackgammonByHoratiu.GameLogic.GameManagers;
+using BackgammonByHoratiu.Settings;
 using Moq;
 using NUnit.Framework;
 
@@ -39,7 +40,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         [Test]
         public void GiveGameManager_WhenSnapshotCreated_ThenColumnValuesAreCloned()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[5] = -3;
             BoardSnapshot snapshot = CreateSnapshot(columnValues);
 
@@ -52,7 +53,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         [Test]
         public void GiveGameManager_WhenSnapshotCreated_ThenAiOutedPiecesIsCopied()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiOutedPieces: 2);
 
             Assert.That(snapshot.AiOutedPieces, Is.EqualTo(2));
@@ -61,7 +62,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         [Test]
         public void GiveGameManager_WhenSnapshotCreated_ThenHumanOutedPiecesIsCopied()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, humanOutedPieces: 1);
 
             Assert.That(snapshot.HumanOutedPieces, Is.EqualTo(1));
@@ -70,7 +71,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         [Test]
         public void GiveGameManager_WhenSnapshotCreated_ThenMovesLeftAreCloned()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             List<int> moves = [3, 5];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiMovesLeft: moves);
 
@@ -86,7 +87,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         [Test]
         public void GiveSnapshotWithAiOutedPiece_WhenGetLegalMoves_ThenOnlyBarEntryMovesAreReturned()
         {
-            int[] columnValues = new int[24]; // all empty
+            int[] columnValues = new int[GameDefines.TotalColumns]; // all empty
             List<int> moves = [1];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiOutedPieces: 1, aiMovesLeft: moves);
 
@@ -100,7 +101,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         public void GiveSnapshotWithAiOutedPieceAndDie1_WhenGetLegalMoves_ThenBarEntryTargetsColumn23()
         {
             // die = 1 → destination = 24 - 1 = 23
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             List<int> moves = [1];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiOutedPieces: 1, aiMovesLeft: moves);
 
@@ -113,7 +114,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         public void GiveSnapshotWithAiOutedPieceAndBlockedEntryColumn_WhenGetLegalMoves_ThenThatColumnIsNotOffered()
         {
             // die = 1, col 23 is blocked by 2 human pieces
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[23] = 2; // col 23 blocked
             List<int> moves = [1];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiOutedPieces: 1, aiMovesLeft: moves);
@@ -131,7 +132,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         public void GiveSnapshotWithAiPieceAndDie1_WhenGetLegalMoves_ThenNormalMoveToAdjacentColumnIsOffered()
         {
             // AI piece at col 5, die=1 → destination col 4 (empty)
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[5] = -2;
             List<int> moves = [1];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiMovesLeft: moves);
@@ -148,7 +149,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         public void GiveSnapshotWithAiPieceAndDestinationBlockedByHuman_WhenGetLegalMoves_ThenBlockedColumnIsNotOffered()
         {
             // AI piece at col 5, die=1, but col 4 has 2 human pieces → blocked
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[5] = -2;
             columnValues[4] = 2; // human block
             List<int> moves = [1];
@@ -163,7 +164,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         [Test]
         public void GiveSnapshotWithNoMovesLeft_WhenGetLegalMoves_ThenReturnsEmptyList()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[5] = -2;
             List<int> moves = [];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiMovesLeft: moves);
@@ -181,7 +182,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         public void GiveSnapshotWithAiPiecesOnlyInHomeBoardAndExactDie_WhenGetLegalMoves_ThenBearOffMoveIsOffered()
         {
             // AI piece at col 2; distance = 2+1 = 3; die = 3 → exact bear-off
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[2] = -1;
             List<int> moves = [3];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiMovesLeft: moves);
@@ -197,7 +198,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         public void GiveSnapshotWithAiPiecesOutsideHomeBoard_WhenGetLegalMoves_ThenBearOffMovesAreNotOffered()
         {
             // AI piece at col 10 (outside home board 0-5) → cannot bear off
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[10] = -2;
             List<int> moves = [3];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiMovesLeft: moves);
@@ -214,7 +215,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         [Test]
         public void GiveSnapshot_WhenAfterNormalMove_ThenSourceColumnValueIncremented()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[5] = -2;
             List<int> moves = [1];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiMovesLeft: moves);
@@ -228,7 +229,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         [Test]
         public void GiveSnapshot_WhenAfterNormalMove_ThenDestinationColumnValueDecremented()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[5] = -2;
             List<int> moves = [1];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiMovesLeft: moves);
@@ -242,7 +243,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         [Test]
         public void GiveSnapshot_WhenAfterNormalMove_ThenDieIsRemovedFromMovesLeft()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[5] = -2;
             List<int> moves = [1, 3];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiMovesLeft: moves);
@@ -256,7 +257,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         [Test]
         public void GiveSnapshot_WhenAfterNormalMoveHitsHumanBlot_ThenHumanOutedPiecesIncremented()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[5] = -2;
             columnValues[4] = 1; // lone human piece
             List<int> moves = [1];
@@ -271,7 +272,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         [Test]
         public void GiveSnapshot_WhenAfterNormalMove_ThenOriginalSnapshotIsUnchanged()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[5] = -2;
             List<int> moves = [1];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiMovesLeft: moves);
@@ -289,7 +290,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         [Test]
         public void GiveSnapshot_WhenAfterBarEntry_ThenAiOutedPiecesDecremented()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             List<int> moves = [1];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiOutedPieces: 1, aiMovesLeft: moves);
 
@@ -302,7 +303,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         [Test]
         public void GiveSnapshot_WhenAfterBarEntry_ThenDestinationColumnHasAiPiece()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             List<int> moves = [1];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiOutedPieces: 1, aiMovesLeft: moves);
 
@@ -315,7 +316,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         [Test]
         public void GiveSnapshot_WhenAfterBarEntryToColumnWithHumanBlot_ThenHumanOutedPiecesIncremented()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[23] = 1; // lone human piece
             List<int> moves = [1];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiOutedPieces: 1, aiMovesLeft: moves);
@@ -333,7 +334,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         [Test]
         public void GiveSnapshot_WhenAfterBearOff_ThenSourceColumnValueIncremented()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[2] = -2;
             List<int> moves = [3];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiMovesLeft: moves);
@@ -347,7 +348,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         [Test]
         public void GiveSnapshot_WhenAfterBearOff_ThenDieIsRemovedFromMovesLeft()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[2] = -2;
             List<int> moves = [3];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiMovesLeft: moves);

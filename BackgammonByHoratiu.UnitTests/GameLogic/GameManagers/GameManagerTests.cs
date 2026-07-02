@@ -1,5 +1,6 @@
 using BackgammonByHoratiu.Entities;
 using BackgammonByHoratiu.GameLogic.GameManagers;
+using BackgammonByHoratiu.Settings;
 using NUnit.Framework;
 
 namespace BackgammonByHoratiu.UnitTests.GameLogic.GameManagers
@@ -53,7 +54,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.GameManagers
             GameManager manager = new();
             manager.LoadContent();
 
-            Assert.That(manager.TableValues, Has.Length.EqualTo(24));
+            Assert.That(manager.TableValues, Has.Length.EqualTo(GameDefines.TotalColumns));
         }
 
         [Test]

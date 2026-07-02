@@ -2,6 +2,7 @@ using BackgammonByHoratiu.Entities;
 using BackgammonByHoratiu.GameLogic.AI.Evaluation;
 using BackgammonByHoratiu.GameLogic.AI.Search;
 using BackgammonByHoratiu.GameLogic.GameManagers;
+using BackgammonByHoratiu.Settings;
 using Moq;
 using NUnit.Framework;
 
@@ -31,7 +32,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Evaluation
         public void GiveSnapshotWithAiPiecesAtColumn2_WhenAiPipCountCalculated_ThenReturnsCorrectValue()
         {
             // col 2 = -3 → 3 AI pieces × (2+1) = 9 pips
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[2] = -3;
             BoardSnapshot snapshot = CreateSnapshot(columnValues);
 
@@ -44,7 +45,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Evaluation
         public void GiveSnapshotWithAiPiecesAtMultipleColumns_WhenAiPipCountCalculated_ThenReturnsSumOfAllPips()
         {
             // col 0: -1 → 1 pip; col 4: -2 → 10 pips; total = 11
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[0] = -1;
             columnValues[4] = -2;
             BoardSnapshot snapshot = CreateSnapshot(columnValues);
@@ -57,7 +58,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Evaluation
         [Test]
         public void GiveSnapshotWithAiOutedPiece_WhenAiPipCountCalculated_ThenBarPipsAreIncluded()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiOutedPieces: 1);
 
             int pipCount = BoardMetrics.AiPipCount(snapshot);
@@ -68,7 +69,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Evaluation
         [Test]
         public void GiveEmptySnapshot_WhenAiPipCountCalculated_ThenReturnsZero()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             BoardSnapshot snapshot = CreateSnapshot(columnValues);
 
             int pipCount = BoardMetrics.AiPipCount(snapshot);
@@ -84,7 +85,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Evaluation
         public void GiveSnapshotWithHumanPiecesAtColumn21_WhenHumanPipCountCalculated_ThenReturnsCorrectValue()
         {
             // col 21 = +2 → 2 human pieces × (24-21) = 2 × 3 = 6 pips
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[21] = 2;
             BoardSnapshot snapshot = CreateSnapshot(columnValues);
 
@@ -97,7 +98,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Evaluation
         public void GiveSnapshotWithHumanPiecesAtMultipleColumns_WhenHumanPipCountCalculated_ThenReturnsSumOfAllPips()
         {
             // col 23: +1 → 1 pip; col 0: +2 → 48 pips; total = 49
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[23] = 1;
             columnValues[0] = 2;
             BoardSnapshot snapshot = CreateSnapshot(columnValues);
@@ -110,7 +111,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Evaluation
         [Test]
         public void GiveSnapshotWithHumanOutedPiece_WhenHumanPipCountCalculated_ThenBarPipsAreIncluded()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, humanOutedPieces: 1);
 
             int pipCount = BoardMetrics.HumanPipCount(snapshot);
@@ -121,7 +122,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Evaluation
         [Test]
         public void GiveEmptySnapshot_WhenHumanPipCountCalculated_ThenReturnsZero()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             BoardSnapshot snapshot = CreateSnapshot(columnValues);
 
             int pipCount = BoardMetrics.HumanPipCount(snapshot);

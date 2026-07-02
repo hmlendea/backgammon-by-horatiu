@@ -212,7 +212,7 @@ namespace BackgammonByHoratiu.Gui.Screens
             IReadOnlyList<int> intermediates,
             int finalColumn,
             int activePlayer,
-            Action onComplete)
+            IReadOnlyList<Action> stepActions)
         {
             List<int> stops = [.. intermediates];
             stops.Add(finalColumn);
@@ -221,14 +221,83 @@ namespace BackgammonByHoratiu.Gui.Screens
             {
                 if (index >= stops.Count)
                 {
-                    onComplete?.Invoke();
                     return;
                 }
 
-                gameBoard.ContinuePieceMoveAnimation(piece, stops[index], activePlayer, () => Continue(piece, index + 1));
+                GameSnapshot stepSnapshot = game.CreateSnapshot();
+                gameBoard.ContinuePieceMoveAnimation(piece, stops[index], activePlayer, () =>
+                {
+                    try
+                    {
+                        stepActions[index]();
+                        undoHistory.Push(stepSnapshot);
+                    }
+                    catch (PieceMoveException ex)
+                    {
+                        Console.Error.WriteLine($"[Backgammon] {ex.Message}");
+                    }
+
+                    Continue(piece, index + 1);
+                });
             }
 
-            gameBoard.BeginPieceMoveAnimation(fromColumn, stops[0], activePlayer, piece => Continue(piece, 1));
+            GameSnapshot firstSnapshot = game.CreateSnapshot();
+            gameBoard.BeginPieceMoveAnimation(fromColumn, stops[0], activePlayer, piece =>
+            {
+                try
+                {
+                    stepActions[0]();
+                    undoHistory.Push(firstSnapshot);
+                }
+                catch (PieceMoveException ex)
+                {
+                    Console.Error.WriteLine($"[Backgammon] {ex.Message}");
+                }
+
+                Continue(piece, 1);
+            });
+        }
+
+        IReadOnlyList<Action> BuildBoardMoveStepActions(int fromColumn, IReadOnlyList<int> intermediates, int finalColumn)
+        {
+            List<int> allStops = [.. intermediates, finalColumn];
+            List<Action> stepActions = [];
+            int previousColumn = fromColumn;
+
+            foreach (int stop in allStops)
+            {
+                int capturedFrom = previousColumn;
+                int capturedDie = Math.Abs(stop - previousColumn);
+                stepActions.Add(() => game.MovePiece(capturedFrom, capturedDie));
+                previousColumn = stop;
+            }
+
+            return stepActions;
+        }
+
+        IReadOnlyList<Action> BuildBarMoveStepActions(int fromBarColumn, IReadOnlyList<int> intermediates, int finalColumn)
+        {
+            List<int> allStops = [.. intermediates, finalColumn];
+            List<Action> stepActions = [];
+            bool isPlayer1Bar = fromBarColumn.Equals(GameDefines.ColBarP1);
+            int firstDie = GameDefines.TotalColumns - allStops[0];
+
+            if (isPlayer1Bar)
+            {
+                firstDie = allStops[0] + 1;
+            }
+
+            int capturedFirstDie = firstDie;
+            stepActions.Add(() => game.MoveOutedPiece(capturedFirstDie));
+
+            for (int i = 1; i < allStops.Count; i++)
+            {
+                int capturedFrom = allStops[i - 1];
+                int capturedDie = Math.Abs(allStops[i] - allStops[i - 1]);
+                stepActions.Add(() => game.MovePiece(capturedFrom, capturedDie));
+            }
+
+            return stepActions;
         }
 
         void RegisterEvents()
@@ -263,10 +332,10 @@ namespace BackgammonByHoratiu.Gui.Screens
                 return game.GetValidDestinations(GameDefines.ColBarP1).Count > 0;
             }
 
-            for (int i = 0; i < 24; i++)
+            for (int columnIndex = 0; columnIndex < GameDefines.TotalColumns; columnIndex++)
             {
-                if (game.TableValues[i] > 0 &&
-                    game.GetValidDestinations(i).Count > 0)
+                if (game.TableValues[columnIndex] > 0 &&
+                    game.GetValidDestinations(columnIndex).Count > 0)
                 {
                     return true;
                 }
@@ -341,9 +410,9 @@ namespace BackgammonByHoratiu.Gui.Screens
                 return;
             }
 
-            int col = gameBoard.ColumnAt(x, y);
+            int column = gameBoard.ColumnAt(x, y);
 
-            if (col < 0 && gameBoard.IsOnHouse(x, y) && dragBeginCol >= 0)
+            if (column < 0 && gameBoard.IsOnHouse(x, y) && dragBeginCol >= 0)
             {
                 int savedFrom = dragBeginCol;
                 int toHouse = game.ActivePlayer == 1 ? GameDefines.ColHouseP1 : GameDefines.ColHouseP2;
@@ -373,7 +442,7 @@ namespace BackgammonByHoratiu.Gui.Screens
                 return;
             }
 
-            if (col < 0 && gameBoard.IsInHumanBar(x, y))
+            if (column < 0 && gameBoard.IsInHumanBar(x, y))
             {
                 if (game.Player1.OutedPieces > 0)
                 {
@@ -383,7 +452,7 @@ namespace BackgammonByHoratiu.Gui.Screens
                 return;
             }
 
-            if (col < 0 && gameBoard.IsInAiBar(x, y))
+            if (column < 0 && gameBoard.IsInAiBar(x, y))
             {
                 if (game.Player2.OutedPieces > 0)
                 {
@@ -393,7 +462,7 @@ namespace BackgammonByHoratiu.Gui.Screens
                 return;
             }
 
-            if (col < 0)
+            if (column < 0)
             {
                 dragBeginCol = -1;
                 return;
@@ -401,16 +470,16 @@ namespace BackgammonByHoratiu.Gui.Screens
 
             if (dragBeginCol == BarBrown || dragBeginCol == BarWhite)
             {
-                int distance = col + 1;
+                int distance = column + 1;
                 int fromBar = GameDefines.ColBarP1;
 
                 if (dragBeginCol == BarBrown)
                 {
-                    distance = 24 - col;
+                    distance = GameDefines.TotalColumns - column;
                     fromBar = GameDefines.ColBarP2;
                 }
 
-                if (!game.GetValidDestinations(fromBar).Contains(col))
+                if (!game.GetValidDestinations(fromBar).Contains(column))
                 {
                     dragBeginCol = -1;
                     return;
@@ -419,34 +488,24 @@ namespace BackgammonByHoratiu.Gui.Screens
                 int savedDist = distance;
                 dragBeginCol = -1;
 
-                GameSnapshot outedSnapshot = game.CreateSnapshot();
-                ChainMoveAnimation(fromBar, game.FindMoveOutedPieceIntermediates(savedDist), col, game.ActivePlayer, () =>
-                {
-                    try
-                    {
-                        game.MoveOutedPiece(savedDist);
-                        undoHistory.Push(outedSnapshot);
-                    }
-                    catch (PieceMoveException ex)
-                    {
-                        Console.Error.WriteLine($"[Backgammon] {ex.Message}");
-                    }
-                });
+                IReadOnlyList<int> barMoveIntermediates = game.FindMoveOutedPieceIntermediates(savedDist);
+                IReadOnlyList<Action> barStepActions = BuildBarMoveStepActions(fromBar, barMoveIntermediates, column);
+                ChainMoveAnimation(fromBar, barMoveIntermediates, column, game.ActivePlayer, barStepActions);
 
                 return;
             }
 
             if (dragBeginCol == -1)
             {
-                bool isPlayer1Piece = game.ActivePlayer == 1 && game.TableValues[col] > 0;
-                bool isPlayer2Piece = game.ActivePlayer == 2 && game.TableValues[col] < 0;
+                bool isPlayer1Piece = game.ActivePlayer == 1 && game.TableValues[column] > 0;
+                bool isPlayer2Piece = game.ActivePlayer == 2 && game.TableValues[column] < 0;
 
                 if (isPlayer1Piece || isPlayer2Piece)
                 {
-                    dragBeginCol = col;
+                    dragBeginCol = column;
                 }
             }
-            else if (col == dragBeginCol)
+            else if (column == dragBeginCol)
             {
                 dragBeginCol = -1;
             }
@@ -454,7 +513,7 @@ namespace BackgammonByHoratiu.Gui.Screens
             {
                 int savedFrom = dragBeginCol;
 
-                if (!game.GetValidDestinations(savedFrom).Contains(col))
+                if (!game.GetValidDestinations(savedFrom).Contains(column))
                 {
                     dragBeginCol = -1;
 
@@ -463,19 +522,9 @@ namespace BackgammonByHoratiu.Gui.Screens
 
                 dragBeginCol = -1;
 
-                GameSnapshot moveSnapshot = game.CreateSnapshot();
-                ChainMoveAnimation(savedFrom, game.FindMovePieceDirectIntermediates(savedFrom, col), col, game.ActivePlayer, () =>
-                {
-                    try
-                    {
-                        game.MovePieceDirect(savedFrom, col);
-                        undoHistory.Push(moveSnapshot);
-                    }
-                    catch (PieceMoveException ex)
-                    {
-                        Console.Error.WriteLine($"[Backgammon] {ex.Message}");
-                    }
-                });
+                IReadOnlyList<int> moveIntermediates = game.FindMovePieceDirectIntermediates(savedFrom, column);
+                IReadOnlyList<Action> moveStepActions = BuildBoardMoveStepActions(savedFrom, moveIntermediates, column);
+                ChainMoveAnimation(savedFrom, moveIntermediates, column, game.ActivePlayer, moveStepActions);
             }
         }
     }

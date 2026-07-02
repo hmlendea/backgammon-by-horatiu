@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using BackgammonByHoratiu.Entities;
 using BackgammonByHoratiu.GameLogic.AI.Search;
 using BackgammonByHoratiu.GameLogic.GameManagers;
+using BackgammonByHoratiu.Settings;
 using Moq;
 using NUnit.Framework;
 
@@ -39,7 +40,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         [Test]
         public void GiveSnapshotWithNoMovesLeft_WhenFindBestSequence_ThenActionsListIsEmpty()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[5] = -2;
             List<int> moves = [];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiMovesLeft: moves);
@@ -52,7 +53,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         [Test]
         public void GiveSnapshotWithNoMovesLeft_WhenFindBestSequence_ThenScoreIsLeafEvaluation()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             List<int> moves = [];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiMovesLeft: moves);
 
@@ -70,7 +71,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         public void GiveSnapshotWithOneLegalMove_WhenFindBestSequence_ThenActionsListIsNonEmpty()
         {
             // AI piece at col 5, die = 1 → one legal move to col 4
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[5] = -2;
             List<int> moves = [1];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiMovesLeft: moves);
@@ -83,7 +84,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         [Test]
         public void GiveSnapshotWithOneLegalMove_WhenFindBestSequence_ThenFirstActionUsesCorrectDie()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[5] = -2;
             List<int> moves = [1];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiMovesLeft: moves);
@@ -97,7 +98,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         public void GiveSnapshotWithAiOutedPieceAndValidBarEntry_WhenFindBestSequence_ThenFirstActionIsBarEntry()
         {
             // AI outed piece, die = 1, col 23 is empty → only legal move is bar entry
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             List<int> moves = [1];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiOutedPieces: 1, aiMovesLeft: moves);
 
@@ -109,7 +110,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         [Test]
         public void GiveSnapshotWithTwoMoves_WhenFindBestSequence_ThenResultHasScoreSet()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[5] = -3;
             List<int> moves = [1, 2];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiMovesLeft: moves);
@@ -128,7 +129,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Search
         public void GiveSnapshotWithDoubles_WhenFindBestSequence_ThenCompletesWithoutError()
         {
             // Four identical dice → large search space; transposition table must handle it
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[5] = -5;
             List<int> moves = [1, 1, 1, 1];
             BoardSnapshot snapshot = CreateSnapshot(columnValues, aiMovesLeft: moves);

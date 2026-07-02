@@ -2,6 +2,7 @@ using BackgammonByHoratiu.Entities;
 using BackgammonByHoratiu.GameLogic.AI.Evaluation;
 using BackgammonByHoratiu.GameLogic.AI.Search;
 using BackgammonByHoratiu.GameLogic.GameManagers;
+using BackgammonByHoratiu.Settings;
 using Moq;
 using NUnit.Framework;
 
@@ -14,7 +15,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Evaluation
         private static BoardSnapshot CreateRacingSnapshot(int humanOutedPieces = 0)
         {
             Mock<IGameManager> mockGame = new();
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[0] = -2; // AI pieces at col 0: 2 × 1 = 2 AI pips
             columnValues[1] = 2;  // Human pieces at col 1: 2 × (24-1) = 46 human pips
             // aiPips (2) - humanPips (46) = -44 < -15 → Racing phase
@@ -32,7 +33,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Evaluation
         private static BoardSnapshot CreateBlockingSnapshot()
         {
             Mock<IGameManager> mockGame = new();
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             // Balanced pip counts → Blocking phase
             columnValues[11] = -3; // AI pips = 3 × 12 = 36
             columnValues[12] = 3;  // Human pips = 3 × (24-12) = 36
@@ -55,7 +56,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Evaluation
         public void GiveEmptySnapshot_WhenEvaluated_ThenReturnsAScore()
         {
             Mock<IGameManager> mockGame = new();
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             Player player1 = new();
             Player player2 = new();
 
@@ -110,7 +111,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Evaluation
             // Position A: 2 AI pieces at col 20 (anchor in human home board, cols 18-23).
             // AI pips = 2 × 21 = 42. Earns BlockingAnchorBonus + AnchorChainBonus.
             Mock<IGameManager> mockAnchor = new();
-            int[] anchorValues = new int[24];
+            int[] anchorValues = new int[GameDefines.TotalColumns];
             anchorValues[20] = -2;
             Player player1Anchor = new();
             Player player2Anchor = new();
@@ -122,7 +123,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Evaluation
             // Position B: 2 AI blots spread across col 19 and col 21, same total pips (42).
             // No owned points, no chain bonuses.
             Mock<IGameManager> mockBlots = new();
-            int[] blotsValues = new int[24];
+            int[] blotsValues = new int[GameDefines.TotalColumns];
             blotsValues[19] = -1;
             blotsValues[21] = -1;
             Player player1Blots = new();

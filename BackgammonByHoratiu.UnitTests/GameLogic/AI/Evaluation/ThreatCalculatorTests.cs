@@ -2,6 +2,7 @@ using BackgammonByHoratiu.Entities;
 using BackgammonByHoratiu.GameLogic.AI.Evaluation;
 using BackgammonByHoratiu.GameLogic.AI.Search;
 using BackgammonByHoratiu.GameLogic.GameManagers;
+using BackgammonByHoratiu.Settings;
 using Moq;
 using NUnit.Framework;
 
@@ -30,7 +31,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Evaluation
         [Test]
         public void GiveSnapshotWithNoHumanPiecesInDirectRange_WhenCalculateThreat_ThenThreatIsZero()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[10] = -1; // AI blot at col 10; no human pieces within 6 columns
             BoardSnapshot snapshot = CreateSnapshot(columnValues);
 
@@ -42,7 +43,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Evaluation
         [Test]
         public void GiveSnapshotWithHumanPieceOneColumnAboveAiBlot_WhenCalculateThreat_ThenDirectThreatIsNonZero()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[10] = -1; // AI blot
             columnValues[11] = 2;  // 2 human pieces 1 step away
             BoardSnapshot snapshot = CreateSnapshot(columnValues);
@@ -55,7 +56,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Evaluation
         [Test]
         public void GiveSnapshotWithHumanPiecesAtMaxDieDistance_WhenCalculateThreat_ThenDirectThreatIsNonZero()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[10] = -1; // AI blot
             columnValues[16] = 1;  // human piece exactly 6 away (max die value)
             BoardSnapshot snapshot = CreateSnapshot(columnValues);
@@ -69,7 +70,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Evaluation
         public void GiveSnapshotWithHumanPiecesMoreThanSixColumnsAway_WhenCalculateThreat_ThenDirectThreatFromThosePiecesIsZero()
         {
             // Only a human piece > 6 columns away; no two-dice path covers it either
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[0] = -1; // AI blot
             columnValues[20] = 3; // human pieces 20 columns away — out of both direct and indirect range
             BoardSnapshot snapshot = CreateSnapshot(columnValues);
@@ -82,7 +83,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Evaluation
         [Test]
         public void GiveSnapshotWithMultipleHumanPiecesInDirectRange_WhenCalculateThreat_ThenThreatEqualsTheirSum()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[10] = -1; // AI blot
             columnValues[11] = 1;  // 1 human piece 1 step away
             columnValues[13] = 2;  // 2 human pieces 3 steps away
@@ -101,7 +102,7 @@ namespace BackgammonByHoratiu.UnitTests.GameLogic.AI.Evaluation
         [Test]
         public void GiveSnapshotWithHumanPiecesAtTwoDiceDistance_WhenCalculateThreat_ThenThreatIsNonZero()
         {
-            int[] columnValues = new int[24];
+            int[] columnValues = new int[GameDefines.TotalColumns];
             columnValues[5] = -1;  // AI blot
             columnValues[12] = 2;  // human pieces 7 away (min two-dice sum)
             BoardSnapshot snapshot = CreateSnapshot(columnValues);

@@ -121,11 +121,6 @@ namespace BackgammonByHoratiu.Entities
                 player.OutedPieces -= 1;
                 player.MovesLeft.Remove(distance);
 
-                if (player.MovesLeft.Count == 0)
-                {
-                    NextTurn();
-                }
-
                 return;
             }
 
@@ -151,11 +146,6 @@ namespace BackgammonByHoratiu.Entities
                 player.MovesLeft.Remove(barEntryDicePair.FirstDie);
                 player.MovesLeft.Remove(barEntryDicePair.SecondDie);
 
-                if (player.MovesLeft.Count == 0)
-                {
-                    NextTurn();
-                }
-
                 return;
             }
 
@@ -179,11 +169,6 @@ namespace BackgammonByHoratiu.Entities
                 player.MovesLeft.Remove(barEntryDiceTriple.FirstDie);
                 player.MovesLeft.Remove(barEntryDiceTriple.SecondDie);
                 player.MovesLeft.Remove(barEntryDiceTriple.ThirdDie);
-
-                if (player.MovesLeft.Count == 0)
-                {
-                    NextTurn();
-                }
 
                 return;
             }
@@ -214,11 +199,6 @@ namespace BackgammonByHoratiu.Entities
             player.MovesLeft.Remove(barEntryDiceQuadruple.SecondDie);
             player.MovesLeft.Remove(barEntryDiceQuadruple.ThirdDie);
             player.MovesLeft.Remove(barEntryDiceQuadruple.FourthDie);
-
-            if (player.MovesLeft.Count == 0)
-            {
-                NextTurn();
-            }
         }
 
         void ApplyBarEntry(int col, int sign)
@@ -518,11 +498,6 @@ namespace BackgammonByHoratiu.Entities
 
             TableValues[pos] -= sign;
             movingPlayer.MovesLeft.Remove(move);
-
-            if (movingPlayer.MovesLeft.Count == 0)
-            {
-                NextTurn();
-            }
         }
 
         public void MovePieceDirect(int from, int to)
