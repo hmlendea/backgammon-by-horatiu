@@ -1203,16 +1203,49 @@ namespace BackgammonByHoratiu.Entities
                 throw new PieceMoveException("You still have moves left");
             }
 
-            if (ActivePlayer == 1)
+            ActivePlayer = ActivePlayer == 1 ? 2 : 1;
+            ThrowDice();
+
+            SkipTurnIfEntryBlocked();
+        }
+
+        void SkipTurnIfEntryBlocked()
+        {
+            int sign = ActivePlayer == 1 ? 1 : -1;
+            Player player = sign > 0 ? Player1 : Player2;
+
+            if (player.OutedPieces > 0 && AreAllEntryColumnsBlocked(sign))
             {
-                ActivePlayer = 2;
+                player.MovesLeft.Clear();
+                ActivePlayer = ActivePlayer == 1 ? 2 : 1;
+                ThrowDice();
+            }
+        }
+
+        bool AreAllEntryColumnsBlocked(int sign)
+        {
+            if (sign > 0)
+            {
+                for (int col = 0; col <= 5; col++)
+                {
+                    if (TableValues[col] > -2)
+                    {
+                        return false;
+                    }
+                }
             }
             else
             {
-                ActivePlayer = 1;
+                for (int col = 18; col <= 23; col++)
+                {
+                    if (TableValues[col] < 2)
+                    {
+                        return false;
+                    }
+                }
             }
 
-            ThrowDice();
+            return true;
         }
 
         bool HasAnyValidMove()
