@@ -16,9 +16,9 @@ namespace BackgammonByHoratiu.Settings
 
         public const int ColumnHeight = PieceSize * 5;
 
-        public const int FrameWidth = 390;
-        public const int FrameHeight = 816;
-        public const int FrameBorder = 108 * FrameWidth / FrameHeight;
+        public const int FrameWidth = 388;
+        public const int FrameHeight = 812;
+        public const int FrameBorder = 49;
 
         public const int BoardHalfWidth = FrameWidth - FrameBorder * 2;
         public const int BoardHalfHeight = FrameHeight - FrameBorder * 2;
