@@ -1,5 +1,4 @@
 using BackgammonByHoratiu.Entities;
-using BackgammonByHoratiu.GameLogic.AI;
 using BackgammonByHoratiu.Settings;
 using NUnit.Framework;
 

@@ -111,8 +111,19 @@ namespace BackgammonByHoratiu.Gui.Controls
             for (int columnIndex = 0; columnIndex < GameDefines.TotalColumns; columnIndex++)
             {
                 bool isTopHalf = columnIndex < GameDefines.TotalColumns / 2;
-                bool isYellow = isTopHalf ? columnIndex % 2 != 0 : columnIndex % 2 == 0;
-                int sourceX = isYellow ? 0 : GameDefines.ColumnFrameSize.Width;
+                bool isYellow = columnIndex % 2 == 0;
+
+                if (isTopHalf)
+                {
+                    isYellow = columnIndex % 2 != 0;
+                }
+
+                int sourceX = GameDefines.ColumnFrameSize.Width;
+
+                if (isYellow)
+                {
+                    sourceX = 0;
+                }
 
                 columnImages[columnIndex] = new GuiImage
                 {
@@ -273,8 +284,20 @@ namespace BackgammonByHoratiu.Gui.Controls
                 HoveredColumn < GameDefines.TotalColumns)
             {
                 int[] tableValues = game.TableValues;
-                int playerSign = game.ActivePlayer == 1 ? 1 : -1;
-                int existingCount = tableValues[HoveredColumn] * playerSign > 0 ? Math.Abs(tableValues[HoveredColumn]) : 0;
+                int playerSign = -1;
+
+                if (game.ActivePlayer == 1)
+                {
+                    playerSign = 1;
+                }
+
+                int existingCount = 0;
+
+                if (tableValues[HoveredColumn] * playerSign > 0)
+                {
+                    existingCount = Math.Abs(tableValues[HoveredColumn]);
+                }
+
                 int ghostPiecePixelY = GetBottomHalfSlotPixelY(existingCount, columnRectangles[HoveredColumn].Bottom);
 
                 if (HoveredColumn < GameDefines.TotalColumns / 2)
@@ -332,7 +355,12 @@ namespace BackgammonByHoratiu.Gui.Controls
                 return;
             }
 
-            int diceRowSourceY = game.ActivePlayer == 1 ? 0 : GameDefines.DieFrameSize.Height;
+            int diceRowSourceY = GameDefines.DieFrameSize.Height;
+
+            if (game.ActivePlayer == 1)
+            {
+                diceRowSourceY = 0;
+            }
 
             foreach (int destination in ValidDestinations)
             {
@@ -389,7 +417,16 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             targetColumn.Location = new Point2D(rectangle.X, rectangle.Y);
             targetColumn.Size = new Size2D(rectangle.Width, rectangle.Height);
-            targetColumn.Rotation = isTopHalf ? MathHelper.Pi : 0f;
+
+            if (isTopHalf)
+            {
+                targetColumn.Rotation = MathHelper.Pi;
+            }
+            else
+            {
+                targetColumn.Rotation = (float)0f;
+            }
+
             targetColumn.Update(lastGameTime);
             targetColumn.Draw(spriteBatch);
         }
@@ -429,8 +466,28 @@ namespace BackgammonByHoratiu.Gui.Controls
                     }
 
                     bool isTopPiece = stackIndex == pieceCount - 1 && columnIndex == SelectedColumn;
-                    int sourceX = isTopPiece ? GameDefines.PieceFrameSize * 2 : (isPlayer2 ? GameDefines.PieceFrameSize : 0);
-                    GuiImage piece = isPlayer2 ? player2Pieces[player2Index++] : player1Pieces[player1Index++];
+                    int sourceX = 0;
+
+                    if (isPlayer2)
+                    {
+                        sourceX = GameDefines.PieceFrameSize;
+                    }
+
+                    if (isTopPiece)
+                    {
+                        sourceX = GameDefines.PieceFrameSize * 2;
+                    }
+
+                    GuiImage piece;
+
+                    if (isPlayer2)
+                    {
+                        piece = player2Pieces[player2Index++];
+                    }
+                    else
+                    {
+                        piece = player1Pieces[player1Index++];
+                    }
 
                     piece.SourceRectangle = new Rectangle2D(sourceX, 0, GameDefines.PieceFrameSize, GameDefines.PieceFrameSize);
                     piece.Size = new Size2D(GameDefines.PieceSize, GameDefines.PieceSize);
@@ -457,7 +514,13 @@ namespace BackgammonByHoratiu.Gui.Controls
                 int indexInLayer = barIndex % GameDefines.PiecesPerColumnLayer;
                 int layerOffset = layer * GameDefines.OverflowLayerSourceOffset * GameDefines.PieceSize / GameDefines.PieceFrameSize;
                 bool isSelected = barIndex == player1OutedPieces - 1 && SelectedColumn == GameDefines.ColBarP1;
-                int sourceX = isSelected ? GameDefines.PieceFrameSize * 2 : 0;
+                int sourceX = 0;
+
+                if (isSelected)
+                {
+                    sourceX = GameDefines.PieceFrameSize * 2;
+                }
+
                 int pixelY = outColumns[0].Top - layerOffset + indexInLayer * GameDefines.PieceSize;
                 GuiImage piece = player1Pieces[player1Index++];
 
@@ -483,7 +546,13 @@ namespace BackgammonByHoratiu.Gui.Controls
                 int indexInLayer = barIndex % GameDefines.PiecesPerColumnLayer;
                 int layerOffset = layer * GameDefines.OverflowLayerSourceOffset * GameDefines.PieceSize / GameDefines.PieceFrameSize;
                 bool isSelected = barIndex == player2OutedPieces - 1 && SelectedColumn == GameDefines.ColBarP2;
-                int sourceX = isSelected ? GameDefines.PieceFrameSize * 2 : GameDefines.PieceFrameSize;
+                int sourceX = GameDefines.PieceFrameSize;
+
+                if (isSelected)
+                {
+                    sourceX = GameDefines.PieceFrameSize * 2;
+                }
+
                 int pixelY = outColumns[1].Bottom - GameDefines.PieceSize - layerOffset - indexInLayer * GameDefines.PieceSize;
                 GuiImage piece = player2Pieces[player2Index++];
 
@@ -619,54 +688,131 @@ namespace BackgammonByHoratiu.Gui.Controls
                 return;
             }
 
-            int playerSign = activePlayer == 1 ? 1 : -1;
-            int outingColumn = toColumn >= 0 && toColumn < GameDefines.TotalColumns &&
-                               game.TableValues[toColumn] * playerSign < 0 &&
-                               Math.Abs(game.TableValues[toColumn]) == 1 ? toColumn : -1;
-            int outingPlayer = outingColumn >= 0 ? (activePlayer == 1 ? 2 : 1) : -1;
+            int playerSign = -1;
 
-            GuiImage piece = FindTopPieceImageAt(fromColumn);
-            piece.SourceRectangle = new Rectangle2D(activePlayer == 2 ? GameDefines.PieceFrameSize : 0, 0, GameDefines.PieceFrameSize, GameDefines.PieceFrameSize);
-            piece.Location = GetAnimSourcePixel(fromColumn);
-
-            StartMovementAnimation(piece, GetAnimDestPixel(toColumn, activePlayer), () =>
+            if (activePlayer == 1)
             {
-                if (outingColumn >= 0)
-                {
-                    BeginOutingAnimation(outingColumn, outingPlayer);
-                }
+                playerSign = 1;
+            }
 
-                onComplete?.Invoke(piece);
-            });
-        }
+            int outingColumn = -1;
 
-        public void ContinuePieceMoveAnimation(GuiImage piece, int toColumn, int activePlayer, Action onComplete)
-        {
-            int playerSign = activePlayer == 1 ? 1 : -1;
-            int outingColumn = toColumn >= 0 && toColumn < GameDefines.TotalColumns &&
-                               game.TableValues[toColumn] * playerSign < 0 &&
-                               Math.Abs(game.TableValues[toColumn]) == 1 ? toColumn : -1;
+            if (toColumn >= 0 && toColumn < GameDefines.TotalColumns &&
+                game.TableValues[toColumn] * playerSign < 0 &&
+                Math.Abs(game.TableValues[toColumn]) == 1)
+            {
+                outingColumn = toColumn;
+            }
+
             int outingPlayer = -1;
 
             if (outingColumn >= 0)
             {
-                outingPlayer = activePlayer == 1 ? 2 : 1;
+                if (activePlayer == 1)
+                {
+                    outingPlayer = 2;
+                }
+                else
+                {
+                    outingPlayer = 1;
+                }
             }
 
+            GuiImage piece = FindTopPieceImageAt(fromColumn);
+
+            if (activePlayer == 2)
+            {
+                piece.SourceRectangle = new Rectangle2D(
+                    GameDefines.PieceFrameSize,
+                    0,
+                    GameDefines.PieceFrameSize,
+                    GameDefines.PieceFrameSize);
+            }
+            else
+            {
+                piece.SourceRectangle = new Rectangle2D(
+                    Point2D.Empty,
+                    GameDefines.PieceFrameSize,
+                    GameDefines.PieceFrameSize);
+            }
+
+            piece.Location = GetAnimSourcePixel(fromColumn);
+
+            StartMovementAnimation(piece, GetAnimDestPixel(toColumn, activePlayer), () =>
+            {
+                onComplete?.Invoke(piece);
+
+                if (outingColumn >= 0)
+                {
+                    int barColumn = GameDefines.ColBarP2;
+
+                    if (outingPlayer == 1)
+                    {
+                        barColumn = GameDefines.ColBarP1;
+                    }
+
+                    GuiImage outedPiece = FindTopPieceImageAt(barColumn);
+                    BeginOutingAnimation(outingColumn, outingPlayer, outedPiece);
+                }
+            });
+        }
+
+        public void ContinuePieceMoveAnimation(int fromColumn, int toColumn, int activePlayer, Action onComplete)
+        {
+            int playerSign = -1;
+
+            if (activePlayer == 1)
+            {
+                playerSign = 1;
+            }
+
+            int outingColumn = -1;
+
+            if (toColumn >= 0 && toColumn < GameDefines.TotalColumns &&
+                game.TableValues[toColumn] * playerSign < 0 &&
+                Math.Abs(game.TableValues[toColumn]) == 1)
+            {
+                outingColumn = toColumn;
+            }
+
+            int outingPlayer = -1;
+
+            if (outingColumn >= 0)
+            {
+                if (activePlayer == 1)
+                {
+                    outingPlayer = 2;
+                }
+                else
+                {
+                    outingPlayer = 1;
+                }
+            }
+
+            GuiImage piece = FindTopPieceImageAt(fromColumn);
             piece.SourceRectangle = new Rectangle2D(
                 activePlayer == 2 ? GameDefines.PieceFrameSize : 0,
                 0,
                 GameDefines.PieceFrameSize,
                 GameDefines.PieceFrameSize);
+            piece.Location = GetAnimSourcePixel(fromColumn);
 
             StartMovementAnimation(piece, GetAnimDestPixel(toColumn, activePlayer), () =>
             {
+                onComplete?.Invoke();
+
                 if (outingColumn >= 0)
                 {
-                    BeginOutingAnimation(outingColumn, outingPlayer);
-                }
+                    int barColumn = GameDefines.ColBarP2;
 
-                onComplete?.Invoke();
+                    if (outingPlayer == 1)
+                    {
+                        barColumn = GameDefines.ColBarP1;
+                    }
+
+                    GuiImage outedPiece = FindTopPieceImageAt(barColumn);
+                    BeginOutingAnimation(outingColumn, outingPlayer, outedPiece);
+                }
             });
         }
         static int GetTopHalfSlotPixelY(int slotIndex, int columnTop)
@@ -709,16 +855,14 @@ namespace BackgammonByHoratiu.Gui.Controls
 
             if (fromColumn == GameDefines.ColBarP1)
             {
-                int centerX = outColumns[0].Left + (outColumns[0].Width - GameDefines.PieceSize) / 2;
-                int sourceSlotIndex = game.Player1.OutedPieces - 1;
-
-                return new Point2D(centerX, GetTopHalfSlotPixelY(sourceSlotIndex, outColumns[0].Top));
+                return new Point2D(
+                    outColumns[0].Left + (outColumns[0].Width - GameDefines.PieceSize) / 2,
+                    GetTopHalfSlotPixelY(game.Player1.OutedPieces - 1, outColumns[0].Top));
             }
 
-            int player2BarCenterX = outColumns[1].Left + (outColumns[1].Width - GameDefines.PieceSize) / 2;
-            int player2SourceSlotIndex = game.Player2.OutedPieces - 1;
-
-            return new Point2D(player2BarCenterX, GetBottomHalfSlotPixelY(player2SourceSlotIndex, outColumns[1].Bottom));
+            return new Point2D(
+                outColumns[1].Left + (outColumns[1].Width - GameDefines.PieceSize) / 2,
+                GetBottomHalfSlotPixelY(game.Player2.OutedPieces - 1, outColumns[1].Bottom));
         }
 
         Point2D GetAnimDestPixel(int toColumn, int activePlayer)
@@ -766,7 +910,7 @@ namespace BackgammonByHoratiu.Gui.Controls
                 GetTopHalfSlotPixelY(game.Player2.CompletedPieces, houses[1].Top));
         }
 
-        void BeginOutingAnimation(int hitColumn, int hitPlayer)
+        void BeginOutingAnimation(int hitColumn, int hitPlayer, GuiImage piece)
         {
             Point2D sourcePixel = new(
                 columnRectangles[hitColumn].Left,
@@ -785,23 +929,15 @@ namespace BackgammonByHoratiu.Gui.Controls
             {
                 destinationPixel = new Point2D(
                     outColumns[0].Left + (outColumns[0].Width - GameDefines.PieceSize) / 2,
-                    GetTopHalfSlotPixelY(game.Player1.OutedPieces, outColumns[0].Top));
+                    GetTopHalfSlotPixelY(game.Player1.OutedPieces - 1, outColumns[0].Top));
             }
             else
             {
                 destinationPixel = new Point2D(
                     outColumns[1].Left + (outColumns[1].Width - GameDefines.PieceSize) / 2,
-                    GetBottomHalfSlotPixelY(game.Player2.OutedPieces, outColumns[1].Bottom));
+                    GetBottomHalfSlotPixelY(game.Player2.OutedPieces - 1, outColumns[1].Bottom));
             }
 
-            int barColumn = GameDefines.ColBarP2;
-
-            if (hitPlayer == 1)
-            {
-                barColumn = GameDefines.ColBarP1;
-            }
-
-            GuiImage piece = FindTopPieceImageAt(barColumn);
             piece.SourceRectangle = new Rectangle2D(
                 hitPlayer == 1 ? 0 : GameDefines.PieceFrameSize,
                 0,

@@ -217,7 +217,7 @@ namespace BackgammonByHoratiu.Gui.Screens
             List<int> stops = [.. intermediates];
             stops.Add(finalColumn);
 
-            void Continue(GuiImage piece, int index)
+            void Continue(int previousStop, int index)
             {
                 if (index >= stops.Count)
                 {
@@ -225,7 +225,7 @@ namespace BackgammonByHoratiu.Gui.Screens
                 }
 
                 GameSnapshot stepSnapshot = game.CreateSnapshot();
-                gameBoard.ContinuePieceMoveAnimation(piece, stops[index], activePlayer, () =>
+                gameBoard.ContinuePieceMoveAnimation(previousStop, stops[index], activePlayer, () =>
                 {
                     try
                     {
@@ -237,12 +237,12 @@ namespace BackgammonByHoratiu.Gui.Screens
                         Console.Error.WriteLine($"[Backgammon] {ex.Message}");
                     }
 
-                    Continue(piece, index + 1);
+                    Continue(stops[index], index + 1);
                 });
             }
 
             GameSnapshot firstSnapshot = game.CreateSnapshot();
-            gameBoard.BeginPieceMoveAnimation(fromColumn, stops[0], activePlayer, piece =>
+            gameBoard.BeginPieceMoveAnimation(fromColumn, stops[0], activePlayer, _ =>
             {
                 try
                 {
@@ -254,7 +254,7 @@ namespace BackgammonByHoratiu.Gui.Screens
                     Console.Error.WriteLine($"[Backgammon] {ex.Message}");
                 }
 
-                Continue(piece, 1);
+                Continue(stops[0], 1);
             });
         }
 

@@ -1496,9 +1496,21 @@ namespace BackgammonByHoratiu.Entities
                 return [];
             }
 
-            int sign = TableValues[from] > 0 ? 1 : -1;
-            int distance = sign > 0 ? to - from : from - to;
-            Player movingPlayer = sign > 0 ? Player1 : Player2;
+            int sign = -1;
+
+            if (TableValues[from] > 0)
+            {
+                sign = 1;
+            }
+
+            Player movingPlayer = Player2;
+            int distance = from - to;
+
+            if (sign > 0)
+            {
+                movingPlayer = Player1;
+                distance = to - from;
+            }
 
             if (movingPlayer.MovesLeft.Contains(distance))
             {
