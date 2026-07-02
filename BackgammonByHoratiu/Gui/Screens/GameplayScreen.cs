@@ -208,17 +208,7 @@ namespace BackgammonByHoratiu.Gui.Screens
 
             bool canUndo = undoHistory.Count > 0 && !gameBoard.IsAnimating && game.ActivePlayer == 1;
 
-            if (canUndo != undoButton.IsEnabled)
-            {
-                if (canUndo)
-                {
-                    undoButton.Enable();
-                }
-                else
-                {
-                    undoButton.Disable();
-                }
-            }
+            undoButton.IsActive = canUndo;
         }
 
         protected override void DoDraw(SpriteBatch spriteBatch) { }
@@ -300,7 +290,7 @@ namespace BackgammonByHoratiu.Gui.Screens
 
         void OnUndoButtonClicked(object sender, MouseButtonEventArgs e)
         {
-            if (gameBoard.IsAnimating || undoHistory.Count == 0)
+            if (!undoButton.IsActive || gameBoard.IsAnimating || undoHistory.Count == 0)
             {
                 return;
             }

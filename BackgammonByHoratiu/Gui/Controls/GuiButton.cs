@@ -13,6 +13,8 @@ namespace BackgammonByHoratiu.Gui.Controls
 
         public InGameButtonIcon Icon { get; set; }
 
+        public bool IsActive { get; set; } = true;
+
         const int FrameWidth = 280;
         const int FrameHeight = 280;
 
@@ -45,7 +47,7 @@ namespace BackgammonByHoratiu.Gui.Controls
         {
             int frameX;
 
-            if (!IsEnabled)
+            if (!IsActive)
             {
                 frameX = FrameWidth * 3;
             }
