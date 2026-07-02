@@ -68,14 +68,14 @@ namespace BackgammonByHoratiu.Gui.Screens
             undoButton = new GuiButton
             {
                 ContentFile = "interface/buttons_ingame",
-                ButtonRow = 0,
+                Icon = InGameButtonIcon.Undo,
                 Location = new Point2D(buttonSpacing, buttonSpacing),
                 Size = GameDefines.InGameButtonSize
             };
             resetButton = new GuiButton
             {
                 ContentFile = "interface/buttons_ingame",
-                ButtonRow = 1,
+                Icon = InGameButtonIcon.Reset,
                 Location = new Point2D(
                     undoButton.ClientRectangle.Left,
                     undoButton.ClientRectangle.Bottom + buttonSpacing),
