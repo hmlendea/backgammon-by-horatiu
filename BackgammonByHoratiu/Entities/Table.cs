@@ -92,6 +92,11 @@ namespace BackgammonByHoratiu.Entities
                 }
                 else
                 {
+                    if (Player1.OutedPieces != 1)
+                    {
+                        throw new PieceMoveException("Invalid destination");
+                    }
+
                     DicePair barEntryDicePair = FindBarEntryCombo(distance, 1);
 
                     if (barEntryDicePair.IsValid)
@@ -192,6 +197,11 @@ namespace BackgammonByHoratiu.Entities
                 }
                 else
                 {
+                    if (Player2.OutedPieces != 1)
+                    {
+                        throw new PieceMoveException("Invalid destination");
+                    }
+
                     DicePair barEntryDicePair = FindBarEntryCombo(distance, -1);
 
                     if (barEntryDicePair.IsValid)
@@ -1655,86 +1665,46 @@ namespace BackgammonByHoratiu.Entities
                     }
                 }
 
-                // Two-die combos from bar
-                for (int i = 0; i < movingPlayer.MovesLeft.Count; i++)
+                // Two-die combos from bar (only when this is the single outed piece)
+                if (movingPlayer.OutedPieces == 1)
                 {
-                    int die1 = movingPlayer.MovesLeft[i];
-                    int intermediate = sign > 0 ? die1 - 1 : 24 - die1;
-                    if (intermediate < 0 || intermediate >= 24)
+                    for (int i = 0; i < movingPlayer.MovesLeft.Count; i++)
                     {
-                        continue;
-                    }
+                        int die1 = movingPlayer.MovesLeft[i];
+                        int intermediate = 24 - die1;
 
-                    bool blocked = sign > 0 ? TableValues[intermediate] < -1 : TableValues[intermediate] > 1;
-                    if (blocked)
-                    {
-                        continue;
-                    }
+                        if (sign > 0)
+                        {
+                            intermediate = die1 - 1;
+                        }
 
-                    for (int j = 0; j < movingPlayer.MovesLeft.Count; j++)
-                    {
-                        if (i == j)
+                        if (intermediate < 0 || intermediate >= 24)
                         {
                             continue;
                         }
 
-                        int die2 = movingPlayer.MovesLeft[j];
-                        int finalCol = intermediate + sign * die2;
-                        if (finalCol < 0 || finalCol >= 24)
+                        bool blocked = TableValues[intermediate] > 1;
+
+                        if (sign > 0)
+                        {
+                            blocked = TableValues[intermediate] < -1;
+                        }
+
+                        if (blocked)
                         {
                             continue;
                         }
 
-                        if (result.Contains(finalCol))
+                        for (int j = 0; j < movingPlayer.MovesLeft.Count; j++)
                         {
-                            continue;
-                        }
-
-                        if (IsStepValid(intermediate, die2, sign))
-                        {
-                            result.Add(finalCol);
-                        }
-                    }
-                }
-
-                // Three-die combos from bar
-                for (int i = 0; i < movingPlayer.MovesLeft.Count; i++)
-                {
-                    int die1 = movingPlayer.MovesLeft[i];
-                    int int1 = sign > 0 ? die1 - 1 : 24 - die1;
-                    if (int1 < 0 || int1 >= 24)
-                    {
-                        continue;
-                    }
-
-                    bool blocked1 = sign > 0 ? TableValues[int1] < -1 : TableValues[int1] > 1;
-                    if (blocked1)
-                    {
-                        continue;
-                    }
-
-                    for (int j = 0; j < movingPlayer.MovesLeft.Count; j++)
-                    {
-                        if (j == i)
-                        {
-                            continue;
-                        }
-
-                        if (!IsStepValid(int1, movingPlayer.MovesLeft[j], sign))
-                        {
-                            continue;
-                        }
-
-                        int int2 = int1 + sign * movingPlayer.MovesLeft[j];
-
-                        for (int k = 0; k < movingPlayer.MovesLeft.Count; k++)
-                        {
-                            if (k == i || k == j)
+                            if (i == j)
                             {
                                 continue;
                             }
 
-                            int finalCol = int2 + sign * movingPlayer.MovesLeft[k];
+                            int die2 = movingPlayer.MovesLeft[j];
+                            int finalCol = intermediate + sign * die2;
+
                             if (finalCol < 0 || finalCol >= 24)
                             {
                                 continue;
@@ -1745,66 +1715,64 @@ namespace BackgammonByHoratiu.Entities
                                 continue;
                             }
 
-                            if (IsStepValid(int2, movingPlayer.MovesLeft[k], sign))
+                            if (IsStepValid(intermediate, die2, sign))
                             {
                                 result.Add(finalCol);
                             }
                         }
                     }
-                }
 
-                // Four-die combos from bar
-                for (int i = 0; i < movingPlayer.MovesLeft.Count; i++)
-                {
-                    int die1 = movingPlayer.MovesLeft[i];
-                    int int1 = sign > 0 ? die1 - 1 : 24 - die1;
-                    if (int1 < 0 || int1 >= 24)
+                    // Three-die combos from bar
+                    for (int i = 0; i < movingPlayer.MovesLeft.Count; i++)
                     {
-                        continue;
-                    }
+                        int die1 = movingPlayer.MovesLeft[i];
+                        int int1 = 24 - die1;
 
-                    bool blocked1 = sign > 0 ? TableValues[int1] < -1 : TableValues[int1] > 1;
-                    if (blocked1)
-                    {
-                        continue;
-                    }
+                        if (sign > 0)
+                        {
+                            int1 = die1 - 1;
+                        }
 
-                    for (int j = 0; j < movingPlayer.MovesLeft.Count; j++)
-                    {
-                        if (j == i)
+                        if (int1 < 0 || int1 >= 24)
                         {
                             continue;
                         }
 
-                        if (!IsStepValid(int1, movingPlayer.MovesLeft[j], sign))
+                        bool blocked1 = TableValues[int1] > 1;
+
+                        if (sign > 0)
+                        {
+                            blocked1 = TableValues[int1] < -1;
+                        }
+
+                        if (blocked1)
                         {
                             continue;
                         }
 
-                        int int2 = int1 + sign * movingPlayer.MovesLeft[j];
-
-                        for (int k = 0; k < movingPlayer.MovesLeft.Count; k++)
+                        for (int j = 0; j < movingPlayer.MovesLeft.Count; j++)
                         {
-                            if (k == i || k == j)
+                            if (j == i)
                             {
                                 continue;
                             }
 
-                            if (!IsStepValid(int2, movingPlayer.MovesLeft[k], sign))
+                            if (!IsStepValid(int1, movingPlayer.MovesLeft[j], sign))
                             {
                                 continue;
                             }
 
-                            int int3 = int2 + sign * movingPlayer.MovesLeft[k];
+                            int int2 = int1 + sign * movingPlayer.MovesLeft[j];
 
-                            for (int l = 0; l < movingPlayer.MovesLeft.Count; l++)
+                            for (int k = 0; k < movingPlayer.MovesLeft.Count; k++)
                             {
-                                if (l == i || l == j || l == k)
+                                if (k == i || k == j)
                                 {
                                     continue;
                                 }
 
-                                int finalCol = int3 + sign * movingPlayer.MovesLeft[l];
+                                int finalCol = int2 + sign * movingPlayer.MovesLeft[k];
+
                                 if (finalCol < 0 || finalCol >= 24)
                                 {
                                     continue;
@@ -1815,14 +1783,99 @@ namespace BackgammonByHoratiu.Entities
                                     continue;
                                 }
 
-                                if (IsStepValid(int3, movingPlayer.MovesLeft[l], sign))
+                                if (IsStepValid(int2, movingPlayer.MovesLeft[k], sign))
                                 {
                                     result.Add(finalCol);
                                 }
                             }
                         }
                     }
-                }
+
+                    // Four-die combos from bar
+                    for (int i = 0; i < movingPlayer.MovesLeft.Count; i++)
+                    {
+                        int die1 = movingPlayer.MovesLeft[i];
+                        int int1 = 24 - die1;
+
+                        if (sign > 0)
+                        {
+                            int1 = die1 - 1;
+                        }
+
+                        if (int1 < 0 || int1 >= 24)
+                        {
+                            continue;
+                        }
+
+                        bool blocked1 = TableValues[int1] > 1;
+
+                        if (sign > 0)
+                        {
+                            blocked1 = TableValues[int1] < -1;
+                        }
+
+                        if (blocked1)
+                        {
+                            continue;
+                        }
+
+                        for (int j = 0; j < movingPlayer.MovesLeft.Count; j++)
+                        {
+                            if (j == i)
+                            {
+                                continue;
+                            }
+
+                            if (!IsStepValid(int1, movingPlayer.MovesLeft[j], sign))
+                            {
+                                continue;
+                            }
+
+                            int int2 = int1 + sign * movingPlayer.MovesLeft[j];
+
+                            for (int k = 0; k < movingPlayer.MovesLeft.Count; k++)
+                            {
+                                if (k == i || k == j)
+                                {
+                                    continue;
+                                }
+
+                                if (!IsStepValid(int2, movingPlayer.MovesLeft[k], sign))
+                                {
+                                    continue;
+                                }
+
+                                int int3 = int2 + sign * movingPlayer.MovesLeft[k];
+
+                                for (int l = 0; l < movingPlayer.MovesLeft.Count; l++)
+                                {
+                                    if (l == i || l == j || l == k)
+                                    {
+                                        continue;
+                                    }
+
+                                    int finalCol = int3 + sign * movingPlayer.MovesLeft[l];
+
+                                    if (finalCol < 0 || finalCol >= 24)
+                                    {
+                                        continue;
+                                    }
+
+                                    if (result.Contains(finalCol))
+                                    {
+                                        continue;
+                                    }
+
+                                    if (IsStepValid(int3, movingPlayer.MovesLeft[l], sign))
+                                    {
+                                        result.Add(finalCol);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                } // end movingPlayer.OutedPieces == 1
 
                 return result;
             }
