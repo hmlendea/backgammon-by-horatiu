@@ -11,7 +11,9 @@ namespace BackgammonByHoratiu.Gui.Controls
     {
         public string ContentFile { get; set; }
 
-        public int ButtonRow { get; set; }
+        public InGameButtonIcon Icon { get; set; }
+
+        public bool IsActive { get; set; } = true;
 
         const int FrameWidth = 280;
         const int FrameHeight = 280;
@@ -45,7 +47,7 @@ namespace BackgammonByHoratiu.Gui.Controls
         {
             int frameX;
 
-            if (!IsEnabled)
+            if (!IsActive)
             {
                 frameX = FrameWidth * 3;
             }
@@ -62,7 +64,7 @@ namespace BackgammonByHoratiu.Gui.Controls
                 frameX = 0;
             }
 
-            int frameY = ButtonRow * FrameHeight;
+            int frameY = (int)Icon * FrameHeight;
 
             image.SourceRectangle = new Rectangle2D(frameX, frameY, FrameWidth, FrameHeight);
             image.Size = Size;

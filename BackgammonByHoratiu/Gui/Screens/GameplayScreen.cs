@@ -23,7 +23,10 @@ namespace BackgammonByHoratiu.Gui.Screens
         IGameManager game;
         GuiGameBoard gameBoard;
         GuiImage tableBackground;
+        GuiButton undoButton;
         GuiButton resetButton;
+
+        Stack<GameSnapshot> undoHistory;
 
         Point2D mousePosition;
 
@@ -62,17 +65,32 @@ namespace BackgammonByHoratiu.Gui.Screens
 
             aiManager.IsExternallyAnimating = () => gameBoard.IsAnimating;
 
+            int buttonSpacing = (GameDefines.HouseWidth - GameDefines.InGameButtonSize.Width) / 2;
+
+            undoButton = new GuiButton
+            {
+                ContentFile = "interface/buttons_ingame",
+                Icon = InGameButtonIcon.Undo,
+                Location = new Point2D(buttonSpacing, buttonSpacing),
+                Size = GameDefines.InGameButtonSize
+            };
             resetButton = new GuiButton
             {
                 ContentFile = "interface/buttons_ingame",
-                ButtonRow = 1,
+                Icon = InGameButtonIcon.Reset,
                 Location = new Point2D(
-                    (GameDefines.HouseWidth - GameDefines.InGameButtonSize.Width) / 2,
-                    (GameDefines.HouseWidth - GameDefines.InGameButtonSize.Width) / 2),
+                    undoButton.ClientRectangle.Left,
+                    undoButton.ClientRectangle.Bottom + buttonSpacing),
                 Size = GameDefines.InGameButtonSize
             };
 
-            GuiManager.Instance.RegisterControls(tableBackground, gameBoard, resetButton);
+            GuiManager.Instance.RegisterControls(
+                tableBackground,
+                gameBoard,
+                undoButton,
+                resetButton);
+
+            undoHistory = [];
             RegisterEvents();
         }
 
@@ -187,6 +205,10 @@ namespace BackgammonByHoratiu.Gui.Screens
                 gameBoard.ValidDestinations = [];
                 gameBoard.HoveredColumn = -1;
             }
+
+            bool canUndo = undoHistory.Count > 0 && !gameBoard.IsAnimating && game.ActivePlayer == 1;
+
+            undoButton.IsActive = canUndo;
         }
 
         protected override void DoDraw(SpriteBatch spriteBatch) { }
@@ -222,6 +244,7 @@ namespace BackgammonByHoratiu.Gui.Screens
             InputManager.Instance.MouseButtonReleased += OnMouseButtonReleased;
             InputManager.Instance.MouseMoved += OnMouseMoved;
             resetButton.Clicked += OnResetButtonClicked;
+            undoButton.Clicked += OnUndoButtonClicked;
         }
 
         void UnregisterEvents()
@@ -231,6 +254,7 @@ namespace BackgammonByHoratiu.Gui.Screens
             InputManager.Instance.MouseButtonReleased -= OnMouseButtonReleased;
             InputManager.Instance.MouseMoved -= OnMouseMoved;
             resetButton.Clicked -= OnResetButtonClicked;
+            undoButton.Clicked -= OnUndoButtonClicked;
         }
 
         bool HasAnyValidMoveForPlayer1()
@@ -260,6 +284,18 @@ namespace BackgammonByHoratiu.Gui.Screens
         void OnResetButtonClicked(object sender, MouseButtonEventArgs e)
         {
             game.NewGame();
+            undoHistory.Clear();
+            dragBeginCol = -1;
+        }
+
+        void OnUndoButtonClicked(object sender, MouseButtonEventArgs e)
+        {
+            if (!undoButton.IsActive || gameBoard.IsAnimating || undoHistory.Count == 0)
+            {
+                return;
+            }
+
+            game.RestoreState(undoHistory.Pop());
             dragBeginCol = -1;
         }
 
@@ -268,6 +304,7 @@ namespace BackgammonByHoratiu.Gui.Screens
             if (e.Key == Keys.N || e.Key == Keys.F2)
             {
                 game.NewGame();
+                undoHistory.Clear();
                 dragBeginCol = -1;
             }
         }
@@ -299,6 +336,7 @@ namespace BackgammonByHoratiu.Gui.Screens
                 try
                 {
                     game.NextTurn();
+                    undoHistory.Clear();
                     dragBeginCol = -1;
                 }
                 catch (PieceMoveException ex)
@@ -324,11 +362,13 @@ namespace BackgammonByHoratiu.Gui.Screens
 
                 dragBeginCol = -1;
 
+                GameSnapshot bearOffSnapshot = game.CreateSnapshot();
                 gameBoard.BeginPieceMoveAnimation(savedFrom, toHouse, game.ActivePlayer, _ =>
                 {
                     try
                     {
                         game.BearOffPiece(savedFrom);
+                        undoHistory.Push(bearOffSnapshot);
                     }
                     catch (PieceMoveException ex)
                     {
@@ -367,8 +407,14 @@ namespace BackgammonByHoratiu.Gui.Screens
 
             if (dragBeginCol == BarBrown || dragBeginCol == BarWhite)
             {
-                int distance = dragBeginCol == BarBrown ? 24 - col : col + 1;
-                int fromBar = dragBeginCol == BarBrown ? GameDefines.ColBarP2 : GameDefines.ColBarP1;
+                int distance = col + 1;
+                int fromBar = GameDefines.ColBarP1;
+
+                if (dragBeginCol == BarBrown)
+                {
+                    distance = 24 - col;
+                    fromBar = GameDefines.ColBarP2;
+                }
 
                 if (!game.GetValidDestinations(fromBar).Contains(col))
                 {
@@ -379,11 +425,13 @@ namespace BackgammonByHoratiu.Gui.Screens
                 int savedDist = distance;
                 dragBeginCol = -1;
 
+                GameSnapshot outedSnapshot = game.CreateSnapshot();
                 ChainMoveAnimation(fromBar, game.FindMoveOutedPieceIntermediates(savedDist), col, game.ActivePlayer, () =>
                 {
                     try
                     {
                         game.MoveOutedPiece(savedDist);
+                        undoHistory.Push(outedSnapshot);
                     }
                     catch (PieceMoveException ex)
                     {
@@ -415,16 +463,19 @@ namespace BackgammonByHoratiu.Gui.Screens
                 if (!game.GetValidDestinations(savedFrom).Contains(col))
                 {
                     dragBeginCol = -1;
+
                     return;
                 }
 
                 dragBeginCol = -1;
 
+                GameSnapshot moveSnapshot = game.CreateSnapshot();
                 ChainMoveAnimation(savedFrom, game.FindMovePieceDirectIntermediates(savedFrom, col), col, game.ActivePlayer, () =>
                 {
                     try
                     {
                         game.MovePieceDirect(savedFrom, col);
+                        undoHistory.Push(moveSnapshot);
                     }
                     catch (PieceMoveException ex)
                     {
