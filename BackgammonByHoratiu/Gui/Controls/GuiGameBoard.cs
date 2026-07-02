@@ -58,28 +58,28 @@ namespace BackgammonByHoratiu.Gui.Controls
             {
                 ContentFile = "Table/frame",
                 Location = new Point2D(0, 0),
-                Size = new Size2D(GameDefines.FrameWidth, GameDefines.FrameHeight)
+                Size = new Size2D(GameDefines.FrameSize.Width, GameDefines.FrameSize.Height)
             };
             frames[1] = new GuiImage
             {
                 ContentFile = "Table/frame",
                 Location = new Point2D(GameDefines.BarX, 0),
-                Size = new Size2D(GameDefines.FrameWidth, GameDefines.FrameHeight)
+                Size = new Size2D(GameDefines.FrameSize.Width, GameDefines.FrameSize.Height)
             };
 
             boardBackgrounds[0] = new GuiImage
             {
                 ContentFile = "Table/board",
-                Location = new Point2D(GameDefines.FrameBorder, GameDefines.FrameBorder),
-                Size = frames[0].Size - new Size2D(GameDefines.FrameBorder * 2)
+                Location = new Point2D(GameDefines.FrameThickness, GameDefines.FrameThickness),
+                Size = frames[0].Size - new Size2D(GameDefines.FrameThickness * 2)
             };
             boardBackgrounds[1] = new GuiImage
             {
                 ContentFile = "Table/board",
                 Location = new Point2D(
-                    boardBackgrounds[0].Location.X + boardBackgrounds[0].Size.Width + GameDefines.FrameBorder * 2,
+                    boardBackgrounds[0].Location.X + boardBackgrounds[0].Size.Width + GameDefines.FrameThickness * 2,
                     boardBackgrounds[0].Location.Y),
-                Size = frames[1].Size - new Size2D(GameDefines.FrameBorder * 2)
+                Size = frames[1].Size - new Size2D(GameDefines.FrameThickness * 2)
             };
 
             dice[0] = new GuiImage
@@ -854,14 +854,14 @@ namespace BackgammonByHoratiu.Gui.Controls
         {
             columnRectangles = new Rectangle2D[GameDefines.TotalColumns];
             columnRectangles[11] = new Rectangle2D(
-                GameDefines.FrameBorder,
-                GameDefines.FrameBorder,
+                GameDefines.FrameThickness,
+                GameDefines.FrameThickness,
                 GameDefines.PieceSize,
                 GameDefines.ColumnHeight);
 
             for (int columnIndex = 10; columnIndex >= 0; columnIndex--)
             {
-                int topY = GameDefines.FrameBorder;
+                int topY = GameDefines.FrameThickness;
 
                 if (columnIndex < 6)
                 {
@@ -886,10 +886,10 @@ namespace BackgammonByHoratiu.Gui.Controls
                 }
             }
 
-            int bottomY = GameDefines.FrameBorder + GameDefines.BoardHalfHeight - GameDefines.ColumnHeight;
+            int bottomY = GameDefines.FrameThickness + GameDefines.BoardHalfHeight - GameDefines.ColumnHeight;
 
             columnRectangles[12] = new Rectangle2D(
-                GameDefines.FrameBorder,
+                GameDefines.FrameThickness,
                 bottomY,
                 GameDefines.PieceSize,
                 GameDefines.ColumnHeight);
@@ -916,7 +916,7 @@ namespace BackgammonByHoratiu.Gui.Controls
                 }
             }
 
-            int outColumnX = GameDefines.BarX - GameDefines.FrameBorder;
+            int outColumnX = GameDefines.BarX - GameDefines.FrameThickness;
             int outColumnWidth = columnRectangles[5].X - outColumnX;
             int boardMidY = GameDefines.RightFrameTopY + GameDefines.BoardHalfHeight / 2;
 
@@ -936,13 +936,13 @@ namespace BackgammonByHoratiu.Gui.Controls
             houses = new Rectangle2D[2];
             houses[1] = new Rectangle2D(
                 GameDefines.HouseX,
-                GameDefines.FrameBorder,
+                GameDefines.FrameThickness,
                 GameDefines.HouseWidth,
                 GameDefines.BoardHalfHeight / 2);
 
             houses[0] = new Rectangle2D(
                 GameDefines.HouseX,
-                GameDefines.FrameBorder + GameDefines.BoardHalfHeight / 2,
+                GameDefines.FrameThickness + GameDefines.BoardHalfHeight / 2,
                 GameDefines.HouseWidth,
                 GameDefines.BoardHalfHeight / 2);
         }

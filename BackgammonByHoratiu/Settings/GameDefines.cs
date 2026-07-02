@@ -16,20 +16,19 @@ namespace BackgammonByHoratiu.Settings
 
         public const int ColumnHeight = PieceSize * 5;
 
-        public const int FrameWidth = 388;
-        public const int FrameHeight = 812;
-        public const int FrameBorder = 49;
+        public static Size2D FrameSize => new(388, 812);
+        public const int FrameThickness = 49;
 
-        public const int BoardHalfWidth = FrameWidth - FrameBorder * 2;
-        public const int BoardHalfHeight = FrameHeight - FrameBorder * 2;
+        public static int BoardHalfWidth => FrameSize.Width - FrameThickness * 2;
+        public static int BoardHalfHeight => FrameSize.Height - FrameThickness * 2;
 
-        public const int BarX = FrameWidth;
+        public static int BarX => FrameSize.Width;
 
-        public const int HouseX = BarX + FrameWidth;
+        public static int HouseX => BarX + FrameSize.Width;
         public const int HouseWidth = PieceSize + Padding * 3;
 
-        public const int WindowWidth = HouseX + HouseWidth * 2;
-        public const int WindowHeight = FrameHeight;
+        public static int WindowWidth => HouseX + HouseWidth * 2;
+        public static int WindowHeight => FrameSize.Height;
 
         public static Size2D ColumnFrameSize => new(105, 512);
         public static Size2D DieFrameSize => new(200, 200);
