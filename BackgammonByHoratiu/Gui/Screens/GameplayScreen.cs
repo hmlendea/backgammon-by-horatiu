@@ -23,6 +23,7 @@ namespace BackgammonByHoratiu.Gui.Screens
         IGameManager game;
         GuiGameBoard gameBoard;
         GuiImage tableBackground;
+        GuiButton undoButton;
         GuiButton resetButton;
 
         Point2D mousePosition;
@@ -62,17 +63,31 @@ namespace BackgammonByHoratiu.Gui.Screens
 
             aiManager.IsExternallyAnimating = () => gameBoard.IsAnimating;
 
+            int buttonSpacing = (GameDefines.HouseWidth - GameDefines.InGameButtonSize.Width) / 2;
+
+            undoButton = new GuiButton
+            {
+                ContentFile = "interface/buttons_ingame",
+                ButtonRow = 0,
+                Location = new Point2D(buttonSpacing, buttonSpacing),
+                Size = GameDefines.InGameButtonSize
+            };
             resetButton = new GuiButton
             {
                 ContentFile = "interface/buttons_ingame",
                 ButtonRow = 1,
                 Location = new Point2D(
-                    (GameDefines.HouseWidth - GameDefines.InGameButtonSize.Width) / 2,
-                    (GameDefines.HouseWidth - GameDefines.InGameButtonSize.Width) / 2),
+                    undoButton.ClientRectangle.Left,
+                    undoButton.ClientRectangle.Bottom + buttonSpacing),
                 Size = GameDefines.InGameButtonSize
             };
 
-            GuiManager.Instance.RegisterControls(tableBackground, gameBoard, resetButton);
+            GuiManager.Instance.RegisterControls(
+                tableBackground,
+                gameBoard,
+                undoButton,
+                resetButton);
+
             RegisterEvents();
         }
 
