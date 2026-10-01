@@ -38,7 +38,7 @@ The first player to bear off all 15 pieces wins.
 
 ### AI
 
-The computer opponent uses a **minimax search** with a transposition table (memoisation) to evaluate full move sequences. The position evaluator accounts for:
+The computer opponent uses a **full-turn maximising search** with a transposition table (memoisation) to evaluate its available move sequences. The position evaluator accounts for:
 
 - **Pip count** — distance remaining to bear off
 - **Point control** — bonuses for owning anchors, home-board points, and outer points
@@ -133,6 +133,10 @@ BackgammonByHoratiu.UnitTests/
 ├── Entities/              # Unit tests for Table, Player, Piece
 └── GameLogic/             # Unit tests for game managers, AI evaluator, and search
 ```
+
+## 🏗️ Architecture
+
+See the [architecture documentation](ARCHITECTURE.md) for the system context, principal components, runtime flows, ownership boundaries, dependencies, constraints, and extension points.
 
 ### Dependencies
 
